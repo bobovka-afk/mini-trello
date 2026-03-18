@@ -11,7 +11,7 @@ datasource db {
 model User {
   id           Int       @default(autoincrement()) @id
   email        String    @unique
-  passwordHash String    @map("password") 
+  passwordHash String?   @map("password") 
   name         String
   avatarPath   String?   @map("picture") 
   emailVerifiedAt DateTime? 

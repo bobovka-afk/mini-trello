@@ -1,3 +1,32 @@
+# Auth test frontend
+
+Внутри репо есть простая тестовая морда для авторизации: `frontend/`.
+
+## Запуск
+
+В одном терминале:
+
+```bash
+npm run start:dev
+```
+
+Во втором:
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+### Что тестировать
+
+- `POST /auth/register` (форма Register)
+- `POST /auth/login` (форма Login) — **ставит refresh cookie** и возвращает access token
+- Google OAuth: кнопка **Continue with Google**
+- `POST /auth/login/access-token` (кнопка Refresh tokens) — работает через refresh cookie
+- Защищённый эндпоинт: `GET /auth/me` (кнопка Call protected)
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>

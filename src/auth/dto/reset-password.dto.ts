@@ -2,18 +2,13 @@ import {
   IsString,
   MinLength,
   MaxLength,
-  IsEmail,
   IsNotEmpty,
 } from 'class-validator';
 
-export class LoginDto {
-  @IsEmail({}, { message: 'Некорректный email' })
-  @IsNotEmpty()
-  email: string;
-
+export class ResetPasswordDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(6, { message: 'Пароль должен содержать не менее 6 символов' })
   @MaxLength(72, { message: 'Пароль не более 72 символов' })
-  password: string;
+  newPassword: string;
 }
