@@ -7,10 +7,14 @@ import { GoogleStrategy } from './strategies/google.strategy'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { getJwtConfig } from '../config/jwt.config'
+import { PrismaModule } from '../prisma/prisma.module'
+import { MailModule } from '../mail/mail.module'
 
 @Module({
 	imports: [
 		UserModule,
+		PrismaModule,
+		MailModule,
 		ConfigModule,
 		JwtModule.registerAsync({
 			imports: [ConfigModule],

@@ -17,4 +17,24 @@ model User {
   emailVerifiedAt DateTime? 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  authTokens AuthToken[]
 }
+
+enum AuthTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+model AuthToken {
+  id Int @default(autoincrement()) @id
+  userId Int
+  type   AuthTokenType
+  tokenHash String @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  usedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+

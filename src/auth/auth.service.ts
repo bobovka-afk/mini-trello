@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserService } from '../user/user.service';
@@ -11,6 +12,9 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { User } from '../generated/prisma/client';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
+import { AuthTokenType } from '../generated/prisma/enums';
 
 
 @Injectable()
@@ -22,6 +26,8 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -29,7 +35,16 @@ export class AuthService {
     if (oldUser) {
       throw new BadRequestException('Пользователь с таким email уже существует');
     }
-    return this.userService.create(registerDto);
+
+    const user = await this.userService.create(registerDto);
+
+    try {
+      await this.requestEmailVerification(registerDto.email);
+    } catch (error) {
+      console.error('Не удалось отправить письмо для подтверждения email:', error);
+    }
+
+    return user;
   }
 
   async login(loginDto: LoginDto) {
@@ -139,6 +154,156 @@ removeRefreshTokenFromResponse(res: Response) {
         sameSite: 'none'
     })
 }
+
+  private generateToken() {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  private hashToken(token: string) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  private getEmailVerificationTtlMs() {
+    const minutes =
+      Number(this.configService.get('EMAIL_VERIFICATION_TTL_MINUTES')) ||
+      60 * 24;
+    return minutes * 60 * 1000;
+  }
+
+  private getPasswordResetTtlMs() {
+    const minutes =
+      Number(this.configService.get('PASSWORD_RESET_TTL_MINUTES')) || 30;
+    return minutes * 60 * 1000;
+  }
+
+  async requestEmailVerification(email: string) {
+    const user = await this.userService.findByEmail(email);
+
+    if (!user || user.emailVerifiedAt) return { ok: true };
+
+    const token = this.generateToken();
+    const tokenHash = this.hashToken(token);
+
+    const expiresAt = new Date(Date.now() + this.getEmailVerificationTtlMs());
+
+    await this.prisma.authToken.create({
+      data: {
+        userId: user.id,
+        type: AuthTokenType.EMAIL_VERIFICATION,
+        tokenHash,
+        expiresAt,
+      },
+    });
+
+    const serverUrl = this.configService.get<string>('SERVER_URL') || '';
+    const verificationUrl = `${serverUrl}/auth/email/verification/confirm?token=${token}`;
+
+    await this.mailService.sendEmailVerification(user.email, verificationUrl);
+    return { ok: true };
+  }
+
+  async confirmEmailVerification(token: string) {
+    if (!token) {
+      throw new BadRequestException('Токен не передан');
+    }
+
+    const tokenHash = this.hashToken(token);
+    const authToken = await this.prisma.authToken.findUnique({
+      where: { tokenHash },
+      include: { user: true },
+    });
+
+    const now = new Date();
+    const isValid =
+      authToken &&
+      authToken.type === AuthTokenType.EMAIL_VERIFICATION &&
+      !authToken.usedAt &&
+      authToken.expiresAt > now;
+
+    if (!isValid) {
+      throw new BadRequestException('Невалидный или истекший токен');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: authToken!.userId },
+        data: { emailVerifiedAt: now },
+      }),
+      this.prisma.authToken.update({
+        where: { id: authToken!.id },
+        data: { usedAt: now },
+      }),
+    ]);
+
+    return { ok: true };
+  }
+
+  async requestPasswordReset(email: string) {
+    const user = await this.userService.findByEmail(email);
+
+    if (!user) return { ok: true };
+
+    const token = this.generateToken();
+    const tokenHash = this.hashToken(token);
+    const expiresAt = new Date(Date.now() + this.getPasswordResetTtlMs());
+
+    await this.prisma.authToken.create({
+      data: {
+        userId: user.id,
+        type: AuthTokenType.PASSWORD_RESET,
+        tokenHash,
+        expiresAt,
+      },
+    });
+
+    const clientUrl = this.configService.get<string>('CLIENT_URL') || '';
+    const resetUrl = `${clientUrl}/reset-password?token=${token}`;
+
+    await this.mailService.sendPasswordReset(user.email, resetUrl);
+    return { ok: true };
+  }
+
+  async confirmPasswordReset(token: string, newPassword: string) {
+    if (!token) {
+      throw new BadRequestException('Токен не передан');
+    }
+
+    if (!newPassword) {
+      throw new BadRequestException('Пароль не передан');
+    }
+
+    const tokenHash = this.hashToken(token);
+    const authToken = await this.prisma.authToken.findUnique({
+      where: { tokenHash },
+      include: { user: true },
+    });
+
+    const now = new Date();
+    const isValid =
+      authToken &&
+      authToken.type === AuthTokenType.PASSWORD_RESET &&
+      !authToken.usedAt &&
+      authToken.expiresAt > now;
+
+    if (!isValid) {
+      throw new BadRequestException('Невалидный или истекший токен');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: authToken!.userId },
+        data: { passwordHash },
+      }),
+      this.prisma.authToken.update({
+        where: { id: authToken!.id },
+        data: { usedAt: now },
+      }),
+    ]);
+
+    return { ok: true };
+  }
 
 
 }

@@ -44,6 +44,235 @@ function formatError(e: unknown) {
   return 'Ошибка запроса';
 }
 
+function getQueryParam(name: string) {
+  const url = new URL(window.location.href);
+  return url.searchParams.get(name);
+}
+
+function EmailVerificationRequestPage() {
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function submit() {
+    setMsg(null);
+    setBusy(true);
+    try {
+      await api('/auth/email/verification/request', {
+        method: 'POST',
+        json: { email },
+      });
+      setMsg('Проверьте почту и папку Спам. Если аккаунт зарегистрирован — письмо придет.');
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="container">
+      <header className="header">
+        <div>
+          <div className="title">Email verification</div>
+          <div className="subtitle">Request confirmation email</div>
+        </div>
+        <div className="row">
+          <button className="btn" onClick={() => navigate('/')} type="button">
+            Home
+          </button>
+        </div>
+      </header>
+
+      <div className="card">
+        <div className="form">
+          <label className="field">
+            <div className="label">Email</div>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="mail@example.com"
+              autoComplete="email"
+            />
+          </label>
+
+          <button className="btnPrimary" onClick={submit} disabled={busy}>
+            {busy ? '...' : 'Send verification email'}
+          </button>
+
+          {msg && <div className="msg">{msg}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmailVerifiedStatusPage() {
+  const status = getQueryParam('status') || 'invalid';
+
+  let title = 'Invalid';
+  if (status === 'success') title = 'Success';
+  else if (status === 'expired') title = 'Expired';
+  else if (status === 'missing') title = 'Missing token';
+
+  return (
+    <div className="container">
+      <header className="header">
+        <div>
+          <div className="title">Email verification</div>
+          <div className="subtitle">Result: {title}</div>
+        </div>
+        <div className="row">
+          <button className="btn" onClick={() => navigate('/')} type="button">
+            Home
+          </button>
+          <button
+            className="btn"
+            onClick={() => navigate('/test/email-verification/request')}
+            type="button"
+          >
+            Request again
+          </button>
+        </div>
+      </header>
+
+      <div className="card">
+        <div className="msg">Status: {status}</div>
+      </div>
+    </div>
+  );
+}
+
+function PasswordResetRequestPage() {
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function submit() {
+    setMsg(null);
+    setBusy(true);
+    try {
+      await api('/auth/password/reset/request', {
+        method: 'POST',
+        json: { email },
+      });
+      setMsg('Проверьте почту и папку Спам. Если аккаунт зарегистрирован — письмо придет.');
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="container">
+      <header className="header">
+        <div>
+          <div className="title">Password reset</div>
+          <div className="subtitle">Request reset link</div>
+        </div>
+        <div className="row">
+          <button className="btn" onClick={() => navigate('/')} type="button">
+            Home
+          </button>
+        </div>
+      </header>
+
+      <div className="card">
+        <div className="form">
+          <label className="field">
+            <div className="label">Email</div>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="mail@example.com"
+              autoComplete="email"
+            />
+          </label>
+
+          <button className="btnPrimary" onClick={submit} disabled={busy}>
+            {busy ? '...' : 'Send reset email'}
+          </button>
+
+          {msg && <div className="msg">{msg}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PasswordResetConfirmPage() {
+  const token = getQueryParam('token') || '';
+  const [newPassword, setNewPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function submit() {
+    setMsg(null);
+    setBusy(true);
+    try {
+      await api('/auth/password/reset/confirm', {
+        method: 'POST',
+        json: { token, newPassword },
+      });
+      setMsg('Пароль успешно изменён.');
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="container">
+      <header className="header">
+        <div>
+          <div className="title">Password reset</div>
+          <div className="subtitle">Confirm token and set new password</div>
+        </div>
+        <div className="row">
+          <button className="btn" onClick={() => navigate('/')} type="button">
+            Home
+          </button>
+        </div>
+      </header>
+
+      <div className="card">
+        <div className="form">
+          {!token ? (
+            <div className="msg">
+              Token отсутствует в query param `token`. Откройте ссылку из письма.
+            </div>
+          ) : (
+            <>
+              <label className="field">
+                <div className="label">New password</div>
+                <input
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                />
+              </label>
+
+              <button
+                className="btnPrimary"
+                onClick={submit}
+                disabled={busy || !newPassword}
+              >
+                {busy ? '...' : 'Set new password'}
+              </button>
+            </>
+          )}
+
+          {msg && <div className="msg">{msg}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Home(props: { onAuthed: (token: string) => void }) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -106,6 +335,23 @@ function Home(props: { onAuthed: (token: string) => void }) {
             type="button"
           >
             Register
+          </button>
+        </div>
+
+        <div className="row">
+          <button
+            className="btn"
+            onClick={() => navigate('/test/email-verification/request')}
+            type="button"
+          >
+            Test email verification
+          </button>
+          <button
+            className="btn"
+            onClick={() => navigate('/test/password-reset/request')}
+            type="button"
+          >
+            Test password reset
           </button>
         </div>
 
@@ -219,6 +465,23 @@ function Dashboard(props: { accessToken: string | null; setToken: (t: string | n
           </button>
         </div>
 
+        <div className="row">
+          <button
+            className="btn"
+            onClick={() => navigate('/test/email-verification/request')}
+            type="button"
+          >
+            Test email verification
+          </button>
+          <button
+            className="btn"
+            onClick={() => navigate('/test/password-reset/request')}
+            type="button"
+          >
+            Test password reset
+          </button>
+        </div>
+
         {status && <div className="msg">{status}</div>}
       </div>
     </div>
@@ -236,6 +499,22 @@ function App() {
 
   if (route.startsWith('/dashboard')) {
     return <Dashboard accessToken={accessToken} setToken={setToken} />;
+  }
+
+  if (route.startsWith('/test/email-verification/request')) {
+    return <EmailVerificationRequestPage />;
+  }
+
+  if (route.startsWith('/email-verified')) {
+    return <EmailVerifiedStatusPage />;
+  }
+
+  if (route.startsWith('/test/password-reset/request')) {
+    return <PasswordResetRequestPage />;
+  }
+
+  if (route.startsWith('/reset-password')) {
+    return <PasswordResetConfirmPage />;
   }
 
   return <Home onAuthed={(t) => setToken(t)} />;
