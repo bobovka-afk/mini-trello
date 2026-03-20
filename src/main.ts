@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import * as path from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +17,11 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(cookieParser());
+
+  // Статическая раздача загруженных аватаров и прочих файлов.
+  // Контроллер сохраняет их в `${process.cwd()}/uploads/...`.
+  const uploadsPath = path.join(process.cwd(), 'uploads');
+  app.use('/uploads', express.static(uploadsPath));
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

@@ -61,4 +61,32 @@ export class UserService {
 
     return user;
   }
+
+  async updateAvatar(id: number, avatarPath: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { avatarPath },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatarPath: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async removeAvatar(id: number) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { avatarPath: null },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatarPath: true,
+        createdAt: true,
+      },
+    });
+  }
 }

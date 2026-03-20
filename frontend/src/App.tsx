@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, API_URL, type ApiError } from './lib/api';
 import './index.css';
 
@@ -452,6 +452,9 @@ function Dashboard(props: { accessToken: string | null; setToken: (t: string | n
           <button className="btn" onClick={() => navigate('/')} type="button">
             Home
           </button>
+          <button className="btn" onClick={() => navigate('/profile/me')} type="button">
+            Profile
+          </button>
           <button className="btnDanger" onClick={logout} type="button">
             Logout
           </button>
@@ -488,6 +491,232 @@ function Dashboard(props: { accessToken: string | null; setToken: (t: string | n
   );
 }
 
+function ProfileMePage(props: { accessToken: string | null }) {
+  const [user, setUser] = useState<UserSafe | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      setMsg(null);
+      if (!props.accessToken) {
+        setMsg('Пожалуйста, сначала выполните вход.');
+        return;
+      }
+
+      try {
+        const res = await api<UserSafe>('/user/me', {
+          method: 'GET',
+          accessToken: props.accessToken,
+        });
+        setUser(res);
+      } catch (e) {
+        setMsg(formatError(e));
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    load();
+  }, [props.accessToken]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  async function uploadAvatar() {
+    if (!props.accessToken) return;
+    if (!selectedFile) return;
+
+    setBusy(true);
+    setMsg(null);
+    try {
+      const form = new FormData();
+      form.append('file', selectedFile);
+
+      const updated = await api<UserSafe>('/user/update-avatar', {
+        method: 'PATCH',
+        accessToken: props.accessToken,
+        body: form,
+      });
+      setUser(updated);
+      setSelectedFile(null);
+      setSelectedFileName(null);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      setMsg('Аватар обновлён.');
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function onPickFile(file: File | null) {
+    setMsg(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setSelectedFileName(null);
+    if (!file) return;
+
+    // Чтобы не упираться в MaxLength на бэке (и не отправлять огромные строки).
+    const MAX_BYTES = 50 * 1024; // ~50 KB
+    if (file.size > MAX_BYTES) {
+      setMsg('Файл слишком большой. Максимум ~50 KB.');
+      return;
+    }
+
+    setSelectedFile(file);
+    setSelectedFileName(file.name);
+    setPreviewUrl(URL.createObjectURL(file));
+  }
+
+  function triggerPick() {
+    setMsg(null);
+    fileInputRef.current?.click();
+  }
+
+  async function removeAvatar() {
+    if (!props.accessToken) return;
+
+    setBusy(true);
+    setMsg(null);
+    try {
+      const updated = await api<UserSafe>('/user/remove-avatar', {
+        method: 'DELETE',
+        accessToken: props.accessToken,
+      });
+      setUser(updated);
+      setSelectedFile(null);
+      setSelectedFileName(null);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      setMsg('Аватар удалён.');
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function formatRegisteredRU(isoDate: string) {
+    const d = new Date(isoDate);
+    const day = d.getDate();
+    const month = d.toLocaleString('ru-RU', { month: 'long' });
+    const year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+  }
+
+  return (
+    <div className="container">
+      <header className="header">
+        <div>
+          <div className="title">Profile</div>
+          <div className="subtitle">Me</div>
+        </div>
+        <div className="row">
+          <button className="btn" onClick={() => navigate('/dashboard')} type="button">
+            Back
+          </button>
+        </div>
+      </header>
+
+      <div className="card">
+        {msg && <div className="msg">{msg}</div>}
+
+        <div className="row" style={{ gap: 24, alignItems: 'flex-start' }}>
+          <div style={{ minWidth: 220 }}>
+            <div style={{ marginTop: 12 }}>
+              <div className="avatarWrap">
+                {previewUrl || user?.avatarPath ? (
+                  <img
+                    className="avatarImg"
+                    src={previewUrl || user?.avatarPath || ''}
+                    alt="avatar"
+                  />
+                ) : (
+                  <div className="msg" style={{ marginTop: 0, padding: 0 }}>
+                    No avatar
+                  </div>
+                )}
+
+                <button
+                  className="avatarEditBtn"
+                  type="button"
+                  disabled={busy}
+                  onClick={triggerPick}
+                >
+                  Edit
+                </button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                  disabled={busy}
+                />
+              </div>
+            </div>
+
+            {selectedFile && (
+              <div className="avatarActions">
+                <div className="avatarHint">
+                  {selectedFileName ? `Selected: ${selectedFileName}` : 'Selected'}
+                </div>
+
+                <button
+                  className="btnPrimary"
+                  type="button"
+                  disabled={busy || !selectedFile}
+                  onClick={uploadAvatar}
+                >
+                  {busy ? '...' : 'Upload a photo...'}
+                </button>
+              </div>
+            )}
+
+            {user?.avatarPath && (
+              <div style={{ marginTop: 12 }}>
+                <button
+                  className="btnDanger"
+                  type="button"
+                  disabled={busy}
+                  onClick={removeAvatar}
+                >
+                  {busy ? '...' : 'Remove photo'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ flex: 1 }}>
+            {/* value only: без отдельной подписи */}
+            <div style={{ marginBottom: 12, fontWeight: 600 }}>
+              {user?.name || '-'}
+            </div>
+
+            <div className="label">Почта</div>
+            <div style={{ marginBottom: 12 }}>{user?.email || '-'}</div>
+
+            <div className="label">Зарегистрирован</div>
+            <div style={{ marginBottom: 12 }}>
+              {user?.createdAt ? formatRegisteredRU(user.createdAt) : '-'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const route = useRoute();
   const [accessToken, setAccessToken] = useState<string | null>(() => getAccessTokenFromStorage());
@@ -499,6 +728,10 @@ function App() {
 
   if (route.startsWith('/dashboard')) {
     return <Dashboard accessToken={accessToken} setToken={setToken} />;
+  }
+
+  if (route.startsWith('/profile')) {
+    return <ProfileMePage accessToken={accessToken} />;
   }
 
   if (route.startsWith('/test/email-verification/request')) {
