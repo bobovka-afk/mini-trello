@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "/Users/igork/Desktop/proj/mini-trello/src/generated/prisma",
+      "value": "D:\\test-projects\\mini-trello\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -33,12 +33,16 @@ const config: runtime.GetPrismaClientConfig = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "windows",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "windows"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/igork/Desktop/proj/mini-trello/prisma/schema.prisma",
+    "sourceFilePath": "D:\\test-projects\\mini-trello\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../../../prisma",
@@ -48,6 +52,7 @@ const config: runtime.GetPrismaClientConfig = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -56,8 +61,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider     = \"prisma-client\"\n  output       = \"../src/generated/prisma\"\n  moduleFormat = \"cjs\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id              Int       @id @default(autoincrement())\n  email           String    @unique\n  passwordHash    String?   @map(\"password\")\n  name            String\n  avatarPath      String?   @map(\"picture\")\n  emailVerifiedAt DateTime?\n  createdAt       DateTime  @default(now())\n  updatedAt       DateTime  @updatedAt\n\n  authTokens AuthToken[]\n}\n\nenum AuthTokenType {\n  EMAIL_VERIFICATION\n  PASSWORD_RESET\n}\n\nmodel AuthToken {\n  id Int @id @default(autoincrement())\n\n  userId Int\n  type   AuthTokenType\n\n  tokenHash String @unique\n\n  expiresAt DateTime\n  createdAt DateTime  @default(now())\n  usedAt    DateTime?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n",
-  "inlineSchemaHash": "4c9c6140232fc015b3dd7634e31e511b93c35d25c9382e65ab52be6e2edc0f01",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client\"\n  output        = \"../src/generated/prisma\"\n  moduleFormat  = \"cjs\"\n  binaryTargets = [\"native\", \"windows\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id              Int       @id @default(autoincrement())\n  email           String    @unique\n  passwordHash    String?   @map(\"password\")\n  name            String\n  avatarPath      String?   @map(\"picture\")\n  emailVerifiedAt DateTime?\n  createdAt       DateTime  @default(now())\n  updatedAt       DateTime  @updatedAt\n\n  authTokens AuthToken[]\n}\n\nenum AuthTokenType {\n  EMAIL_VERIFICATION\n  PASSWORD_RESET\n}\n\nmodel AuthToken {\n  id        Int           @id @default(autoincrement())\n  userId    Int\n  type      AuthTokenType\n  tokenHash String        @unique\n  expiresAt DateTime\n  createdAt DateTime      @default(now())\n  usedAt    DateTime?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n",
+  "inlineSchemaHash": "6741b03c3c1a37d77a8845128ae92fd0b4dc8f3e78ba358d6b577724a8a76f99",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},

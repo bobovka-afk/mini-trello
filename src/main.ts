@@ -7,6 +7,9 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const redisHost = process.env.REDIS_HOST ?? 'localhost';
+  const redisPort = Number(process.env.REDIS_PORT ?? 6379);
+
   app.enableCors({
     origin: true,
     credentials: true,
@@ -22,8 +25,8 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.REDIS,
     options: {
-      host: 'localhost',
-      port: 6379,
+      host: redisHost,
+      port: redisPort,
     },
   });
 

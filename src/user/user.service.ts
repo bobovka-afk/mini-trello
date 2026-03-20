@@ -55,6 +55,7 @@ export class UserService {
         email,
         name,
         avatarPath: picture,
+        emailVerifiedAt: new Date(),
       },
     });
 

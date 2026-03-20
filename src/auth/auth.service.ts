@@ -37,7 +37,6 @@ export class AuthService {
     }
 
     const user = await this.userService.create(registerDto);
-
     try {
       await this.requestEmailVerification(registerDto.email);
     } catch (error) {
@@ -125,6 +124,11 @@ async validateOAuthLogin(req: {
             req.user.name,
             req.user.picture
         )
+    } else if (!user.emailVerifiedAt) {
+        user = await this.prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerifiedAt: new Date() },
+        });
     }
 
     const tokens = this.issueTokens(user.id)
