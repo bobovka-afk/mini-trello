@@ -9,22 +9,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id           Int       @default(autoincrement()) @id
-  email        String    @unique
-  passwordHash String?   @map("password") 
-  name         String
-  avatarPath   String?   @map("picture") 
-  emailVerifiedAt DateTime? 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  authTokens AuthToken[]
-}
-
 enum AuthTokenType {
   EMAIL_VERIFICATION
   PASSWORD_RESET
+}
+
+enum WorkspaceRole {
+  ADMIN
+  OWNER
+  MEMBER
+}
+
+model User {
+  id              Int       @default(autoincrement()) @id
+  email           String    @unique
+  passwordHash    String?   @map("password")
+  name            String
+  avatarPath      String?   @map("picture")
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  authTokens       AuthToken[]
+  workspaceMembers WorkspaceMember[]
 }
 
 model AuthToken {
@@ -38,4 +45,30 @@ model AuthToken {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Workspace {
+  id          Int       @default(autoincrement()) @id
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  members WorkspaceMember[]
+}
+
+model WorkspaceMember {
+  id          Int           @default(autoincrement()) @id
+  workspaceId Int
+  userId      Int
+  role        WorkspaceRole @default(MEMBER)
+  createdAt   DateTime      @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
 

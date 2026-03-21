@@ -10,4 +10,6 @@
  */
 export type * from './models/User'
 export type * from './models/AuthToken'
+export type * from './models/Workspace'
+export type * from './models/WorkspaceMember'
 export type * from './commonInputTypes'

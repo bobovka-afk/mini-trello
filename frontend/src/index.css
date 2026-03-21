@@ -201,3 +201,421 @@ button {
   max-height: 420px;
 }
 
+/* —— Jira-like workspace UI (light shell) —— */
+.jira-shell {
+  min-height: 100vh;
+  display: flex;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  color: #172b4d;
+  background: #f1f2f4;
+}
+
+.jira-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-right: 1px solid #dfe1e6;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.jira-sidebar-brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.jira-logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #0c66e4 0%, #05c 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.jira-sidebar-title {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.jira-sidebar-sub {
+  font-size: 11px;
+  color: #626f86;
+  margin-top: 2px;
+}
+
+.jira-nav-section {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #626f86;
+  margin-bottom: 8px;
+}
+
+.jira-nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: 3px;
+  font-size: 14px;
+  color: #172b4d;
+  cursor: pointer;
+}
+
+.jira-nav-item:hover {
+  background: #f1f2f4;
+}
+
+.jira-nav-item-active {
+  background: #e9f2ff;
+  color: #0c66e4;
+  font-weight: 600;
+}
+
+.jira-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 28px 40px;
+}
+
+.jira-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.jira-page-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.jira-page-desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #626f86;
+  max-width: 560px;
+  line-height: 1.45;
+}
+
+.jira-topbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.jira-btn {
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.jira-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.jira-btn-primary {
+  background: #0c66e4;
+  color: #fff;
+  border-color: #0c66e4;
+}
+
+.jira-btn-primary:hover:not(:disabled) {
+  background: #0055cc;
+  border-color: #0055cc;
+}
+
+.jira-btn-ghost {
+  background: #fff;
+  color: #172b4d;
+  border-color: #dfe1e6;
+}
+
+.jira-btn-ghost:hover:not(:disabled) {
+  background: #f7f8f9;
+}
+
+.jira-btn-sm {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.jira-btn-danger {
+  background: #c9372c;
+  color: #fff;
+  border-color: #c9372c;
+}
+
+.jira-btn-danger:hover:not(:disabled) {
+  background: #ae2a24;
+}
+
+.jira-btn-danger-ghost {
+  background: transparent;
+  color: #ae2a24;
+  border-color: transparent;
+}
+
+.jira-btn-danger-ghost:hover:not(:disabled) {
+  background: #ffeceb;
+}
+
+.jira-banner {
+  border-radius: 3px;
+  padding: 12px 14px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  border: 1px solid #dfe1e6;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.jira-banner-warn {
+  background: #fffae6;
+  border-color: #f5cd47;
+  color: #172b4d;
+}
+
+.jira-banner-error {
+  background: #ffeceb;
+  border-color: #f87168;
+  color: #5d1f1a;
+}
+
+.jira-link-btn {
+  border: none;
+  background: none;
+  color: #0c66e4;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+}
+
+.jira-panel {
+  background: #fff;
+  border: 1px solid #dfe1e6;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px rgba(9, 30, 66, 0.08);
+}
+
+.jira-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #dfe1e6;
+}
+
+.jira-panel-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.jira-table-wrap {
+  overflow-x: auto;
+}
+
+.jira-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.jira-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #626f86;
+  border-bottom: 1px solid #dfe1e6;
+  background: #fafbfc;
+}
+
+.jira-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f2f4;
+  vertical-align: top;
+}
+
+.jira-table tbody tr:hover td {
+  background: #f7f8f9;
+}
+
+.jira-cell-title {
+  font-weight: 600;
+  color: #172b4d;
+}
+
+.jira-cell-meta {
+  font-size: 12px;
+  color: #626f86;
+  margin-top: 2px;
+}
+
+.jira-cell-desc {
+  color: #44546f;
+  max-width: 280px;
+}
+
+.jira-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: #e9f2ff;
+  color: #0c66e4;
+}
+
+.jira-row-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.jira-row-actions .jira-btn {
+  margin-left: 4px;
+}
+
+.jira-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #626f86;
+  font-size: 14px;
+}
+
+.jira-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 30, 66, 0.54);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1000;
+}
+
+.jira-modal {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 8px 16px rgba(9, 30, 66, 0.15);
+  border: 1px solid #dfe1e6;
+}
+
+.jira-modal-sm {
+  max-width: 400px;
+}
+
+.jira-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px;
+  border-bottom: 1px solid #dfe1e6;
+}
+
+.jira-modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.jira-icon-btn {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  color: #626f86;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.jira-icon-btn:hover {
+  color: #172b4d;
+}
+
+.jira-modal-body {
+  padding: 16px 20px;
+}
+
+.jira-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid #f1f2f4;
+}
+
+.jira-field {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.jira-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #44546f;
+  margin-bottom: 6px;
+}
+
+.jira-input,
+.jira-textarea {
+  width: 100%;
+  border: 2px solid #dfe1e6;
+  border-radius: 3px;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #172b4d;
+  background: #fafbfc;
+  outline: none;
+}
+
+.jira-input:focus,
+.jira-textarea:focus {
+  border-color: #0c66e4;
+  background: #fff;
+}
+
+.jira-textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.jira-hint {
+  font-size: 12px;
+  color: #626f86;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.jira-confirm-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #44546f;
+}
+

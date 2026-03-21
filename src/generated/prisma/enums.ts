@@ -15,3 +15,12 @@ export const AuthTokenType = {
 } as const
 
 export type AuthTokenType = (typeof AuthTokenType)[keyof typeof AuthTokenType]
+
+
+export const WorkspaceRole = {
+  ADMIN: 'ADMIN',
+  OWNER: 'OWNER',
+  MEMBER: 'MEMBER'
+} as const
+
+export type WorkspaceRole = (typeof WorkspaceRole)[keyof typeof WorkspaceRole]

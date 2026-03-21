@@ -27,3 +27,13 @@ export type User = Prisma.UserModel
  * 
  */
 export type AuthToken = Prisma.AuthTokenModel
+/**
+ * Model Workspace
+ * 
+ */
+export type Workspace = Prisma.WorkspaceModel
+/**
+ * Model WorkspaceMember
+ * 
+ */
+export type WorkspaceMember = Prisma.WorkspaceMemberModel

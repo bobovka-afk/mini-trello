@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, API_URL, type ApiError } from './lib/api';
+import { WorkspacesPage } from './WorkspacesPage';
 import './index.css';
 
 type UserSafe = {
@@ -452,6 +453,9 @@ function Dashboard(props: { accessToken: string | null; setToken: (t: string | n
           <button className="btn" onClick={() => navigate('/')} type="button">
             Home
           </button>
+          <button className="btn" onClick={() => navigate('/workspaces')} type="button">
+            Workspaces (Jira UI)
+          </button>
           <button className="btn" onClick={() => navigate('/profile/me')} type="button">
             Profile
           </button>
@@ -728,6 +732,10 @@ function App() {
 
   if (route.startsWith('/dashboard')) {
     return <Dashboard accessToken={accessToken} setToken={setToken} />;
+  }
+
+  if (route.startsWith('/workspaces')) {
+    return <WorkspacesPage accessToken={accessToken} />;
   }
 
   if (route.startsWith('/profile')) {
