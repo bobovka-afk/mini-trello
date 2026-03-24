@@ -8,7 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
-import type * as runtime from "@prisma/client/runtime/library"
+import type * as runtime from "@prisma/client/runtime/client"
 import type * as $Enums from "../enums"
 import type * as Prisma from "../internal/prismaNamespace"
 
@@ -242,6 +242,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   authTokens?: Prisma.AuthTokenListRelationFilter
   workspaceMembers?: Prisma.WorkspaceMemberListRelationFilter
+  workspaceInvitesSent?: Prisma.WorkspaceInviteListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -255,6 +256,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   authTokens?: Prisma.AuthTokenOrderByRelationAggregateInput
   workspaceMembers?: Prisma.WorkspaceMemberOrderByRelationAggregateInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -271,6 +273,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   authTokens?: Prisma.AuthTokenListRelationFilter
   workspaceMembers?: Prisma.WorkspaceMemberListRelationFilter
+  workspaceInvitesSent?: Prisma.WorkspaceInviteListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -313,6 +316,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   authTokens?: Prisma.AuthTokenCreateNestedManyWithoutUserInput
   workspaceMembers?: Prisma.WorkspaceMemberCreateNestedManyWithoutUserInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteCreateNestedManyWithoutInvitedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -326,6 +330,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutUserInput
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedCreateNestedManyWithoutInvitedByInput
 }
 
 export type UserUpdateInput = {
@@ -338,6 +343,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authTokens?: Prisma.AuthTokenUpdateManyWithoutUserNestedInput
   workspaceMembers?: Prisma.WorkspaceMemberUpdateManyWithoutUserNestedInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUpdateManyWithoutInvitedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -351,6 +357,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutUserNestedInput
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedUpdateManyWithoutInvitedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -483,6 +490,20 @@ export type UserUpdateOneRequiredWithoutWorkspaceMembersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWorkspaceMembersInput, Prisma.UserUpdateWithoutWorkspaceMembersInput>, Prisma.UserUncheckedUpdateWithoutWorkspaceMembersInput>
 }
 
+export type UserCreateNestedOneWithoutWorkspaceInvitesSentInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWorkspaceInvitesSentInput, Prisma.UserUncheckedCreateWithoutWorkspaceInvitesSentInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWorkspaceInvitesSentInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutWorkspaceInvitesSentNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWorkspaceInvitesSentInput, Prisma.UserUncheckedCreateWithoutWorkspaceInvitesSentInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWorkspaceInvitesSentInput
+  upsert?: Prisma.UserUpsertWithoutWorkspaceInvitesSentInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWorkspaceInvitesSentInput, Prisma.UserUpdateWithoutWorkspaceInvitesSentInput>, Prisma.UserUncheckedUpdateWithoutWorkspaceInvitesSentInput>
+}
+
 export type UserCreateWithoutAuthTokensInput = {
   email: string
   passwordHash?: string | null
@@ -492,6 +513,7 @@ export type UserCreateWithoutAuthTokensInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceMembers?: Prisma.WorkspaceMemberCreateNestedManyWithoutUserInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteCreateNestedManyWithoutInvitedByInput
 }
 
 export type UserUncheckedCreateWithoutAuthTokensInput = {
@@ -504,6 +526,7 @@ export type UserUncheckedCreateWithoutAuthTokensInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedCreateNestedManyWithoutInvitedByInput
 }
 
 export type UserCreateOrConnectWithoutAuthTokensInput = {
@@ -531,6 +554,7 @@ export type UserUpdateWithoutAuthTokensInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceMembers?: Prisma.WorkspaceMemberUpdateManyWithoutUserNestedInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUpdateManyWithoutInvitedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuthTokensInput = {
@@ -543,6 +567,7 @@ export type UserUncheckedUpdateWithoutAuthTokensInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedUpdateManyWithoutInvitedByNestedInput
 }
 
 export type UserCreateWithoutWorkspaceMembersInput = {
@@ -554,6 +579,7 @@ export type UserCreateWithoutWorkspaceMembersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   authTokens?: Prisma.AuthTokenCreateNestedManyWithoutUserInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteCreateNestedManyWithoutInvitedByInput
 }
 
 export type UserUncheckedCreateWithoutWorkspaceMembersInput = {
@@ -566,6 +592,7 @@ export type UserUncheckedCreateWithoutWorkspaceMembersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutUserInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedCreateNestedManyWithoutInvitedByInput
 }
 
 export type UserCreateOrConnectWithoutWorkspaceMembersInput = {
@@ -593,6 +620,7 @@ export type UserUpdateWithoutWorkspaceMembersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authTokens?: Prisma.AuthTokenUpdateManyWithoutUserNestedInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUpdateManyWithoutInvitedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkspaceMembersInput = {
@@ -605,6 +633,73 @@ export type UserUncheckedUpdateWithoutWorkspaceMembersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedUpdateManyWithoutInvitedByNestedInput
+}
+
+export type UserCreateWithoutWorkspaceInvitesSentInput = {
+  email: string
+  passwordHash?: string | null
+  name: string
+  avatarPath?: string | null
+  emailVerifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  authTokens?: Prisma.AuthTokenCreateNestedManyWithoutUserInput
+  workspaceMembers?: Prisma.WorkspaceMemberCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutWorkspaceInvitesSentInput = {
+  id?: number
+  email: string
+  passwordHash?: string | null
+  name: string
+  avatarPath?: string | null
+  emailVerifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutUserInput
+  workspaceMembers?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutWorkspaceInvitesSentInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutWorkspaceInvitesSentInput, Prisma.UserUncheckedCreateWithoutWorkspaceInvitesSentInput>
+}
+
+export type UserUpsertWithoutWorkspaceInvitesSentInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutWorkspaceInvitesSentInput, Prisma.UserUncheckedUpdateWithoutWorkspaceInvitesSentInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutWorkspaceInvitesSentInput, Prisma.UserUncheckedCreateWithoutWorkspaceInvitesSentInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutWorkspaceInvitesSentInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutWorkspaceInvitesSentInput, Prisma.UserUncheckedUpdateWithoutWorkspaceInvitesSentInput>
+}
+
+export type UserUpdateWithoutWorkspaceInvitesSentInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authTokens?: Prisma.AuthTokenUpdateManyWithoutUserNestedInput
+  workspaceMembers?: Prisma.WorkspaceMemberUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutWorkspaceInvitesSentInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+  workspaceMembers?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -615,11 +710,13 @@ export type UserUncheckedUpdateWithoutWorkspaceMembersInput = {
 export type UserCountOutputType = {
   authTokens: number
   workspaceMembers: number
+  workspaceInvitesSent: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   authTokens?: boolean | UserCountOutputTypeCountAuthTokensArgs
   workspaceMembers?: boolean | UserCountOutputTypeCountWorkspaceMembersArgs
+  workspaceInvitesSent?: boolean | UserCountOutputTypeCountWorkspaceInvitesSentArgs
 }
 
 /**
@@ -646,6 +743,13 @@ export type UserCountOutputTypeCountWorkspaceMembersArgs<ExtArgs extends runtime
   where?: Prisma.WorkspaceMemberWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountWorkspaceInvitesSentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WorkspaceInviteWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -658,6 +762,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   authTokens?: boolean | Prisma.User$authTokensArgs<ExtArgs>
   workspaceMembers?: boolean | Prisma.User$workspaceMembersArgs<ExtArgs>
+  workspaceInvitesSent?: boolean | Prisma.User$workspaceInvitesSentArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -698,6 +803,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   authTokens?: boolean | Prisma.User$authTokensArgs<ExtArgs>
   workspaceMembers?: boolean | Prisma.User$workspaceMembersArgs<ExtArgs>
+  workspaceInvitesSent?: boolean | Prisma.User$workspaceInvitesSentArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -708,6 +814,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     authTokens: Prisma.$AuthTokenPayload<ExtArgs>[]
     workspaceMembers: Prisma.$WorkspaceMemberPayload<ExtArgs>[]
+    workspaceInvitesSent: Prisma.$WorkspaceInvitePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1114,6 +1221,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   authTokens<T extends Prisma.User$authTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$authTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuthTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workspaceMembers<T extends Prisma.User$workspaceMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$workspaceMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkspaceMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  workspaceInvitesSent<T extends Prisma.User$workspaceInvitesSentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$workspaceInvitesSentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkspaceInvitePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1347,6 +1455,11 @@ export type UserFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Skip the first `n` Users.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Users.
+   */
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 
@@ -1584,6 +1697,30 @@ export type User$workspaceMembersArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.WorkspaceMemberScalarFieldEnum | Prisma.WorkspaceMemberScalarFieldEnum[]
+}
+
+/**
+ * User.workspaceInvitesSent
+ */
+export type User$workspaceInvitesSentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WorkspaceInvite
+   */
+  select?: Prisma.WorkspaceInviteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WorkspaceInvite
+   */
+  omit?: Prisma.WorkspaceInviteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkspaceInviteInclude<ExtArgs> | null
+  where?: Prisma.WorkspaceInviteWhereInput
+  orderBy?: Prisma.WorkspaceInviteOrderByWithRelationInput | Prisma.WorkspaceInviteOrderByWithRelationInput[]
+  cursor?: Prisma.WorkspaceInviteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WorkspaceInviteScalarFieldEnum | Prisma.WorkspaceInviteScalarFieldEnum[]
 }
 
 /**

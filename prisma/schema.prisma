@@ -6,7 +6,6 @@ generator client {
 }
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum AuthTokenType {
@@ -20,6 +19,13 @@ enum WorkspaceRole {
   MEMBER
 }
 
+enum WorkspaceInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
 model User {
   id              Int       @default(autoincrement()) @id
   email           String    @unique
@@ -30,8 +36,9 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  authTokens       AuthToken[]
-  workspaceMembers WorkspaceMember[]
+  authTokens            AuthToken[]
+  workspaceMembers      WorkspaceMember[]
+  workspaceInvitesSent  WorkspaceInvite[]
 }
 
 model AuthToken {
@@ -54,6 +61,7 @@ model Workspace {
   updatedAt   DateTime  @updatedAt
 
   members WorkspaceMember[]
+  invites WorkspaceInvite[]
 }
 
 model WorkspaceMember {
@@ -70,5 +78,25 @@ model WorkspaceMember {
   @@index([workspaceId])
   @@index([userId])
 }
+
+model WorkspaceInvite {
+  id              Int           @default(autoincrement()) @id
+  email           String
+  workspaceId     Int
+  invitedByUserId Int
+  tokenHash       String?        @unique
+  role            WorkspaceRole @default(MEMBER)
+  status          WorkspaceInviteStatus @default(PENDING)
+  expiresAt       DateTime
+  usedAt          DateTime?
+  createdAt       DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy User      @relation(fields: [invitedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([workspaceId, email])
+  @@index([invitedByUserId])
+}
+
 
 

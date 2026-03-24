@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { WorkspaceModule } from './workspace/workspace.module';
+import { WorkspaceInviteModule } from './workspace-invite/workspace-invite.module';
 
 
 @Module({
@@ -17,6 +18,7 @@ import { WorkspaceModule } from './workspace/workspace.module';
     UserModule,
     AuthModule,
     WorkspaceModule,
+    WorkspaceInviteModule,
   ],
   controllers: [AppController],
   providers: [AppService ],

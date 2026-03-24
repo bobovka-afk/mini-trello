@@ -50,7 +50,13 @@ export class UserController {
       limits: { fileSize: 5 * 1024 * 1024 }, 
       fileFilter: (_req, file, cb) => {
         if (!file.mimetype.startsWith('image/')) {
-          return cb(new BadRequestException('Только изображения'), false);
+          return cb(
+            new BadRequestException({
+              code: 'IMAGE_FILE_REQUIRED',
+              message: 'Only image files are allowed',
+            }),
+            false,
+          );
         }
         cb(null, true);
       },
@@ -60,7 +66,12 @@ export class UserController {
     @Req() req: Request & { user: { id: number } },
     @UploadedFile() file?: MulterFile,
   ) {
-    if (!file) throw new BadRequestException('Файл не передан');
+    if (!file) {
+      throw new BadRequestException({
+        code: 'FILE_NOT_PROVIDED',
+        message: 'File is not provided',
+      });
+    }
 
     const baseUrl = process.env.SERVER_URL ?? 'http://localhost:3000';
     const avatarUrl = `${baseUrl}/uploads/avatars/${file.filename}`;

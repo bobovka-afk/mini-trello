@@ -3,27 +3,30 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { WorkspaceRole } from '../generated/prisma/enums';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+    NotFoundException,
+    ForbiddenException,
+    BadRequestException,
+} from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
 
 @Injectable()
 export class WorkspaceService {
     constructor(private readonly prisma: PrismaService) {}
 
-    private async getWorkspaceById(workspaceId: number) {
-        return this.prisma.workspace.findUnique({
-            where: { id: workspaceId },
-        })
-    }
 
-    private async checkWorkspaceAccess(
+
+    async checkWorkspaceAccess(
         workspaceId: number,
         userId: number,
-        action: 'update' | 'delete',
+        action: 'update' | 'delete' | 'manage_invites',
     ) {
         const existingWorkspace = await this.getWorkspaceById(workspaceId);
         if (!existingWorkspace) {
-            throw new NotFoundException('Рабочее пространство не найдено');
+            throw new NotFoundException({
+                code: 'WORKSPACE_NOT_FOUND',
+                message: 'Workspace not found',
+            });
         }
 
         const member = await this.prisma.workspaceMember.findUnique({
@@ -36,14 +39,20 @@ export class WorkspaceService {
         });
 
         if (!member) {
-            throw new ForbiddenException('Вы не являетесь участником этого рабочего пространства');
+            throw new ForbiddenException({
+                code: 'WORKSPACE_MEMBER_REQUIRED',
+                message: 'You are not a member of this workspace',
+            });
         }
 
         if (
             member.role !== WorkspaceRole.OWNER &&
             member.role !== WorkspaceRole.ADMIN
         ) {
-            throw new ForbiddenException(`У вас нет прав на ${action} этого рабочего пространства`);
+            throw new ForbiddenException({
+                code: 'WORKSPACE_ACTION_FORBIDDEN',
+                message: `You do not have permission to ${action} this workspace`,
+            });
         }
     }
 
@@ -91,6 +100,13 @@ export class WorkspaceService {
     ) {
         await this.checkWorkspaceAccess(workspaceId, userId, 'update');
 
+        if (dto.name === undefined && dto.description === undefined) {
+            throw new BadRequestException({
+                code: 'WORKSPACE_UPDATE_FIELDS_REQUIRED',
+                message: 'Provide at least one field: name or description',
+            });
+        }
+
         const workspace = await this.prisma.workspace.update({
             where: { id: workspaceId },
             data: {
@@ -112,6 +128,12 @@ export class WorkspaceService {
             where: { id: workspaceId },
         })
         return { ok: true }
+    }
+
+    private async getWorkspaceById(workspaceId: number) {
+        return this.prisma.workspace.findUnique({
+            where: { id: workspaceId },
+        })
     }
 
 

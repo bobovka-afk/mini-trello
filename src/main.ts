@@ -18,8 +18,7 @@ async function bootstrap() {
   });
   app.use(cookieParser());
 
-  // Статическая раздача загруженных аватаров и прочих файлов.
-  // Контроллер сохраняет их в `${process.cwd()}/uploads/...`.
+
   const uploadsPath = path.join(process.cwd(), 'uploads');
   app.use('/uploads', express.static(uploadsPath));
 

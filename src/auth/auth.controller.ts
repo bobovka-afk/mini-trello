@@ -55,7 +55,10 @@ export class AuthController {
 
 		if (!refreshTokenFromCookies) {
 			this.authService.removeRefreshTokenFromResponse(res)
-			throw new UnauthorizedException('Refresh токен не прошел')
+			throw new UnauthorizedException({
+				code: 'REFRESH_TOKEN_REQUIRED',
+				message: 'Refresh token is missing or invalid',
+			})
 		}
 
 		const { refreshToken, ...response } =

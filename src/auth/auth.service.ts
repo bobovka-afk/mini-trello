@@ -31,16 +31,23 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const oldUser = await this.userService.findByEmail(registerDto.email);
+    const normalizedEmail = this.normalizeEmail(registerDto.email);
+    const oldUser = await this.userService.findByEmail(normalizedEmail);
     if (oldUser) {
-      throw new BadRequestException('Пользователь с таким email уже существует');
+      throw new BadRequestException({
+        code: 'EMAIL_ALREADY_EXISTS',
+        message: 'User with this email already exists',
+      });
     }
 
-    const user = await this.userService.create(registerDto);
+    const user = await this.userService.create({
+      ...registerDto,
+      email: normalizedEmail,
+    });
     try {
-      await this.requestEmailVerification(registerDto.email);
+      await this.requestEmailVerification(normalizedEmail);
     } catch (error) {
-      console.error('Не удалось отправить письмо для подтверждения email:', error);
+      console.error('Failed to send email verification message:', error);
     }
 
     return user;
@@ -48,33 +55,6 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     return this.signIn(loginDto);
-  }
-
-  private async signIn(loginDto: LoginDto) {
-    const user = await this.validateUser(loginDto);
-    const tokens = this.issueTokens(user.id);
-    return { user, ...tokens };
-  }
-
-
-  private async validateUser(loginDto: LoginDto) {
-    const user = await this.userService.findByEmail(loginDto.email);
-    if (!user) {
-      throw new UnauthorizedException('Неверный email или пароль');
-    }
-    if (!user.passwordHash) {
-      throw new UnauthorizedException('Неверный email или пароль');
-    }
-    const isMatch = await bcrypt.compare(loginDto.password, user.passwordHash);
-    if (!isMatch) {
-      throw new UnauthorizedException('Неверный email или пароль');
-    }
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      createdAt: user.createdAt,
-    };
   }
 
   async getNewTokens(refreshToken: string) {
@@ -85,14 +65,20 @@ export class AuthService {
 
         const user = await this.userService.getById(result.id)
         if (!user) {
-            throw new UnauthorizedException('Пользователь не найден')
+            throw new UnauthorizedException({
+              code: 'USER_NOT_FOUND',
+              message: 'User not found',
+            })
         }
 
         const tokens = this.issueTokens(user.id)
 
         return { user, ...tokens }
     } catch {
-        throw new UnauthorizedException('Невалидный refresh токен')
+        throw new UnauthorizedException({
+          code: 'INVALID_REFRESH_TOKEN',
+          message: 'Invalid refresh token',
+        })
     }
 }
 
@@ -114,13 +100,14 @@ issueTokens(userId: number) {
 async validateOAuthLogin(req: {
     user: { email: string; name: string; picture: string }
 }) {
-    let user: User | null = await this.userService.getByEmail(
-        req.user.email
+    const normalizedEmail = this.normalizeEmail(req.user.email);
+    let user: User | null = await this.userService.findByEmail(
+        normalizedEmail
     )
 
     if (!user) {
         user = await this.userService.createOAuthUser(
-            req.user.email,
+            normalizedEmail,
             req.user.name,
             req.user.picture
         )
@@ -181,7 +168,8 @@ removeRefreshTokenFromResponse(res: Response) {
   }
 
   async requestEmailVerification(email: string) {
-    const user = await this.userService.findByEmail(email);
+    const normalizedEmail = this.normalizeEmail(email);
+    const user = await this.userService.findByEmail(normalizedEmail);
 
     if (!user || user.emailVerifiedAt) return { ok: true };
 
@@ -208,7 +196,10 @@ removeRefreshTokenFromResponse(res: Response) {
 
   async confirmEmailVerification(token: string) {
     if (!token) {
-      throw new BadRequestException('Токен не передан');
+      throw new BadRequestException({
+        code: 'TOKEN_REQUIRED',
+        message: 'Token is required',
+      });
     }
 
     const tokenHash = this.hashToken(token);
@@ -225,7 +216,10 @@ removeRefreshTokenFromResponse(res: Response) {
       authToken.expiresAt > now;
 
     if (!isValid) {
-      throw new BadRequestException('Невалидный или истекший токен');
+      throw new BadRequestException({
+        code: 'TOKEN_INVALID_OR_EXPIRED',
+        message: 'Token is invalid or expired',
+      });
     }
 
     await this.prisma.$transaction([
@@ -243,7 +237,8 @@ removeRefreshTokenFromResponse(res: Response) {
   }
 
   async requestPasswordReset(email: string) {
-    const user = await this.userService.findByEmail(email);
+    const normalizedEmail = this.normalizeEmail(email);
+    const user = await this.userService.findByEmail(normalizedEmail);
 
     if (!user) return { ok: true };
 
@@ -269,11 +264,17 @@ removeRefreshTokenFromResponse(res: Response) {
 
   async confirmPasswordReset(token: string, newPassword: string) {
     if (!token) {
-      throw new BadRequestException('Токен не передан');
+      throw new BadRequestException({
+        code: 'TOKEN_REQUIRED',
+        message: 'Token is required',
+      });
     }
 
     if (!newPassword) {
-      throw new BadRequestException('Пароль не передан');
+      throw new BadRequestException({
+        code: 'PASSWORD_REQUIRED',
+        message: 'Password is required',
+      });
     }
 
     const tokenHash = this.hashToken(token);
@@ -290,7 +291,10 @@ removeRefreshTokenFromResponse(res: Response) {
       authToken.expiresAt > now;
 
     if (!isValid) {
-      throw new BadRequestException('Невалидный или истекший токен');
+      throw new BadRequestException({
+        code: 'TOKEN_INVALID_OR_EXPIRED',
+        message: 'Token is invalid or expired',
+      });
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -307,6 +311,46 @@ removeRefreshTokenFromResponse(res: Response) {
     ]);
 
     return { ok: true };
+  }
+
+  private async signIn(loginDto: LoginDto) {
+    const user = await this.validateUser(loginDto);
+    const tokens = this.issueTokens(user.id);
+    return { user, ...tokens };
+  }
+
+  private async validateUser(loginDto: LoginDto) {
+    const normalizedEmail = this.normalizeEmail(loginDto.email);
+    const user = await this.userService.findByEmail(normalizedEmail);
+    if (!user) {
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password',
+      });
+    }
+    if (!user.passwordHash) {
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password',
+      });
+    }
+    const isMatch = await bcrypt.compare(loginDto.password, user.passwordHash);
+    if (!isMatch) {
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password',
+      });
+    }
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.createdAt,
+    };
+  }
+
+  private normalizeEmail(email: string) {
+    return email.trim().toLowerCase();
   }
 
 
