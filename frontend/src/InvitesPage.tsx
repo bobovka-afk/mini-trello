@@ -175,13 +175,13 @@ export function InvitesPage({ accessToken }: Props) {
   return (
     <div className="jira-shell">
       <aside className="jira-sidebar">
-        <div className="jira-sidebar-brand">
+        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
           <span className="jira-logo-mark" aria-hidden />
           <div>
-            <div className="jira-sidebar-title">mini-trello</div>
+            <div className="jira-sidebar-title">Mini trello</div>
             <div className="jira-sidebar-sub">team spaces</div>
           </div>
-        </div>
+        </button>
         <nav className="jira-nav">
           <div className="jira-nav-section">Разделы</div>
           <button type="button" className="jira-nav-item" onClick={() => navigate('/workspaces')}>
@@ -202,9 +202,6 @@ export function InvitesPage({ accessToken }: Props) {
             </p>
           </div>
           <div className="jira-topbar-actions">
-            <button type="button" className="jira-btn jira-btn-ghost" onClick={() => navigate('/dashboard')}>
-              ← К дашборду
-            </button>
             <button
               type="button"
               className="jira-btn jira-btn-primary"
@@ -214,10 +211,7 @@ export function InvitesPage({ accessToken }: Props) {
                 setMsg(null);
               }}
             >
-              Отправить инвайт
-            </button>
-            <button type="button" className="jira-btn jira-btn-ghost" onClick={() => void load()} disabled={loading}>
-              Обновить
+              Отправить приглашение
             </button>
           </div>
         </header>
@@ -338,21 +332,19 @@ export function InvitesPage({ accessToken }: Props) {
             </div>
             <div className="jira-modal-body">
               <label className="jira-field">
-                <span className="jira-label">Workspace ID *</span>
+                <span className="jira-label">ID пространства *</span>
                 <input
                   className="jira-input"
                   value={createWorkspaceId}
                   onChange={(e) => setCreateWorkspaceId(e.target.value)}
-                  placeholder="Например, 1"
                 />
               </label>
               <label className="jira-field">
-                <span className="jira-label">Email *</span>
+                <span className="jira-label">Почта *</span>
                 <input
                   className="jira-input"
                   value={createEmail}
                   onChange={(e) => setCreateEmail(e.target.value)}
-                  placeholder="user@example.com"
                   autoComplete="email"
                 />
               </label>
@@ -373,7 +365,7 @@ export function InvitesPage({ accessToken }: Props) {
                 Отмена
               </button>
               <button type="button" className="jira-btn jira-btn-primary" disabled={createBusy} onClick={() => void submitCreate()}>
-                {createBusy ? 'Отправка…' : 'Отправить'}
+                {createBusy ? 'Отправка…' : 'Отправить приглашение'}
               </button>
             </div>
           </div>

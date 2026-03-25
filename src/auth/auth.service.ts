@@ -112,10 +112,10 @@ async validateOAuthLogin(req: {
             req.user.picture
         )
     } else if (!user.emailVerifiedAt) {
-        user = await this.prisma.user.update({
-            where: { id: user.id },
-            data: { emailVerifiedAt: new Date() },
-        });
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerifiedAt: new Date() },
+      });
     }
 
     const tokens = this.issueTokens(user.id)

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, API_URL, type ApiError } from './lib/api';
 import { WorkspacesPage } from './WorkspacesPage';
-import { InvitesPage } from './InvitesPage';
+import { WorkspaceMembersPage } from './WorkspaceMembersPage';
+import { ProfileInvitesSection } from './ProfileInvitesSection';
 import './index.css';
 
 type UserSafe = {
@@ -72,38 +73,45 @@ function EmailVerificationRequestPage() {
     }
   }
 
+  const isErrorMsg =
+    typeof msg === 'string' &&
+    (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
+
   return (
-    <div className="container">
-      <header className="header">
-        <div>
-          <div className="title">Email verification</div>
-          <div className="subtitle">Request confirmation email</div>
-        </div>
-        <div className="row">
-          <button className="btn" onClick={() => navigate('/')} type="button">
-            Home
-          </button>
-        </div>
-      </header>
+    <div className="jira-shell">
+      <div className="jira-main">
+        <header className="jira-topbar">
+          <div>
+            <h1 className="jira-page-title">Email verification</h1>
+            <p className="jira-page-desc">Request confirmation email</p>
+          </div>
+          <div className="jira-topbar-actions">
+            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/')} type="button">
+              Home
+            </button>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="form">
-          <label className="field">
-            <div className="label">Email</div>
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="mail@example.com"
-              autoComplete="email"
-            />
-          </label>
+        <section className="jira-panel">
+          <div className="jira-modal-body">
+            <label className="jira-field">
+              <span className="jira-label">Email</span>
+              <input
+                className="jira-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="mail@example.com"
+                autoComplete="email"
+              />
+            </label>
 
-          <button className="btnPrimary" onClick={submit} disabled={busy}>
-            {busy ? '...' : 'Send verification email'}
-          </button>
+            <button className="jira-btn jira-btn-primary" onClick={() => void submit()} disabled={busy} type="button">
+              {busy ? '...' : 'Send verification email'}
+            </button>
 
-          {msg && <div className="msg">{msg}</div>}
-        </div>
+            {msg && <div className={isErrorMsg ? 'jira-banner jira-banner-error' : 'jira-banner'}>{msg}</div>}
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -118,28 +126,27 @@ function EmailVerifiedStatusPage() {
   else if (status === 'missing') title = 'Missing token';
 
   return (
-    <div className="container">
-      <header className="header">
-        <div>
-          <div className="title">Email verification</div>
-          <div className="subtitle">Result: {title}</div>
-        </div>
-        <div className="row">
-          <button className="btn" onClick={() => navigate('/')} type="button">
-            Home
-          </button>
-          <button
-            className="btn"
-            onClick={() => navigate('/test/email-verification/request')}
-            type="button"
-          >
-            Request again
-          </button>
-        </div>
-      </header>
+    <div className="jira-shell">
+      <div className="jira-main">
+        <header className="jira-topbar">
+          <div>
+            <h1 className="jira-page-title">Email verification</h1>
+            <p className="jira-page-desc">Result: {title}</p>
+          </div>
+          <div className="jira-topbar-actions">
+            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/')} type="button">
+              Home
+            </button>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="msg">Status: {status}</div>
+        <section className="jira-panel">
+          <div className="jira-modal-body">
+            <div className="jira-banner">
+              <strong>Status:</strong> {status}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -166,38 +173,45 @@ function PasswordResetRequestPage() {
     }
   }
 
+  const isErrorMsg =
+    typeof msg === 'string' &&
+    (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
+
   return (
-    <div className="container">
-      <header className="header">
-        <div>
-          <div className="title">Password reset</div>
-          <div className="subtitle">Request reset link</div>
-        </div>
-        <div className="row">
-          <button className="btn" onClick={() => navigate('/')} type="button">
-            Home
-          </button>
-        </div>
-      </header>
+    <div className="jira-shell">
+      <div className="jira-main">
+        <header className="jira-topbar">
+          <div>
+            <h1 className="jira-page-title">Password reset</h1>
+            <p className="jira-page-desc">Request reset link</p>
+          </div>
+          <div className="jira-topbar-actions">
+            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/')} type="button">
+              Home
+            </button>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="form">
-          <label className="field">
-            <div className="label">Email</div>
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="mail@example.com"
-              autoComplete="email"
-            />
-          </label>
+        <section className="jira-panel">
+          <div className="jira-modal-body">
+            <label className="jira-field">
+              <span className="jira-label">Email</span>
+              <input
+                className="jira-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="mail@example.com"
+                autoComplete="email"
+              />
+            </label>
 
-          <button className="btnPrimary" onClick={submit} disabled={busy}>
-            {busy ? '...' : 'Send reset email'}
-          </button>
+            <button className="jira-btn jira-btn-primary" onClick={() => void submit()} disabled={busy} type="button">
+              {busy ? '...' : 'Send reset email'}
+            </button>
 
-          {msg && <div className="msg">{msg}</div>}
-        </div>
+            {msg && <div className={isErrorMsg ? 'jira-banner jira-banner-error' : 'jira-banner'}>{msg}</div>}
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -225,51 +239,59 @@ function PasswordResetConfirmPage() {
     }
   }
 
+  const isErrorMsg =
+    typeof msg === 'string' &&
+    (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
+
   return (
-    <div className="container">
-      <header className="header">
-        <div>
-          <div className="title">Password reset</div>
-          <div className="subtitle">Confirm token and set new password</div>
-        </div>
-        <div className="row">
-          <button className="btn" onClick={() => navigate('/')} type="button">
-            Home
-          </button>
-        </div>
-      </header>
+    <div className="jira-shell">
+      <div className="jira-main">
+        <header className="jira-topbar">
+          <div>
+            <h1 className="jira-page-title">Password reset</h1>
+            <p className="jira-page-desc">Confirm token and set new password</p>
+          </div>
+          <div className="jira-topbar-actions">
+            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/')} type="button">
+              Home
+            </button>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="form">
-          {!token ? (
-            <div className="msg">
-              Token отсутствует в query param `token`. Откройте ссылку из письма.
-            </div>
-          ) : (
-            <>
-              <label className="field">
-                <div className="label">New password</div>
-                <input
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  type="password"
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                />
-              </label>
+        <section className="jira-panel">
+          <div className="jira-modal-body">
+            {!token ? (
+              <div className="jira-banner jira-banner-error">
+                Token отсутствует в query param `token`. Откройте ссылку из письма.
+              </div>
+            ) : (
+              <>
+                <label className="jira-field">
+                  <span className="jira-label">New password</span>
+                  <input
+                    className="jira-input"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    type="password"
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                  />
+                </label>
 
-              <button
-                className="btnPrimary"
-                onClick={submit}
-                disabled={busy || !newPassword}
-              >
-                {busy ? '...' : 'Set new password'}
-              </button>
-            </>
-          )}
+                <button
+                  className="jira-btn jira-btn-primary"
+                  onClick={() => void submit()}
+                  disabled={busy || !newPassword}
+                  type="button"
+                >
+                  {busy ? '...' : 'Set new password'}
+                </button>
+              </>
+            )}
 
-          {msg && <div className="msg">{msg}</div>}
-        </div>
+            {msg && <div className={isErrorMsg ? 'jira-banner jira-banner-error' : 'jira-banner'}>{msg}</div>}
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -302,7 +324,7 @@ function Home(props: { onAuthed: (token: string) => void }) {
         json: { email, password },
       });
       props.onAuthed(res.accessToken);
-      navigate('/dashboard');
+      navigate('/workspaces');
     } catch (e) {
       setMsg(formatError(e));
     } finally {
@@ -311,93 +333,99 @@ function Home(props: { onAuthed: (token: string) => void }) {
   }
 
   return (
-    <div className="container">
-      <header className="header">
-        <div>
-          <div className="title">mini-trello auth test</div>
-          <div className="subtitle">API: {API_URL}</div>
-        </div>
-        <a className="btn" href={`${API_URL}/auth/google`}>
-          Continue with Google
-        </a>
+    <div className="jira-shell jira-auth-shell">
+      <header className="jira-auth-header">
+        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
+          <span className="jira-logo-mark" aria-hidden />
+          <div>
+            <div className="jira-sidebar-title">Mini trello</div>
+            <div className="jira-sidebar-sub">team spaces</div>
+          </div>
+        </button>
       </header>
 
-      <div className="card">
-        <div className="tabs">
-          <button
-            className={mode === 'login' ? 'tab tabActive' : 'tab'}
-            onClick={() => setMode('login')}
-            type="button"
-          >
-            Login
-          </button>
-          <button
-            className={mode === 'register' ? 'tab tabActive' : 'tab'}
-            onClick={() => setMode('register')}
-            type="button"
-          >
-            Register
-          </button>
-        </div>
+      <main className="jira-auth-main">
+        <div className="jira-panel jira-auth-panel">
+          <div className="jira-auth-panel-head">
+            <h1 className="jira-auth-title">{mode === 'login' ? 'Вход' : 'Регистрация'}</h1>
+            <p className="jira-auth-subtitle">
+              {mode === 'login'
+                ? 'Войдите, чтобы управлять рабочими пространствами'
+                : 'Создайте аккаунт и присоединяйтесь к командам'}
+            </p>
+          </div>
 
-        <div className="row">
-          <button
-            className="btn"
-            onClick={() => navigate('/test/email-verification/request')}
-            type="button"
-          >
-            Test email verification
-          </button>
-          <button
-            className="btn"
-            onClick={() => navigate('/test/password-reset/request')}
-            type="button"
-          >
-            Test password reset
-          </button>
-        </div>
+          <div className="jira-auth-tabs">
+            <button
+              className={mode === 'login' ? 'jira-auth-tab jira-auth-tab-active' : 'jira-auth-tab'}
+              onClick={() => setMode('login')}
+              type="button"
+            >
+              Вход
+            </button>
+            <button
+              className={mode === 'register' ? 'jira-auth-tab jira-auth-tab-active' : 'jira-auth-tab'}
+              onClick={() => setMode('register')}
+              type="button"
+            >
+              Регистрация
+            </button>
+          </div>
 
-        <div className="form">
-          {mode === 'register' && (
-            <label className="field">
-              <div className="label">Name</div>
+          {msg && <div className="jira-banner jira-banner-error">{msg}</div>}
+
+          <div className="jira-auth-form">
+            {mode === 'register' && (
+              <label className="jira-field">
+                <span className="jira-label">Имя</span>
+                <input
+                  className="jira-input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  maxLength={40}
+                />
+              </label>
+            )}
+
+            <label className="jira-field">
+              <span className="jira-label">Email</span>
               <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Igor"
-                autoComplete="name"
+                className="jira-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                maxLength={80}
               />
             </label>
-          )}
 
-          <label className="field">
-            <div className="label">Email</div>
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="mail@example.com"
-              autoComplete="email"
-            />
-          </label>
+            <label className="jira-field">
+              <span className="jira-label">Пароль</span>
+              <input
+                className="jira-input"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                maxLength={80}
+              />
+            </label>
 
-          <label className="field">
-            <div className="label">Password</div>
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              placeholder="••••••••"
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            />
-          </label>
+            <button
+              type="button"
+              className="jira-btn jira-btn-primary jira-auth-submit"
+              onClick={() => void submit()}
+              disabled={busy}
+            >
+              {busy ? '...' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+            </button>
 
-          <button className="btnPrimary" onClick={submit} disabled={busy}>
-            {busy ? '...' : mode === 'login' ? 'Login' : 'Register'}
-          </button>
-
-          {msg && <div className="msg">{msg}</div>}
+            <a className="jira-btn jira-btn-ghost jira-auth-google" href={`${API_URL}/auth/google`}>
+              Продолжить с Google
+            </a>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -444,56 +472,63 @@ function Dashboard(props: { accessToken: string | null; setToken: (t: string | n
   }
 
   return (
-    <div className="container">
-      <header className="header">
-        <div>
-          <div className="title">Dashboard</div>
-          <div className="subtitle">Access token: {accessTokenShort}</div>
-        </div>
-        <div className="row">
-          <button className="btn" onClick={() => navigate('/')} type="button">
-            Home
+    <div className="jira-shell">
+      <aside className="jira-sidebar">
+        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
+          <span className="jira-logo-mark" aria-hidden />
+          <div>
+            <div className="jira-sidebar-title">Mini trello</div>
+            <div className="jira-sidebar-sub">team spaces</div>
+          </div>
+        </button>
+        <nav className="jira-nav">
+          <div className="jira-nav-section">Разделы</div>
+          <button type="button" className="jira-nav-item jira-nav-item-active">
+            Дашборд
           </button>
-          <button className="btn" onClick={() => navigate('/workspaces')} type="button">
-            Workspaces (Jira UI)
+          <button type="button" className="jira-nav-item" onClick={() => navigate('/workspaces')}>
+            Рабочие пространства
           </button>
-          <button className="btn" onClick={() => navigate('/invites')} type="button">
-            Invites
+          <button type="button" className="jira-nav-item" onClick={() => navigate('/profile/me')}>
+            Профиль
           </button>
-          <button className="btn" onClick={() => navigate('/profile/me')} type="button">
-            Profile
-          </button>
-          <button className="btnDanger" onClick={logout} type="button">
-            Logout
-          </button>
-        </div>
-      </header>
+        </nav>
+      </aside>
 
-      <div className="card">
-        <div className="row">
-          <button className="btn" onClick={refresh} type="button">
-            Refresh tokens (cookie)
-          </button>
-        </div>
+      <div className="jira-main">
+        <header className="jira-topbar">
+          <div>
+            <h1 className="jira-page-title">Dashboard</h1>
+            <p className="jira-page-desc">Access token: {accessTokenShort}</p>
+          </div>
+          <div className="jira-topbar-actions">
+            <button className="jira-btn jira-btn-danger" onClick={() => void logout()} type="button">
+              Выйти
+            </button>
+          </div>
+        </header>
 
-        <div className="row">
-          <button
-            className="btn"
-            onClick={() => navigate('/test/email-verification/request')}
-            type="button"
-          >
-            Test email verification
-          </button>
-          <button
-            className="btn"
-            onClick={() => navigate('/test/password-reset/request')}
-            type="button"
-          >
-            Test password reset
-          </button>
-        </div>
+        {!props.accessToken && (
+          <div className="jira-banner jira-banner-warn">
+            Войдите на главной странице, чтобы работать с рабочими пространствами.
+            <button type="button" className="jira-link-btn" onClick={() => navigate('/')}>
+              На главную
+            </button>
+          </div>
+        )}
 
-        {status && <div className="msg">{status}</div>}
+        <section className="jira-panel">
+          <div className="jira-panel-head">
+            <span className="jira-panel-title">Actions</span>
+            <button className="jira-btn jira-btn-ghost jira-btn-sm" onClick={() => void refresh()} type="button">
+              Refresh tokens (cookie)
+            </button>
+          </div>
+
+          <div className="jira-modal-body">
+            {status && <div className="jira-banner">{status}</div>}
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -506,6 +541,7 @@ function ProfileMePage(props: { accessToken: string | null }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -536,6 +572,21 @@ function ProfileMePage(props: { accessToken: string | null }) {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatarPath, previewUrl]);
+
+  const avatarSrc = useMemo(() => {
+    if (!user) return '';
+    const p = previewUrl || user.avatarPath || '';
+    if (!p) return '';
+    if (p.startsWith('data:')) return p;
+    if (p.startsWith('http://') || p.startsWith('https://')) return p;
+    if (p.startsWith('//')) return `https:${p}`;
+    if (p.startsWith('/')) return `${API_URL}${p}`;
+    return `${API_URL}/${p}`;
+  }, [previewUrl, user]);
 
   async function uploadAvatar() {
     if (!props.accessToken) return;
@@ -616,109 +667,162 @@ function ProfileMePage(props: { accessToken: string | null }) {
   function formatRegisteredRU(isoDate: string) {
     const d = new Date(isoDate);
     const day = d.getDate();
-    const month = d.toLocaleString('ru-RU', { month: 'long' });
+    // Месяц в родительном падеже (например: 20 марта, 5 апреля)
+    const monthGenitive = [
+      'января',
+      'февраля',
+      'марта',
+      'апреля',
+      'мая',
+      'июня',
+      'июля',
+      'августа',
+      'сентября',
+      'октября',
+      'ноября',
+      'декабря',
+    ];
+    const month = monthGenitive[d.getMonth()] ?? '';
     const year = d.getFullYear();
     return `${day} ${month} ${year}`;
   }
 
+  const isErrorMsg =
+    typeof msg === 'string' &&
+    (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
+
   return (
-    <div className="container">
-      <header className="header">
-        <div>
-          <div className="title">Profile</div>
-          <div className="subtitle">Me</div>
-        </div>
-        <div className="row">
-          <button className="btn" onClick={() => navigate('/dashboard')} type="button">
-            Back
+    <div className="jira-shell">
+      <aside className="jira-sidebar">
+        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
+          <span className="jira-logo-mark" aria-hidden />
+          <div>
+            <div className="jira-sidebar-title">Mini trello</div>
+            <div className="jira-sidebar-sub">team spaces</div>
+          </div>
+        </button>
+        <nav className="jira-nav">
+          <div className="jira-nav-section">Разделы</div>
+          <button type="button" className="jira-nav-item" onClick={() => navigate('/workspaces')}>
+            Рабочие пространства
           </button>
-        </div>
-      </header>
+          <button type="button" className="jira-nav-item jira-nav-item-active">
+            Профиль
+          </button>
+        </nav>
+      </aside>
 
-      <div className="card">
-        {msg && <div className="msg">{msg}</div>}
+      <div className="jira-main">
+        <header className="jira-topbar">
+          <div>
+            <h1 className="jira-page-title">Профиль</h1>
+            <p className="jira-page-desc">Личные данные</p>
+          </div>
+          <div className="jira-topbar-actions">
+            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/workspaces')} type="button">
+              Назад
+            </button>
+          </div>
+        </header>
 
-        <div className="row" style={{ gap: 24, alignItems: 'flex-start' }}>
-          <div style={{ minWidth: 220 }}>
-            <div style={{ marginTop: 12 }}>
-              <div className="avatarWrap">
-                {previewUrl || user?.avatarPath ? (
-                  <img
-                    className="avatarImg"
-                    src={previewUrl || user?.avatarPath || ''}
-                    alt="avatar"
+        {msg && <div className={isErrorMsg ? 'jira-banner jira-banner-error' : 'jira-banner'}>{msg}</div>}
+
+        <section className="jira-panel">
+          <div className="jira-modal-body">
+            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+              <div style={{ width: 160, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ marginTop: 12 }}>
+                  <div className="avatarWrap">
+                    {previewUrl || user?.avatarPath ? (
+                      !avatarError ? (
+                        <img
+                          className="avatarImg"
+                          src={avatarSrc}
+                          alt="avatar"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          crossOrigin="anonymous"
+                          onError={() => setAvatarError(true)}
+                        />
+                      ) : (
+                        <div className="jira-cell-meta" style={{ marginTop: 0, padding: 0 }}>
+                          Не удалось загрузить аватар
+                        </div>
+                      )
+                    ) : (
+                      <div className="jira-cell-meta" style={{ marginTop: 0, padding: 0 }}>
+                        Нет аватара
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                    disabled={busy}
                   />
-                ) : (
-                  <div className="msg" style={{ marginTop: 0, padding: 0 }}>
-                    No avatar
+
+                  <button
+                    className="avatarEditBtn"
+                    type="button"
+                    disabled={busy}
+                    onClick={() => triggerPick()}
+                  >
+                    Редактировать
+                  </button>
+                </div>
+
+                {selectedFile && (
+                  <div className="avatarActions">
+                    <div className="avatarHint">
+                      {selectedFileName ? `Выбрано: ${selectedFileName}` : 'Выберите файл'}
+                    </div>
+
+                    <button
+                      className="jira-btn jira-btn-primary"
+                      type="button"
+                      disabled={busy || !selectedFile}
+                      onClick={() => void uploadAvatar()}
+                    >
+                      {busy ? '...' : 'Загрузить фото...'}
+                    </button>
                   </div>
                 )}
 
-                <button
-                  className="avatarEditBtn"
-                  type="button"
-                  disabled={busy}
-                  onClick={triggerPick}
-                >
-                  Edit
-                </button>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-                  disabled={busy}
-                />
+                {user?.avatarPath && (
+                  <div style={{ marginTop: 12 }}>
+                    <button
+                      className="jira-btn jira-btn-danger avatarDeleteBtn"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void removeAvatar()}
+                    >
+                      {busy ? '...' : 'Удалить'}
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
 
-            {selectedFile && (
-              <div className="avatarActions">
-                <div className="avatarHint">
-                  {selectedFileName ? `Selected: ${selectedFileName}` : 'Selected'}
+              <div style={{ flex: 1 }}>
+                <div style={{ marginBottom: 12, fontWeight: 600 }}>{user?.name || '-'}</div>
+
+                <div className="jira-label">Почта</div>
+                <div style={{ marginBottom: 12 }}>{user?.email || '-'}</div>
+
+                <div className="jira-label">Зарегистрирован</div>
+                <div style={{ marginBottom: 12 }}>
+                  {user?.createdAt ? formatRegisteredRU(user.createdAt) : '-'}
                 </div>
-
-                <button
-                  className="btnPrimary"
-                  type="button"
-                  disabled={busy || !selectedFile}
-                  onClick={uploadAvatar}
-                >
-                  {busy ? '...' : 'Upload a photo...'}
-                </button>
               </div>
-            )}
-
-            {user?.avatarPath && (
-              <div style={{ marginTop: 12 }}>
-                <button
-                  className="btnDanger"
-                  type="button"
-                  disabled={busy}
-                  onClick={removeAvatar}
-                >
-                  {busy ? '...' : 'Remove photo'}
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div style={{ flex: 1 }}>
-            {/* value only: без отдельной подписи */}
-            <div style={{ marginBottom: 12, fontWeight: 600 }}>
-              {user?.name || '-'}
-            </div>
-
-            <div className="label">Почта</div>
-            <div style={{ marginBottom: 12 }}>{user?.email || '-'}</div>
-
-            <div className="label">Зарегистрирован</div>
-            <div style={{ marginBottom: 12 }}>
-              {user?.createdAt ? formatRegisteredRU(user.createdAt) : '-'}
             </div>
           </div>
+        </section>
+
+        <div style={{ marginTop: 20 }}>
+          <ProfileInvitesSection accessToken={props.accessToken} />
         </div>
       </div>
     </div>
@@ -727,46 +831,98 @@ function ProfileMePage(props: { accessToken: string | null }) {
 
 function App() {
   const route = useRoute();
-  const [accessToken, setAccessToken] = useState<string | null>(() => getAccessTokenFromStorage());
+  const [accessToken, setAccessToken] = useState<string | null>(() => {
+    const stored = getAccessTokenFromStorage();
+    if (stored) return stored;
+    const url = new URL(window.location.href);
+    return url.searchParams.get('accessToken');
+  });
+
+  type Theme = 'light' | 'dark';
+  const THEME_KEY = 'mini_trello_theme';
+  const getInitialTheme = (): Theme => {
+    const fromStorage = localStorage.getItem(THEME_KEY);
+    if (fromStorage === 'light' || fromStorage === 'dark') return fromStorage;
+    try {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  };
+
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
 
   const setToken = (t: string | null) => {
     setAccessTokenToStorage(t);
     setAccessToken(t);
   };
 
-  if (route.startsWith('/dashboard')) {
-    return <Dashboard accessToken={accessToken} setToken={setToken} />;
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const tokenFromQuery = url.searchParams.get('accessToken');
+    if (!tokenFromQuery) return;
+    setToken(tokenFromQuery);
+    url.searchParams.delete('accessToken');
+    window.history.replaceState({}, '', url.pathname + url.search);
+    if (url.pathname.startsWith('/dashboard')) {
+      navigate('/workspaces');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const memberRouteMatch = route.match(/^\/workspaces\/(\d+)\/members$/);
+  let page: JSX.Element;
+  if (memberRouteMatch) {
+    page = <WorkspaceMembersPage accessToken={accessToken} workspaceId={Number(memberRouteMatch[1])} />;
+  } else if (route.startsWith('/dashboard')) {
+    // Google callback redirects here; we no longer show dashboard UI.
+    page = <WorkspacesPage accessToken={accessToken} />;
+  } else if (route.startsWith('/workspaces')) {
+    page = <WorkspacesPage accessToken={accessToken} />;
+  } else if (route.startsWith('/profile')) {
+    page = <ProfileMePage accessToken={accessToken} />;
+  } else if (route.startsWith('/test/email-verification/request')) {
+    page = <EmailVerificationRequestPage />;
+  } else if (route.startsWith('/email-verified')) {
+    page = <EmailVerifiedStatusPage />;
+  } else if (route.startsWith('/test/password-reset/request')) {
+    page = <PasswordResetRequestPage />;
+  } else if (route.startsWith('/reset-password')) {
+    page = <PasswordResetConfirmPage />;
+  } else {
+    page = <Home onAuthed={(t) => setToken(t)} />;
   }
 
-  if (route.startsWith('/workspaces')) {
-    return <WorkspacesPage accessToken={accessToken} />;
-  }
+  useEffect(() => {
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      // ignore
+    }
+    document.documentElement.classList.toggle('theme-dark', theme === 'dark');
+  }, [theme]);
 
-  if (route.startsWith('/invites')) {
-    return <InvitesPage accessToken={accessToken} />;
-  }
-
-  if (route.startsWith('/profile')) {
-    return <ProfileMePage accessToken={accessToken} />;
-  }
-
-  if (route.startsWith('/test/email-verification/request')) {
-    return <EmailVerificationRequestPage />;
-  }
-
-  if (route.startsWith('/email-verified')) {
-    return <EmailVerifiedStatusPage />;
-  }
-
-  if (route.startsWith('/test/password-reset/request')) {
-    return <PasswordResetRequestPage />;
-  }
-
-  if (route.startsWith('/reset-password')) {
-    return <PasswordResetConfirmPage />;
-  }
-
-  return <Home onAuthed={(t) => setToken(t)} />;
+  return (
+    <>
+      <div className="theme-toggle" aria-label="Theme switch">
+        <span className="theme-toggle-icon" aria-hidden>
+          ◐
+        </span>
+        <label className="theme-switch" aria-label="Toggle dark theme">
+          <input
+            className="theme-switch-input"
+            type="checkbox"
+            checked={theme === 'dark'}
+            onChange={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          />
+          <span className="theme-switch-track" aria-hidden>
+            <span className="theme-switch-thumb" />
+          </span>
+        </label>
+      </div>
+      {page}
+    </>
+  );
 }
 
 export default App;

@@ -51,6 +51,13 @@ function formatDate(iso: string) {
   }
 }
 
+function formatWorkspaceNameForUI(name: string) {
+  // Sometimes stored name comes like: `12345(Название)`.
+  // For UI show only `Название`.
+  const m = name.match(/^\s*\d+\s*\((.*)\)\s*$/);
+  return m ? m[1] : name;
+}
+
 type Props = { accessToken: string | null };
 
 export function WorkspacesPage({ accessToken }: Props) {
@@ -124,7 +131,7 @@ export function WorkspacesPage({ accessToken }: Props) {
 
   function openEdit(row: WorkspaceMemberRow) {
     setEditRow(row);
-    setEditName(row.workspace.name);
+    setEditName(formatWorkspaceNameForUI(row.workspace.name));
     setEditDesc(row.workspace.description ?? '');
     setMsg(null);
   }
@@ -133,7 +140,8 @@ export function WorkspacesPage({ accessToken }: Props) {
     const json: { name?: string; description?: string } = {};
     const n = name.trim();
     const d = desc.trim();
-    if (n && n !== row.workspace.name) json.name = n;
+    const currentName = formatWorkspaceNameForUI(row.workspace.name);
+    if (n && n !== currentName) json.name = n;
     if (d.length >= 3 && d !== (row.workspace.description ?? '')) {
       json.description = d;
     }
@@ -208,13 +216,13 @@ export function WorkspacesPage({ accessToken }: Props) {
   return (
     <div className="jira-shell">
       <aside className="jira-sidebar">
-        <div className="jira-sidebar-brand">
+        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
           <span className="jira-logo-mark" aria-hidden />
           <div>
-            <div className="jira-sidebar-title">mini-trello</div>
+            <div className="jira-sidebar-title">Mini trello</div>
             <div className="jira-sidebar-sub">team spaces</div>
           </div>
-        </div>
+        </button>
         <nav className="jira-nav">
           <div className="jira-nav-section">Разделы</div>
           <button type="button" className="jira-nav-item jira-nav-item-active">
@@ -232,9 +240,6 @@ export function WorkspacesPage({ accessToken }: Props) {
             </p>
           </div>
           <div className="jira-topbar-actions">
-            <button type="button" className="jira-btn jira-btn-ghost" onClick={() => navigate('/dashboard')}>
-              ← К дашборду
-            </button>
             <button
               type="button"
               className="jira-btn jira-btn-primary"
@@ -263,9 +268,6 @@ export function WorkspacesPage({ accessToken }: Props) {
         <section className="jira-panel">
           <div className="jira-panel-head">
             <span className="jira-panel-title">Ваши пространства</span>
-            <button type="button" className="jira-btn jira-btn-ghost jira-btn-sm" onClick={() => void load()} disabled={loading}>
-              Обновить
-            </button>
           </div>
 
           {loading ? (
@@ -290,8 +292,9 @@ export function WorkspacesPage({ accessToken }: Props) {
                   {rows.map((row) => (
                     <tr key={row.id}>
                       <td>
-                        <div className="jira-cell-title">{row.workspace.name}</div>
-                        <div className="jira-cell-meta">ID {row.workspace.id}</div>
+                        <div className="jira-cell-title">
+                          {formatWorkspaceNameForUI(row.workspace.name)}
+                        </div>
                       </td>
                       <td className="jira-cell-desc">
                         {row.workspace.description?.trim()
@@ -303,6 +306,13 @@ export function WorkspacesPage({ accessToken }: Props) {
                       </td>
                       <td className="jira-cell-meta">{formatDate(row.workspace.updatedAt)}</td>
                       <td className="jira-row-actions">
+                        <button
+                          type="button"
+                          className="jira-btn jira-btn-ghost jira-btn-sm"
+                          onClick={() => navigate(`/workspaces/${row.workspace.id}/members`)}
+                        >
+                          Участники
+                        </button>
                         {canManageWorkspace(row.role) ? (
                           <>
                             <button type="button" className="jira-btn jira-btn-ghost jira-btn-sm" onClick={() => openEdit(row)}>
@@ -348,7 +358,6 @@ export function WorkspacesPage({ accessToken }: Props) {
                   className="jira-input"
                   value={createName}
                   onChange={(e) => setCreateName(e.target.value)}
-                  placeholder="Например, Маркетинг"
                   maxLength={18}
                 />
               </label>
@@ -358,7 +367,6 @@ export function WorkspacesPage({ accessToken }: Props) {
                   className="jira-textarea"
                   value={createDesc}
                   onChange={(e) => setCreateDesc(e.target.value)}
-                  placeholder="Необязательно (от 3 символов, если заполняете)"
                   rows={3}
                   maxLength={255}
                 />
@@ -405,9 +413,6 @@ export function WorkspacesPage({ accessToken }: Props) {
                   maxLength={255}
                 />
               </label>
-              <p className="jira-hint">
-                PATCH отправляет только изменённые поля. Описание — не короче 3 символов, если указываете.
-              </p>
             </div>
             <div className="jira-modal-footer">
               <button type="button" className="jira-btn jira-btn-ghost" onClick={() => !editBusy && setEditRow(null)}>
@@ -437,7 +442,7 @@ export function WorkspacesPage({ accessToken }: Props) {
             </div>
             <div className="jira-modal-body">
               <p className="jira-confirm-text">
-                <strong>{deleteRow.workspace.name}</strong> будет удалено безвозвратно (если у вас есть права).
+                <strong>{formatWorkspaceNameForUI(deleteRow.workspace.name)}</strong> будет удалено безвозвратно (если у вас есть права).
               </p>
             </div>
             <div className="jira-modal-footer">

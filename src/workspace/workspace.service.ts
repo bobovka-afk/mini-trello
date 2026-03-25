@@ -9,14 +9,10 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
-import { WorkspaceMember } from 'src/generated/prisma/client';
 
 @Injectable()
 export class WorkspaceService {
     constructor(private readonly prisma: PrismaService) {}
-
-
-
 
 
     async createWorkspace(dto: CreateWorkspaceDto, userId: number) {
@@ -56,10 +52,23 @@ export class WorkspaceService {
         });
     }
 
-    async getWorkspaceMembers(workspaceId: number, userId: number, paginationDto: PaginationDto): Promise<WorkspaceMember[]> {
+    async getWorkspaceMembers(
+        workspaceId: number,
+        userId: number,
+        paginationDto: PaginationDto
+    ) {
         await this.getWorkspaceMemberOrThrow(workspaceId, userId);
         return this.prisma.workspaceMember.findMany({
             where: { workspaceId: workspaceId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatarPath: true,
+                    },
+                },
+            },
             orderBy: {
                 createdAt: 'desc',
             },

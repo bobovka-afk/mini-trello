@@ -59,12 +59,12 @@ export class WorkspaceController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':workspaceId/members')
-  async getWorkspaceMembers(
+  async getMembersWorkspace(
     @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Query() paginationDto: PaginationDto,
   ) {
-    return this.workspaceService.getWorkspaceMembers(req.user.id, workspaceId, paginationDto);
+    return this.workspaceService.getWorkspaceMembers(workspaceId, req.user.id, paginationDto);
   }
 
   @UseGuards(JwtAuthGuard)
