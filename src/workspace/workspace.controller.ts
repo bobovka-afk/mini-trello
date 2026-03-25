@@ -24,7 +24,7 @@ export class WorkspaceController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  async createWorkSpace(
+  async createWorkspace(
     @Req() req: Request & { user: { id: number } },@Body() dto: CreateWorkspaceDto,) {
       return this.workspaceService.createWorkspace(dto, req.user.id);
     }
@@ -56,4 +56,35 @@ export class WorkspaceController {
   ) {
     return this.workspaceService.deleteWorkspace(workspaceId, req.user.id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':workspaceId/members')
+  async getWorkspaceMembers(
+    @Req() req: Request & { user: { id: number } },
+    @Param('workspaceId', ParseIntPipe) workspaceId: number,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.workspaceService.getWorkspaceMembers(req.user.id, workspaceId, paginationDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':workspaceId/members/:memberId')
+  async deleteWorkspaceMember(
+    @Req() req: Request & { user: { id: number } },
+    @Param('workspaceId', ParseIntPipe) workspaceId: number,
+    @Param('memberId', ParseIntPipe) memberId: number,
+  ) {
+    return this.workspaceService.deleteWorkspaceMember(workspaceId, req.user.id, memberId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/workspace/:workspaceId/members/me')
+  async leaveWorkspace(
+    @Req() req: Request & { user: { id: number } },
+    @Param('workspaceId', ParseIntPipe) workspaceId: number,
+  ) {
+    return this.workspaceService.leaveWorkspace(req.user.id, workspaceId);
+  }
+
+
 }

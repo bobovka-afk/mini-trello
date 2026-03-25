@@ -148,7 +148,7 @@ export class WorkspaceInviteService {
         const invite = await this.getInviteForEmailOrThrow(inviteId, currentUserEmail);
 
         this.ensureInviteIsActive(invite.status, invite.usedAt, invite.expiresAt);
-        await this.getWorkspaceOrThrow(invite.workspaceId);
+        await this.workspaceService.getWorkspaceOrThrow(invite.workspaceId);
 
         try {
             return await this.prisma.$transaction(async (tx) => {
@@ -190,7 +190,7 @@ export class WorkspaceInviteService {
         const invite = await this.getInviteForEmailOrThrow(inviteId, currentUserEmail);
 
         this.ensureInviteIsActive(invite.status, invite.usedAt, invite.expiresAt);
-        await this.getWorkspaceOrThrow(invite.workspaceId);
+        await this.workspaceService.getWorkspaceOrThrow(invite.workspaceId);
 
         return this.prisma.workspaceInvite.update({
             where: { id: invite.id },
@@ -200,20 +200,6 @@ export class WorkspaceInviteService {
             },
             select: this.getInvitePublicSelect(),
         });
-    }
-
-    private async getWorkspaceOrThrow(workspaceId: number) {
-        const workspace = await this.prisma.workspace.findUnique({
-            where: { id: workspaceId },
-            select: { id: true },
-        });
-        if (!workspace) {
-            throw new NotFoundException({
-                code: 'WORKSPACE_NOT_FOUND',
-                message: 'Workspace not found',
-            });
-        }
-        return workspace;
     }
 
     private async getUserEmailOrThrow(userId: number) {

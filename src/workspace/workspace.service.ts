@@ -9,6 +9,7 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
+import { WorkspaceMember } from 'src/generated/prisma/client';
 
 @Injectable()
 export class WorkspaceService {
@@ -16,45 +17,7 @@ export class WorkspaceService {
 
 
 
-    async checkWorkspaceAccess(
-        workspaceId: number,
-        userId: number,
-        action: 'update' | 'delete' | 'manage_invites',
-    ) {
-        const existingWorkspace = await this.getWorkspaceById(workspaceId);
-        if (!existingWorkspace) {
-            throw new NotFoundException({
-                code: 'WORKSPACE_NOT_FOUND',
-                message: 'Workspace not found',
-            });
-        }
 
-        const member = await this.prisma.workspaceMember.findUnique({
-            where: {
-                workspaceId_userId: {
-                    workspaceId,
-                    userId,
-                },
-            },
-        });
-
-        if (!member) {
-            throw new ForbiddenException({
-                code: 'WORKSPACE_MEMBER_REQUIRED',
-                message: 'You are not a member of this workspace',
-            });
-        }
-
-        if (
-            member.role !== WorkspaceRole.OWNER &&
-            member.role !== WorkspaceRole.ADMIN
-        ) {
-            throw new ForbiddenException({
-                code: 'WORKSPACE_ACTION_FORBIDDEN',
-                message: `You do not have permission to ${action} this workspace`,
-            });
-        }
-    }
 
     async createWorkspace(dto: CreateWorkspaceDto, userId: number) {
         const workspace = await this.prisma.workspace.create({
@@ -93,6 +56,18 @@ export class WorkspaceService {
         });
     }
 
+    async getWorkspaceMembers(workspaceId: number, userId: number, paginationDto: PaginationDto): Promise<WorkspaceMember[]> {
+        await this.getWorkspaceMemberOrThrow(workspaceId, userId);
+        return this.prisma.workspaceMember.findMany({
+            where: { workspaceId: workspaceId },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            take: paginationDto.limit,
+            skip: paginationDto.offset,
+        });
+    }
+
     async updateWorkspace(
         workspaceId: number,
         dto: UpdateWorkspaceDto,
@@ -121,8 +96,62 @@ export class WorkspaceService {
         };
     }
 
+    async deleteWorkspaceMember(
+        workspaceId: number,
+        actorUserId: number,
+        memberId: number,
+      ): Promise<{ ok: boolean }> {
+        await this.checkWorkspaceAccess(workspaceId, actorUserId, 'delete');
+
+        const targetMember = await this.getWorkspaceMemberOrThrow(
+            workspaceId,
+            memberId,
+          );
+          if (targetMember.role === WorkspaceRole.OWNER) {
+            throw new ForbiddenException({
+              code: 'WORKSPACE_OWNER_CANNOT_BE_REMOVED',
+              message: 'You cannot remove workspace OWNER. Transfer ownership first.',
+            });
+          }
+      
+        await this.prisma.workspaceMember.delete({
+          where: {
+            workspaceId_userId: {
+              workspaceId,
+              userId: memberId,
+            },
+          },
+        });
+      
+        return { ok: true };
+      }
+
+    async leaveWorkspace(userId: number, workspaceId: number): Promise <{ok: boolean}> {
+        await this.getWorkspaceOrThrow(workspaceId);
+        await this.getWorkspaceMemberOrThrow(workspaceId, userId);
+        await this.prisma.workspaceMember.delete({
+            where: {
+                workspaceId_userId : {
+                    userId: userId,
+                    workspaceId: workspaceId
+                }
+
+            }
+        })
+
+        return { ok: true }
+    }
+
     async deleteWorkspace(workspaceId: number, userId: number): Promise<{ ok: boolean }> {
         await this.checkWorkspaceAccess(workspaceId, userId, 'delete');
+
+        const member = await this.getWorkspaceMemberOrThrow(workspaceId, userId);
+        if (member.role !== WorkspaceRole.OWNER) {
+            throw new ForbiddenException({
+                code: 'WORKSPACE_OWNER_REQUIRED',
+                message: 'Only workspace OWNER can delete the workspace',
+            });
+        }
 
         await this.prisma.workspace.delete({
             where: { id: workspaceId },
@@ -130,12 +159,56 @@ export class WorkspaceService {
         return { ok: true }
     }
 
-    private async getWorkspaceById(workspaceId: number) {
-        return this.prisma.workspace.findUnique({
-            where: { id: workspaceId },
-        })
+    async checkWorkspaceAccess(
+        workspaceId: number,
+        userId: number,
+        action: 'update' | 'delete' | 'manage_invites',
+    ) {
+        await this.getWorkspaceOrThrow(workspaceId);
+        const member = await this.getWorkspaceMemberOrThrow(workspaceId, userId);
+
+        if (
+            member.role !== WorkspaceRole.OWNER &&
+            member.role !== WorkspaceRole.ADMIN
+        ) {
+            throw new ForbiddenException({
+                code: 'WORKSPACE_ACTION_FORBIDDEN',
+                message: `You do not have permission to ${action} this workspace`,
+            });
+        }
     }
 
+    async getWorkspaceOrThrow(workspaceId: number) {
+        const workspace = await this.prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: { id: true },
+        });
+        if (!workspace) {
+            throw new NotFoundException({
+                code: 'WORKSPACE_NOT_FOUND',
+                message: 'Workspace not found',
+            });
+        }
+        return workspace;
+    }
+
+    private async getWorkspaceMemberOrThrow(workspaceId: number, userId: number) {
+        const member = await this.prisma.workspaceMember.findUnique({
+            where: {
+                workspaceId_userId: {
+                    workspaceId,
+                    userId,
+                },
+            },
+        });
+        if (!member) {
+            throw new ForbiddenException({
+                code: 'WORKSPACE_MEMBER_REQUIRED',
+                message: 'You are not a member of this workspace',
+            });
+        }
+        return member;
+    }
 
 
 
