@@ -26,6 +26,19 @@ enum WorkspaceInviteStatus {
   EXPIRED
 }
 
+enum ListColorPreset {
+  GREEN
+  YELLOW
+  ORANGE
+  RED
+  PURPLE
+  BLUE
+  TEAL
+  OLIVE
+  BROWN
+  GRAY
+}
+
 model User {
   id              Int       @default(autoincrement()) @id
   email           String    @unique
@@ -62,6 +75,7 @@ model Workspace {
 
   members WorkspaceMember[]
   invites WorkspaceInvite[]
+  boards Board[]
 }
 
 model WorkspaceMember {
@@ -75,8 +89,6 @@ model WorkspaceMember {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, userId])
-  @@index([workspaceId])
-  @@index([userId])
 }
 
 model WorkspaceInvite {
@@ -95,8 +107,37 @@ model WorkspaceInvite {
   invitedBy User      @relation(fields: [invitedByUserId], references: [id], onDelete: Restrict)
 
   @@unique([workspaceId, email])
-  @@index([invitedByUserId])
 }
+
+model Board {
+  id              Int           @default(autoincrement()) @id
+  workspaceId Int
+  name        String
+  description String?
+  position    Int      @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  list List[]
+
+
+}
+
+model List {
+  id              Int           @default(autoincrement()) @id
+  boardId Int
+  name        String
+  position    Int      @default(0)
+  colorPreset ListColorPreset  @default(GRAY)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+}
+
 
 
 

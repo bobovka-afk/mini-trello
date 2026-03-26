@@ -10,14 +10,14 @@ import {
 
     @IsString()
     @IsNotEmpty()
-    @MinLength(3, { message: 'Имя должно содержать не менее 3 символов' })
-    @MaxLength(18, { message: 'Имя не более 18 символов' })
+    @MinLength(3)
+    @MaxLength(18)
     name: string;
 
     @IsString()
     @IsOptional()
-    @MinLength(3, { message: 'Описание должно содержать не менее 3 символов' })
-    @MaxLength(255, { message: 'Описание не более 255 символов' })
+    @MinLength(3)
+    @MaxLength(255)
     description: string;
   
 

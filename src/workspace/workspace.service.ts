@@ -82,7 +82,7 @@ export class WorkspaceService {
         dto: UpdateWorkspaceDto,
         userId: number,
     ) {
-        await this.checkWorkspaceAccess(workspaceId, userId, 'update');
+        await this.checkWorkspaceAccess(workspaceId, userId);
 
         if (dto.name === undefined && dto.description === undefined) {
             throw new BadRequestException({
@@ -110,7 +110,7 @@ export class WorkspaceService {
         actorUserId: number,
         memberId: number,
       ): Promise<{ ok: boolean }> {
-        await this.checkWorkspaceAccess(workspaceId, actorUserId, 'delete');
+        await this.checkWorkspaceAccess(workspaceId, actorUserId);
 
         const targetMember = await this.getWorkspaceMemberOrThrow(
             workspaceId,
@@ -152,7 +152,7 @@ export class WorkspaceService {
     }
 
     async deleteWorkspace(workspaceId: number, userId: number): Promise<{ ok: boolean }> {
-        await this.checkWorkspaceAccess(workspaceId, userId, 'delete');
+        await this.checkWorkspaceAccess(workspaceId, userId);
 
         const member = await this.getWorkspaceMemberOrThrow(workspaceId, userId);
         if (member.role !== WorkspaceRole.OWNER) {
@@ -168,11 +168,7 @@ export class WorkspaceService {
         return { ok: true }
     }
 
-    async checkWorkspaceAccess(
-        workspaceId: number,
-        userId: number,
-        action: 'update' | 'delete' | 'manage_invites',
-    ) {
+    async checkWorkspaceAccess(workspaceId: number, userId: number) {
         await this.getWorkspaceOrThrow(workspaceId);
         const member = await this.getWorkspaceMemberOrThrow(workspaceId, userId);
 
@@ -182,9 +178,15 @@ export class WorkspaceService {
         ) {
             throw new ForbiddenException({
                 code: 'WORKSPACE_ACTION_FORBIDDEN',
-                message: `You do not have permission to ${action} this workspace`,
+                message: 'You do not have permission to access this workspace',
             });
         }
+    }
+
+    /** Любой участник пространства (включая MEMBER) — для досок и списков. */
+    async assertWorkspaceMember(workspaceId: number, userId: number) {
+        await this.getWorkspaceOrThrow(workspaceId);
+        await this.getWorkspaceMemberOrThrow(workspaceId, userId);
     }
 
     async getWorkspaceOrThrow(workspaceId: number) {

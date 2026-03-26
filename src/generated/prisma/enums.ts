@@ -34,3 +34,19 @@ export const WorkspaceInviteStatus = {
 } as const
 
 export type WorkspaceInviteStatus = (typeof WorkspaceInviteStatus)[keyof typeof WorkspaceInviteStatus]
+
+
+export const ListColorPreset = {
+  GREEN: 'GREEN',
+  YELLOW: 'YELLOW',
+  ORANGE: 'ORANGE',
+  RED: 'RED',
+  PURPLE: 'PURPLE',
+  BLUE: 'BLUE',
+  TEAL: 'TEAL',
+  OLIVE: 'OLIVE',
+  BROWN: 'BROWN',
+  GRAY: 'GRAY'
+} as const
+
+export type ListColorPreset = (typeof ListColorPreset)[keyof typeof ListColorPreset]

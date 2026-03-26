@@ -8,7 +8,7 @@ import {
 import { Transform } from 'class-transformer';
 
 export class LoginDto {
-  @IsEmail({}, { message: 'Некорректный email' })
+  @IsEmail({})
   @IsNotEmpty()
   @Transform(({ value }) =>
     typeof value === 'string' ? value.trim().toLowerCase() : value,
@@ -17,7 +17,7 @@ export class LoginDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(6, { message: 'Пароль должен содержать не менее 6 символов' })
-  @MaxLength(72, { message: 'Пароль не более 72 символов' })
+  @MinLength(6)
+  @MaxLength(72)
   password: string;
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, type ApiError } from './lib/api';
+import { formatWorkspaceRole } from './lib/roles';
 
 type WorkspaceMemberRow = {
   id: number;
@@ -35,20 +36,6 @@ function formatError(e: unknown) {
 
 function canManageWorkspace(role: string) {
   return role === 'OWNER' || role === 'ADMIN';
-}
-
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return iso;
-  }
 }
 
 function formatWorkspaceNameForUI(name: string) {
@@ -214,114 +201,148 @@ export function WorkspacesPage({ accessToken }: Props) {
     Object.keys(buildEditPatch(editRow, editName, editDesc)).length > 0;
 
   return (
-    <div className="jira-shell">
-      <aside className="jira-sidebar">
-        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
-          <span className="jira-logo-mark" aria-hidden />
+    <div className="trello-app-shell">
+      <div className="trello-boards-main">
+        <header className="trello-boards-topbar">
           <div>
-            <div className="jira-sidebar-title">Mini trello</div>
-            <div className="jira-sidebar-sub">team spaces</div>
-          </div>
-        </button>
-        <nav className="jira-nav">
-          <div className="jira-nav-section">Разделы</div>
-          <button type="button" className="jira-nav-item jira-nav-item-active">
-            Рабочие пространства
-          </button>
-        </nav>
-      </aside>
-
-      <div className="jira-main">
-        <header className="jira-topbar">
-          <div>
-            <h1 className="jira-page-title">Рабочие пространства</h1>
-            <p className="jira-page-desc">
-              Создавайте команды, редактируйте настройки и удаляйте пространства (owner/admin).
-            </p>
-          </div>
-          <div className="jira-topbar-actions">
             <button
               type="button"
-              className="jira-btn jira-btn-primary"
-              disabled={!accessToken}
-              onClick={() => {
-                setCreateOpen(true);
-                setMsg(null);
-              }}
+              className="trello-top-left-brand"
+              onClick={() => navigate('/workspaces')}
             >
-              Создать пространство
+              <span className="trello-logo" aria-hidden />
+              <span className="trello-top-left-brand-text">mini trello</span>
             </button>
+            <h1 className="trello-boards-title">Рабочие пространства</h1>
+          </div>
+          <div className="trello-topbar-actions">
+            {accessToken && rows.length > 0 && (
+              <button
+                type="button"
+                className="trello-btn trello-btn-primary"
+                onClick={() => {
+                  setCreateOpen(true);
+                  setMsg(null);
+                }}
+              >
+                Создать рабочее пространство
+              </button>
+            )}
           </div>
         </header>
 
         {!accessToken && (
-          <div className="jira-banner jira-banner-warn">
-            Войдите на главной странице, чтобы управлять пространствами.
-            <button type="button" className="jira-link-btn" onClick={() => navigate('/')}>
+          <div className="trello-banner trello-banner-warn">
+            Войдите на главной, чтобы управлять рабочими пространствами.
+            <button type="button" className="trello-inline-link" onClick={() => navigate('/')}>
               На главную
             </button>
           </div>
         )}
 
-        {msg && <div className="jira-banner jira-banner-error">{msg}</div>}
+        {msg && <div className="trello-banner trello-banner-error">{msg}</div>}
 
-        <section className="jira-panel">
-          <div className="jira-panel-head">
-            <span className="jira-panel-title">Ваши пространства</span>
+        <section className="trello-panel">
+          <div className="trello-panel-head">
+            <span className="trello-panel-title">Ваши рабочие пространства</span>
           </div>
 
           {loading ? (
-            <div className="jira-empty">Загрузка…</div>
+            <div className="trello-empty">Загрузка…</div>
           ) : rows.length === 0 ? (
-            <div className="jira-empty">
-              Пока нет пространств. Создайте первое — кнопка справа вверху.
-            </div>
+            accessToken ? (
+              <div className="trello-workspaces-empty-grid">
+                <button
+                  type="button"
+                  className="trello-board-tile trello-board-tile-add"
+                  onClick={() => {
+                    setCreateOpen(true);
+                    setMsg(null);
+                  }}
+                >
+                  <span className="trello-board-tile-add-icon">+</span>
+                    <span>Создать рабочее пространство</span>
+                </button>
+              </div>
+            ) : (
+              <div className="trello-empty">Пока нет рабочих пространств.</div>
+            )
           ) : (
-            <div className="jira-table-wrap">
-              <table className="jira-table">
+            <div className="trello-table-wrap">
+              <table className="trello-table">
                 <thead>
                   <tr>
                     <th>Название</th>
                     <th>Описание</th>
                     <th>Роль</th>
-                    <th>Обновлено</th>
                     <th />
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row) => (
-                    <tr key={row.id}>
+                    <tr
+                      key={row.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate(`/workspaces/${row.workspace.id}/boards`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(`/workspaces/${row.workspace.id}/boards`);
+                        }
+                      }}
+                    >
                       <td>
-                        <div className="jira-cell-title">
+                        <div className="trello-cell-title">
                           {formatWorkspaceNameForUI(row.workspace.name)}
                         </div>
                       </td>
-                      <td className="jira-cell-desc">
+                      <td className="trello-cell-desc">
                         {row.workspace.description?.trim()
                           ? row.workspace.description
                           : '—'}
                       </td>
                       <td>
-                        <span className="jira-pill">{row.role}</span>
+                        <span className="trello-pill">{formatWorkspaceRole(row.role)}</span>
                       </td>
-                      <td className="jira-cell-meta">{formatDate(row.workspace.updatedAt)}</td>
-                      <td className="jira-row-actions">
+                      <td className="trello-row-actions">
                         <button
                           type="button"
-                          className="jira-btn jira-btn-ghost jira-btn-sm"
-                          onClick={() => navigate(`/workspaces/${row.workspace.id}/members`)}
+                          className="trello-btn trello-btn-primary trello-btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/workspaces/${row.workspace.id}/boards`);
+                          }}
+                        >
+                          Доски
+                        </button>
+                        <button
+                          type="button"
+                          className="trello-btn trello-btn-ghost trello-btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/workspaces/${row.workspace.id}/members`);
+                          }}
                         >
                           Участники
                         </button>
                         {canManageWorkspace(row.role) ? (
                           <>
-                            <button type="button" className="jira-btn jira-btn-ghost jira-btn-sm" onClick={() => openEdit(row)}>
+                            <button
+                              type="button"
+                              className="trello-btn trello-btn-ghost trello-btn-sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEdit(row);
+                              }}
+                            >
                               Изменить
                             </button>
                             <button
                               type="button"
-                              className="jira-btn jira-btn-danger-ghost jira-btn-sm"
-                              onClick={() => {
+                              className="trello-btn trello-btn-danger-ghost trello-btn-sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setDeleteRow(row);
                                 setMsg(null);
                               }}
@@ -330,7 +351,7 @@ export function WorkspacesPage({ accessToken }: Props) {
                             </button>
                           </>
                         ) : (
-                          <span className="jira-cell-meta">Только просмотр</span>
+                          <span className="trello-cell-meta">Только просмотр</span>
                         )}
                       </td>
                     </tr>
@@ -343,28 +364,33 @@ export function WorkspacesPage({ accessToken }: Props) {
       </div>
 
       {createOpen && (
-        <div className="jira-modal-backdrop" role="presentation" onClick={() => !createBusy && setCreateOpen(false)}>
-          <div className="jira-modal" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
-            <div className="jira-modal-header">
-              <h2 className="jira-modal-title">Создать пространство</h2>
-              <button type="button" className="jira-icon-btn" onClick={() => !createBusy && setCreateOpen(false)} aria-label="Закрыть">
+        <div className="trello-modal-backdrop" role="presentation" onClick={() => !createBusy && setCreateOpen(false)}>
+          <div className="trello-modal" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
+            <div className="trello-modal-head">
+              <h2 className="trello-modal-title">Создать рабочее пространство</h2>
+              <button
+                type="button"
+                className="trello-modal-close"
+                onClick={() => !createBusy && setCreateOpen(false)}
+                aria-label="Закрыть"
+              >
                 ×
               </button>
             </div>
-            <div className="jira-modal-body">
-              <label className="jira-field">
-                <span className="jira-label">Название *</span>
+            <div className="trello-modal-body">
+              <label className="trello-field">
+                <span className="trello-label">Название *</span>
                 <input
-                  className="jira-input"
+                  className="trello-input"
                   value={createName}
                   onChange={(e) => setCreateName(e.target.value)}
                   maxLength={18}
                 />
               </label>
-              <label className="jira-field">
-                <span className="jira-label">Описание</span>
+              <label className="trello-field">
+                <span className="trello-label">Описание</span>
                 <textarea
-                  className="jira-textarea"
+                  className="trello-textarea"
                   value={createDesc}
                   onChange={(e) => setCreateDesc(e.target.value)}
                   rows={3}
@@ -372,11 +398,16 @@ export function WorkspacesPage({ accessToken }: Props) {
                 />
               </label>
             </div>
-            <div className="jira-modal-footer">
-              <button type="button" className="jira-btn jira-btn-ghost" onClick={() => !createBusy && setCreateOpen(false)}>
+            <div className="trello-modal-foot">
+              <button type="button" className="trello-btn trello-btn-ghost" onClick={() => !createBusy && setCreateOpen(false)}>
                 Отмена
               </button>
-              <button type="button" className="jira-btn jira-btn-primary" disabled={!canCreate || createBusy} onClick={() => void submitCreate()}>
+              <button
+                type="button"
+                className="trello-btn trello-btn-primary"
+                disabled={!canCreate || createBusy}
+                onClick={() => void submitCreate()}
+              >
                 {createBusy ? 'Создание…' : 'Создать'}
               </button>
             </div>
@@ -385,28 +416,33 @@ export function WorkspacesPage({ accessToken }: Props) {
       )}
 
       {editRow && (
-        <div className="jira-modal-backdrop" role="presentation" onClick={() => !editBusy && setEditRow(null)}>
-          <div className="jira-modal" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
-            <div className="jira-modal-header">
-              <h2 className="jira-modal-title">Настройки пространства</h2>
-              <button type="button" className="jira-icon-btn" onClick={() => !editBusy && setEditRow(null)} aria-label="Закрыть">
+        <div className="trello-modal-backdrop" role="presentation" onClick={() => !editBusy && setEditRow(null)}>
+          <div className="trello-modal" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
+            <div className="trello-modal-head">
+              <h2 className="trello-modal-title">Настройки рабочего пространства</h2>
+              <button
+                type="button"
+                className="trello-modal-close"
+                onClick={() => !editBusy && setEditRow(null)}
+                aria-label="Закрыть"
+              >
                 ×
               </button>
             </div>
-            <div className="jira-modal-body">
-              <label className="jira-field">
-                <span className="jira-label">Название</span>
+            <div className="trello-modal-body">
+              <label className="trello-field">
+                <span className="trello-label">Название</span>
                 <input
-                  className="jira-input"
+                  className="trello-input"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   maxLength={18}
                 />
               </label>
-              <label className="jira-field">
-                <span className="jira-label">Описание</span>
+              <label className="trello-field">
+                <span className="trello-label">Описание</span>
                 <textarea
-                  className="jira-textarea"
+                  className="trello-textarea"
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
                   rows={3}
@@ -414,13 +450,13 @@ export function WorkspacesPage({ accessToken }: Props) {
                 />
               </label>
             </div>
-            <div className="jira-modal-footer">
-              <button type="button" className="jira-btn jira-btn-ghost" onClick={() => !editBusy && setEditRow(null)}>
+            <div className="trello-modal-foot">
+              <button type="button" className="trello-btn trello-btn-ghost" onClick={() => !editBusy && setEditRow(null)}>
                 Отмена
               </button>
               <button
                 type="button"
-                className="jira-btn jira-btn-primary"
+                className="trello-btn trello-btn-primary"
                 disabled={!canEditSave || editBusy}
                 onClick={() => void submitEdit()}
               >
@@ -432,24 +468,39 @@ export function WorkspacesPage({ accessToken }: Props) {
       )}
 
       {deleteRow && (
-        <div className="jira-modal-backdrop" role="presentation" onClick={() => !deleteBusy && setDeleteRow(null)}>
-          <div className="jira-modal jira-modal-sm" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
-            <div className="jira-modal-header">
-              <h2 className="jira-modal-title">Удалить пространство?</h2>
-              <button type="button" className="jira-icon-btn" onClick={() => !deleteBusy && setDeleteRow(null)} aria-label="Закрыть">
+        <div className="trello-modal-backdrop" role="presentation" onClick={() => !deleteBusy && setDeleteRow(null)}>
+          <div
+            className="trello-modal trello-modal-narrow"
+            role="dialog"
+            aria-modal
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="trello-modal-head">
+              <h2 className="trello-modal-title">Удалить рабочее пространство?</h2>
+              <button
+                type="button"
+                className="trello-modal-close"
+                onClick={() => !deleteBusy && setDeleteRow(null)}
+                aria-label="Закрыть"
+              >
                 ×
               </button>
             </div>
-            <div className="jira-modal-body">
-              <p className="jira-confirm-text">
+            <div className="trello-modal-body">
+              <p className="trello-confirm-text">
                 <strong>{formatWorkspaceNameForUI(deleteRow.workspace.name)}</strong> будет удалено безвозвратно (если у вас есть права).
               </p>
             </div>
-            <div className="jira-modal-footer">
-              <button type="button" className="jira-btn jira-btn-ghost" onClick={() => !deleteBusy && setDeleteRow(null)}>
+            <div className="trello-modal-foot">
+              <button type="button" className="trello-btn trello-btn-ghost" onClick={() => !deleteBusy && setDeleteRow(null)}>
                 Отмена
               </button>
-              <button type="button" className="jira-btn jira-btn-danger" disabled={deleteBusy} onClick={() => void confirmDelete()}>
+              <button
+                type="button"
+                className="trello-btn trello-btn-danger"
+                disabled={deleteBusy}
+                onClick={() => void confirmDelete()}
+              >
                 {deleteBusy ? 'Удаление…' : 'Удалить'}
               </button>
             </div>

@@ -213,6 +213,23 @@ export type EnumWorkspaceInviteStatusWithAggregatesFilter<$PrismaModel = never> 
   _max?: Prisma.NestedEnumWorkspaceInviteStatusFilter<$PrismaModel>
 }
 
+export type EnumListColorPresetNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ListColorPreset | Prisma.EnumListColorPresetFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ListColorPreset[] | Prisma.ListEnumListColorPresetFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ListColorPreset[] | Prisma.ListEnumListColorPresetFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumListColorPresetNullableFilter<$PrismaModel> | $Enums.ListColorPreset | null
+}
+
+export type EnumListColorPresetNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ListColorPreset | Prisma.EnumListColorPresetFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ListColorPreset[] | Prisma.ListEnumListColorPresetFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ListColorPreset[] | Prisma.ListEnumListColorPresetFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumListColorPresetNullableWithAggregatesFilter<$PrismaModel> | $Enums.ListColorPreset | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumListColorPresetNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumListColorPresetNullableFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -423,6 +440,23 @@ export type NestedEnumWorkspaceInviteStatusWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumWorkspaceInviteStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumWorkspaceInviteStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumListColorPresetNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ListColorPreset | Prisma.EnumListColorPresetFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ListColorPreset[] | Prisma.ListEnumListColorPresetFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ListColorPreset[] | Prisma.ListEnumListColorPresetFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumListColorPresetNullableFilter<$PrismaModel> | $Enums.ListColorPreset | null
+}
+
+export type NestedEnumListColorPresetNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ListColorPreset | Prisma.EnumListColorPresetFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ListColorPreset[] | Prisma.ListEnumListColorPresetFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ListColorPreset[] | Prisma.ListEnumListColorPresetFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumListColorPresetNullableWithAggregatesFilter<$PrismaModel> | $Enums.ListColorPreset | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumListColorPresetNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumListColorPresetNullableFilter<$PrismaModel>
 }
 
 

@@ -7,6 +7,8 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { WorkspaceModule } from './workspace/workspace.module';
 import { WorkspaceInviteModule } from './workspace-invite/workspace-invite.module';
+import { BoardModule } from './board/board.module';
+import { ListModule } from './list/list.module';
 
 
 @Module({
@@ -19,6 +21,8 @@ import { WorkspaceInviteModule } from './workspace-invite/workspace-invite.modul
     AuthModule,
     WorkspaceModule,
     WorkspaceInviteModule,
+    BoardModule,
+    ListModule,
   ],
   controllers: [AppController],
   providers: [AppService ],

@@ -28,13 +28,27 @@ function formatError(e: unknown) {
 
 function formatDate(iso: string) {
   try {
-    return new Date(iso).toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const d = new Date(iso);
+    const months = [
+      'января',
+      'февраля',
+      'марта',
+      'апреля',
+      'мая',
+      'июня',
+      'июля',
+      'августа',
+      'сентября',
+      'октября',
+      'ноября',
+      'декабря',
+    ];
+    const day = d.getDate();
+    const mon = months[d.getMonth()] ?? '';
+    const y = d.getFullYear();
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${day} ${mon} ${y} ${h}:${min}`;
   } catch {
     return iso;
   }
@@ -174,27 +188,12 @@ export function InvitesPage({ accessToken }: Props) {
 
   return (
     <div className="jira-shell">
-      <aside className="jira-sidebar">
-        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
-          <span className="jira-logo-mark" aria-hidden />
-          <div>
-            <div className="jira-sidebar-title">Mini trello</div>
-            <div className="jira-sidebar-sub">team spaces</div>
-          </div>
-        </button>
-        <nav className="jira-nav">
-          <div className="jira-nav-section">Разделы</div>
-          <button type="button" className="jira-nav-item" onClick={() => navigate('/workspaces')}>
-            Рабочие пространства
-          </button>
-          <button type="button" className="jira-nav-item jira-nav-item-active">
-            Приглашения
-          </button>
-        </nav>
-      </aside>
-
       <div className="jira-main">
         <header className="jira-topbar">
+          <button type="button" className="trello-top-left-brand" onClick={() => navigate('/workspaces')}>
+            <span className="trello-logo" aria-hidden />
+            <span className="trello-top-left-brand-text">mini trello</span>
+          </button>
           <div>
             <h1 className="jira-page-title">Мои приглашения</h1>
             <p className="jira-page-desc">
@@ -332,7 +331,7 @@ export function InvitesPage({ accessToken }: Props) {
             </div>
             <div className="jira-modal-body">
               <label className="jira-field">
-                <span className="jira-label">ID пространства *</span>
+                <span className="jira-label">ID рабочего пространства *</span>
                 <input
                   className="jira-input"
                   value={createWorkspaceId}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, API_URL, type ApiError } from './lib/api';
+import { formatWorkspaceRole } from './lib/roles';
 
 type Props = {
   accessToken: string | null;
@@ -51,13 +52,27 @@ function formatError(e: unknown) {
 
 function formatDate(iso: string) {
   try {
-    return new Date(iso).toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const d = new Date(iso);
+    const months = [
+      'января',
+      'февраля',
+      'марта',
+      'апреля',
+      'мая',
+      'июня',
+      'июля',
+      'августа',
+      'сентября',
+      'октября',
+      'ноября',
+      'декабря',
+    ];
+    const day = d.getDate();
+    const mon = months[d.getMonth()] ?? '';
+    const y = d.getFullYear();
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${day} ${mon} ${y} ${h}:${min}`;
   } catch {
     return iso;
   }
@@ -227,38 +242,32 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   }
 
   return (
-    <div className="jira-shell">
-      <aside className="jira-sidebar">
-        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
-          <span className="jira-logo-mark" aria-hidden />
+    <div className="trello-app-shell">
+      <div className="trello-boards-main">
+        <header className="trello-boards-topbar">
           <div>
-            <div className="jira-sidebar-title">Mini trello</div>
-            <div className="jira-sidebar-sub">team spaces</div>
-          </div>
-        </button>
-        <nav className="jira-nav">
-          <div className="jira-nav-section">Разделы</div>
-          <button type="button" className="jira-nav-item" onClick={() => navigate('/workspaces')}>
-            Рабочие пространства
-          </button>
-          <button type="button" className="jira-nav-item jira-nav-item-active">
-            Участники
-          </button>
-        </nav>
-      </aside>
-
-      <div className="jira-main">
-        <header className="jira-topbar">
-          <div>
-            <h1 className="jira-page-title">Участники</h1>
-          </div>
-          <div className="jira-topbar-actions">
-            <button type="button" className="jira-btn jira-btn-ghost" onClick={() => navigate('/workspaces')}>
-              ← К пространствам
+            <button
+              type="button"
+              className="trello-top-left-brand"
+              onClick={() => navigate('/workspaces')}
+            >
+              <span className="trello-logo" aria-hidden />
+              <span className="trello-top-left-brand-text">mini trello</span>
             </button>
             <button
               type="button"
-              className="jira-btn jira-btn-primary"
+              className="trello-btn trello-btn-primary trello-btn-sm"
+              onClick={() => navigate('/workspaces')}
+            >
+              ← Рабочие пространства
+            </button>
+            <h1 className="trello-boards-title trello-boards-title-offset">Участники рабочего пространства</h1>
+            <p className="trello-boards-sub">Приглашения и роли</p>
+          </div>
+          <div className="trello-topbar-actions">
+            <button
+              type="button"
+              className="trello-btn trello-btn-primary"
               disabled={!accessToken || !canManageWorkspace || createBusy}
               onClick={() => {
                 setCreateOpen(true);
@@ -271,28 +280,24 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
         </header>
 
         {!accessToken && (
-          <div className="jira-banner jira-banner-warn">
-            Войдите на главной странице, чтобы управлять пространствами.
-            <button type="button" className="jira-link-btn" onClick={() => navigate('/')}>
+          <div className="trello-banner trello-banner-warn">
+            Войдите на главной, чтобы управлять рабочим пространством.
+            <button type="button" className="trello-inline-link" onClick={() => navigate('/')}>
               На главную
             </button>
           </div>
         )}
 
-        {(msg && <div className="jira-banner jira-banner-error">{msg}</div>) || null}
+        {(msg && <div className="trello-banner trello-banner-error">{msg}</div>) || null}
 
-        <section className="jira-panel">
-          <div className="jira-panel-head">
-            <span className="jira-panel-title">Члены пространства</span>
-          </div>
-
+        <div className="trello-members-table-block">
           {loading ? (
-            <div className="jira-empty">Загрузка…</div>
+            <div className="trello-empty">Загрузка…</div>
           ) : rows.length === 0 ? (
-            <div className="jira-empty">Участников пока нет.</div>
+            <div className="trello-empty">Участников пока нет.</div>
           ) : (
-            <div className="jira-table-wrap">
-              <table className="jira-table">
+            <div className="trello-table-wrap">
+              <table className="trello-table">
                 <thead>
                   <tr>
                     <th>Пользователь</th>
@@ -308,7 +313,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                     return (
                       <tr key={member.id}>
                         <td>
-                          <div className="jira-cell-title">
+                          <div className="trello-cell-title">
                             <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}>
                               {member.user.avatarPath && !brokenAvatarUserIds[member.user.id] ? (
                                 <img
@@ -350,14 +355,14 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                           </div>
                         </td>
                         <td>
-                          <span className="jira-pill">{member.role}</span>
+                          <span className="trello-pill">{formatWorkspaceRole(member.role)}</span>
                         </td>
-                        <td className="jira-cell-meta">{formatDate(member.createdAt)}</td>
-                        <td className="jira-row-actions">
+                        <td className="trello-cell-meta">{formatDate(member.createdAt)}</td>
+                        <td className="trello-row-actions">
                           {isMe ? (
                             <button
                               type="button"
-                              className="jira-btn jira-btn-danger-ghost jira-btn-sm"
+                              className="trello-btn trello-btn-danger-ghost trello-btn-sm"
                               disabled={leaveBusy || currentUserLoadBusy}
                               onClick={() => void leaveWorkspace()}
                             >
@@ -366,7 +371,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                           ) : deleteAllowed ? (
                             <button
                               type="button"
-                              className="jira-btn jira-btn-danger-ghost jira-btn-sm"
+                              className="trello-btn trello-btn-danger-ghost trello-btn-sm"
                               disabled={deleteBusy}
                               onClick={() => {
                                 setDeleteMember(member);
@@ -376,9 +381,9 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                               Удалить
                             </button>
                           ) : canManageWorkspace ? (
-                            <span className="jira-cell-meta">Нельзя удалить</span>
+                            <span className="trello-cell-meta">Нельзя удалить</span>
                           ) : (
-                            <span className="jira-cell-meta">Только просмотр</span>
+                            <span className="trello-cell-meta">Только просмотр</span>
                           )}
                         </td>
                       </tr>
@@ -390,10 +395,10 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
           )}
 
           {!loading && rows.length > 0 && (
-            <div className="jira-row-actions" style={{ padding: '12px 16px' }}>
+            <div className="trello-row-actions" style={{ padding: '12px 16px' }}>
               <button
                 type="button"
-                className="jira-btn jira-btn-ghost jira-btn-sm"
+                className="trello-btn trello-btn-ghost trello-btn-sm"
                 disabled={offset === 0}
                 onClick={() => setOffset((v) => Math.max(v - limit, 0))}
               >
@@ -401,7 +406,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
               </button>
               <button
                 type="button"
-                className="jira-btn jira-btn-ghost jira-btn-sm"
+                className="trello-btn trello-btn-ghost trello-btn-sm"
                 disabled={rows.length < limit}
                 onClick={() => setOffset((v) => v + limit)}
               >
@@ -409,40 +414,40 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
               </button>
             </div>
           )}
-        </section>
+        </div>
 
         {createOpen && (
           <div
-            className="jira-modal-backdrop"
+            className="trello-modal-backdrop"
             role="presentation"
             onClick={() => !createBusy && setCreateOpen(false)}
           >
-            <div className="jira-modal" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
-              <div className="jira-modal-header">
-                <h2 className="jira-modal-title">Отправить приглашение</h2>
+            <div className="trello-modal" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
+              <div className="trello-modal-head">
+                <h2 className="trello-modal-title">Отправить приглашение</h2>
                 <button
                   type="button"
-                  className="jira-icon-btn"
+                  className="trello-modal-close"
                   onClick={() => !createBusy && setCreateOpen(false)}
                   aria-label="Закрыть"
                 >
                   ×
                 </button>
               </div>
-              <div className="jira-modal-body">
-                <label className="jira-field">
-                  <span className="jira-label">Почта *</span>
+              <div className="trello-modal-body">
+                <label className="trello-field">
+                  <span className="trello-label">Почта *</span>
                   <input
-                    className="jira-input"
+                    className="trello-input"
                     value={createEmail}
                     onChange={(e) => setCreateEmail(e.target.value)}
                     autoComplete="email"
                   />
                 </label>
-                <label className="jira-field">
-                  <span className="jira-label">Роль</span>
+                <label className="trello-field">
+                  <span className="trello-label">Роль</span>
                   <select
-                    className="jira-input"
+                    className="trello-input"
                     value={createRole}
                     onChange={(e) => setCreateRole(e.target.value as InviteRole)}
                   >
@@ -451,17 +456,17 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                   </select>
                 </label>
               </div>
-              <div className="jira-modal-footer">
+              <div className="trello-modal-foot">
                 <button
                   type="button"
-                  className="jira-btn jira-btn-ghost"
+                  className="trello-btn trello-btn-ghost"
                   onClick={() => !createBusy && setCreateOpen(false)}
                 >
                   Отмена
                 </button>
                 <button
                   type="button"
-                  className="jira-btn jira-btn-primary"
+                  className="trello-btn trello-btn-primary"
                   disabled={createBusy}
                   onClick={() => void submitCreateInvite()}
                 >
@@ -474,32 +479,46 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
 
         {deleteMember && (
           <div
-            className="jira-modal-backdrop"
+            className="trello-modal-backdrop"
             role="presentation"
             onClick={() => !deleteBusy && setDeleteMember(null)}
           >
-            <div className="jira-modal jira-modal-sm" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
-              <div className="jira-modal-header">
-                <h2 className="jira-modal-title">Удалить участника?</h2>
+            <div
+              className="trello-modal trello-modal-narrow"
+              role="dialog"
+              aria-modal
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="trello-modal-head">
+                <h2 className="trello-modal-title">Удалить участника?</h2>
                 <button
                   type="button"
-                  className="jira-icon-btn"
+                  className="trello-modal-close"
                   onClick={() => !deleteBusy && setDeleteMember(null)}
                   aria-label="Закрыть"
                 >
                   ×
                 </button>
               </div>
-              <div className="jira-modal-body">
-                <p className="jira-confirm-text">
-                  Пользователь <strong>#{deleteMember.userId}</strong> будет удален из пространства #{workspaceId}.
+              <div className="trello-modal-body">
+                <p className="trello-confirm-text">
+                  Пользователь <strong>#{deleteMember.userId}</strong> будет удален из рабочего пространства #{workspaceId}.
                 </p>
               </div>
-              <div className="jira-modal-footer">
-                <button type="button" className="jira-btn jira-btn-ghost" onClick={() => !deleteBusy && setDeleteMember(null)}>
+              <div className="trello-modal-foot">
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-ghost"
+                  onClick={() => !deleteBusy && setDeleteMember(null)}
+                >
                   Отмена
                 </button>
-                <button type="button" className="jira-btn jira-btn-danger" disabled={deleteBusy} onClick={() => void deleteWorkspaceMember()}>
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-danger"
+                  disabled={deleteBusy}
+                  onClick={() => void deleteWorkspaceMember()}
+                >
                   {deleteBusy ? 'Удаление…' : 'Удалить'}
                 </button>
               </div>

@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { api, API_URL, type ApiError } from './lib/api';
 import { WorkspacesPage } from './WorkspacesPage';
+import { WorkspaceBoardsPage } from './WorkspaceBoardsPage';
+import { BoardPage } from './BoardPage';
 import { WorkspaceMembersPage } from './WorkspaceMembersPage';
 import { ProfileInvitesSection } from './ProfileInvitesSection';
 import './index.css';
@@ -78,38 +80,50 @@ function EmailVerificationRequestPage() {
     (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
 
   return (
-    <div className="jira-shell">
-      <div className="jira-main">
-        <header className="jira-topbar">
+    <div className="trello-app-shell">
+      <div className="trello-boards-main">
+        <header className="trello-boards-topbar">
           <div>
-            <h1 className="jira-page-title">Email verification</h1>
-            <p className="jira-page-desc">Request confirmation email</p>
+            <h1 className="trello-boards-title">Подтверждение email</h1>
+            <p className="trello-boards-sub">Запрос письма с ссылкой</p>
           </div>
-          <div className="jira-topbar-actions">
-            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/')} type="button">
-              Home
-            </button>
-          </div>
+          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+            На главную
+          </button>
         </header>
 
-        <section className="jira-panel">
-          <div className="jira-modal-body">
-            <label className="jira-field">
-              <span className="jira-label">Email</span>
+        <section className="trello-panel">
+          <div style={{ padding: 16 }}>
+            <label className="trello-field">
+              <span className="trello-label">Email</span>
               <input
-                className="jira-input"
+                className="trello-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="mail@example.com"
                 autoComplete="email"
               />
             </label>
 
-            <button className="jira-btn jira-btn-primary" onClick={() => void submit()} disabled={busy} type="button">
-              {busy ? '...' : 'Send verification email'}
+            <button
+              className="trello-btn trello-btn-primary"
+              style={{ marginTop: 12 }}
+              onClick={() => void submit()}
+              disabled={busy}
+              type="button"
+            >
+              {busy ? '…' : 'Отправить письмо'}
             </button>
 
-            {msg && <div className={isErrorMsg ? 'jira-banner jira-banner-error' : 'jira-banner'}>{msg}</div>}
+            {msg && (
+              <div
+                className={
+                  isErrorMsg ? 'trello-banner trello-banner-error' : 'trello-banner trello-banner-warn'
+                }
+                style={{ marginTop: 12 }}
+              >
+                {msg}
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -126,24 +140,22 @@ function EmailVerifiedStatusPage() {
   else if (status === 'missing') title = 'Missing token';
 
   return (
-    <div className="jira-shell">
-      <div className="jira-main">
-        <header className="jira-topbar">
+    <div className="trello-app-shell">
+      <div className="trello-boards-main">
+        <header className="trello-boards-topbar">
           <div>
-            <h1 className="jira-page-title">Email verification</h1>
-            <p className="jira-page-desc">Result: {title}</p>
+            <h1 className="trello-boards-title">Подтверждение email</h1>
+            <p className="trello-boards-sub">Результат: {title}</p>
           </div>
-          <div className="jira-topbar-actions">
-            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/')} type="button">
-              Home
-            </button>
-          </div>
+          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+            На главную
+          </button>
         </header>
 
-        <section className="jira-panel">
-          <div className="jira-modal-body">
-            <div className="jira-banner">
-              <strong>Status:</strong> {status}
+        <section className="trello-panel">
+          <div style={{ padding: 16 }}>
+            <div className="trello-banner trello-banner-warn">
+              <strong>Статус:</strong> {status}
             </div>
           </div>
         </section>
@@ -178,38 +190,50 @@ function PasswordResetRequestPage() {
     (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
 
   return (
-    <div className="jira-shell">
-      <div className="jira-main">
-        <header className="jira-topbar">
+    <div className="trello-app-shell">
+      <div className="trello-boards-main">
+        <header className="trello-boards-topbar">
           <div>
-            <h1 className="jira-page-title">Password reset</h1>
-            <p className="jira-page-desc">Request reset link</p>
+            <h1 className="trello-boards-title">Сброс пароля</h1>
+            <p className="trello-boards-sub">Запрос ссылки на почту</p>
           </div>
-          <div className="jira-topbar-actions">
-            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/')} type="button">
-              Home
-            </button>
-          </div>
+          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+            На главную
+          </button>
         </header>
 
-        <section className="jira-panel">
-          <div className="jira-modal-body">
-            <label className="jira-field">
-              <span className="jira-label">Email</span>
+        <section className="trello-panel">
+          <div style={{ padding: 16 }}>
+            <label className="trello-field">
+              <span className="trello-label">Email</span>
               <input
-                className="jira-input"
+                className="trello-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="mail@example.com"
                 autoComplete="email"
               />
             </label>
 
-            <button className="jira-btn jira-btn-primary" onClick={() => void submit()} disabled={busy} type="button">
-              {busy ? '...' : 'Send reset email'}
+            <button
+              className="trello-btn trello-btn-primary"
+              style={{ marginTop: 12 }}
+              onClick={() => void submit()}
+              disabled={busy}
+              type="button"
+            >
+              {busy ? '…' : 'Отправить письмо'}
             </button>
 
-            {msg && <div className={isErrorMsg ? 'jira-banner jira-banner-error' : 'jira-banner'}>{msg}</div>}
+            {msg && (
+              <div
+                className={
+                  isErrorMsg ? 'trello-banner trello-banner-error' : 'trello-banner trello-banner-warn'
+                }
+                style={{ marginTop: 12 }}
+              >
+                {msg}
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -244,52 +268,59 @@ function PasswordResetConfirmPage() {
     (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
 
   return (
-    <div className="jira-shell">
-      <div className="jira-main">
-        <header className="jira-topbar">
+    <div className="trello-app-shell">
+      <div className="trello-boards-main">
+        <header className="trello-boards-topbar">
           <div>
-            <h1 className="jira-page-title">Password reset</h1>
-            <p className="jira-page-desc">Confirm token and set new password</p>
+            <h1 className="trello-boards-title">Сброс пароля</h1>
+            <p className="trello-boards-sub">Введите новый пароль по ссылке из письма</p>
           </div>
-          <div className="jira-topbar-actions">
-            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/')} type="button">
-              Home
-            </button>
-          </div>
+          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+            На главную
+          </button>
         </header>
 
-        <section className="jira-panel">
-          <div className="jira-modal-body">
+        <section className="trello-panel">
+          <div style={{ padding: 16 }}>
             {!token ? (
-              <div className="jira-banner jira-banner-error">
-                Token отсутствует в query param `token`. Откройте ссылку из письма.
+              <div className="trello-banner trello-banner-error">
+                В ссылке нет параметра <code>token</code>. Откройте письмо и перейдите по ссылке оттуда.
               </div>
             ) : (
               <>
-                <label className="jira-field">
-                  <span className="jira-label">New password</span>
+                <label className="trello-field">
+                  <span className="trello-label">Новый пароль</span>
                   <input
-                    className="jira-input"
+                    className="trello-input"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     type="password"
-                    placeholder="••••••••"
                     autoComplete="new-password"
                   />
                 </label>
 
                 <button
-                  className="jira-btn jira-btn-primary"
+                  className="trello-btn trello-btn-primary"
+                  style={{ marginTop: 12 }}
                   onClick={() => void submit()}
                   disabled={busy || !newPassword}
                   type="button"
                 >
-                  {busy ? '...' : 'Set new password'}
+                  {busy ? '…' : 'Сохранить пароль'}
                 </button>
               </>
             )}
 
-            {msg && <div className={isErrorMsg ? 'jira-banner jira-banner-error' : 'jira-banner'}>{msg}</div>}
+            {msg && (
+              <div
+                className={
+                  isErrorMsg ? 'trello-banner trello-banner-error' : 'trello-banner trello-banner-warn'
+                }
+                style={{ marginTop: 12 }}
+              >
+                {msg}
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -297,7 +328,17 @@ function PasswordResetConfirmPage() {
   );
 }
 
-function Home(props: { onAuthed: (token: string) => void }) {
+function avatarSrcForToolbar(p: string | null | undefined): string {
+  if (!p) return '';
+  const normalized = p.replace(/\\/g, '/');
+  if (normalized.startsWith('data:')) return normalized;
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) return normalized;
+  if (normalized.startsWith('//')) return `https:${normalized}`;
+  if (normalized.startsWith('/')) return `${API_URL}${normalized}`;
+  return `${API_URL}/${normalized}`;
+}
+
+function Home(props: { onAuthed: (token: string) => void; hasSession: boolean }) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -333,38 +374,30 @@ function Home(props: { onAuthed: (token: string) => void }) {
   }
 
   return (
-    <div className="jira-shell jira-auth-shell">
-      <header className="jira-auth-header">
-        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
-          <span className="jira-logo-mark" aria-hidden />
-          <div>
-            <div className="jira-sidebar-title">Mini trello</div>
-            <div className="jira-sidebar-sub">team spaces</div>
-          </div>
+    <div className="trello-home-shell">
+      <header className="trello-home-header">
+        <button
+          type="button"
+          className="trello-home-brand"
+          onClick={() => (props.hasSession ? navigate('/workspaces') : navigate('/'))}
+        >
+          <span className="trello-logo" aria-hidden />
+          Mini Trello
         </button>
       </header>
 
-      <main className="jira-auth-main">
-        <div className="jira-panel jira-auth-panel">
-          <div className="jira-auth-panel-head">
-            <h1 className="jira-auth-title">{mode === 'login' ? 'Вход' : 'Регистрация'}</h1>
-            <p className="jira-auth-subtitle">
-              {mode === 'login'
-                ? 'Войдите, чтобы управлять рабочими пространствами'
-                : 'Создайте аккаунт и присоединяйтесь к командам'}
-            </p>
-          </div>
-
-          <div className="jira-auth-tabs">
+      <main className="trello-home-main">
+        <div className="trello-home-card">
+          <div className="trello-home-tabs">
             <button
-              className={mode === 'login' ? 'jira-auth-tab jira-auth-tab-active' : 'jira-auth-tab'}
+              className={mode === 'login' ? 'trello-home-tab trello-home-tab-active' : 'trello-home-tab'}
               onClick={() => setMode('login')}
               type="button"
             >
               Вход
             </button>
             <button
-              className={mode === 'register' ? 'jira-auth-tab jira-auth-tab-active' : 'jira-auth-tab'}
+              className={mode === 'register' ? 'trello-home-tab trello-home-tab-active' : 'trello-home-tab'}
               onClick={() => setMode('register')}
               type="button"
             >
@@ -372,14 +405,27 @@ function Home(props: { onAuthed: (token: string) => void }) {
             </button>
           </div>
 
-          {msg && <div className="jira-banner jira-banner-error">{msg}</div>}
+          <h1 className="trello-home-title trello-home-title-center">
+            {mode === 'login' ? 'Вход' : 'Создать аккаунт'}
+          </h1>
+          <p className="trello-home-sub trello-home-sub-center">
+            {mode === 'login'
+              ? 'Войдите, чтобы открыть доски и рабочие пространства'
+              : 'Зарегистрируйтесь и приглашайте команду на доски'}
+          </p>
 
-          <div className="jira-auth-form">
+          {msg && (
+            <div className="trello-banner trello-banner-error" style={{ marginBottom: 16 }}>
+              {msg}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {mode === 'register' && (
-              <label className="jira-field">
-                <span className="jira-label">Имя</span>
+              <label className="trello-field">
+                <span className="trello-label">Имя</span>
                 <input
-                  className="jira-input"
+                  className="trello-input"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   autoComplete="name"
@@ -388,10 +434,10 @@ function Home(props: { onAuthed: (token: string) => void }) {
               </label>
             )}
 
-            <label className="jira-field">
-              <span className="jira-label">Email</span>
+            <label className="trello-field">
+              <span className="trello-label">Email</span>
               <input
-                className="jira-input"
+                className="trello-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
@@ -399,10 +445,10 @@ function Home(props: { onAuthed: (token: string) => void }) {
               />
             </label>
 
-            <label className="jira-field">
-              <span className="jira-label">Пароль</span>
+            <label className="trello-field">
+              <span className="trello-label">Пароль</span>
               <input
-                className="jira-input"
+                className="trello-input"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
@@ -413,14 +459,32 @@ function Home(props: { onAuthed: (token: string) => void }) {
 
             <button
               type="button"
-              className="jira-btn jira-btn-primary jira-auth-submit"
+              className="trello-btn trello-btn-primary trello-home-submit"
               onClick={() => void submit()}
               disabled={busy}
             >
-              {busy ? '...' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+              {busy ? '…' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
             </button>
 
-            <a className="jira-btn jira-btn-ghost jira-auth-google" href={`${API_URL}/auth/google`}>
+            <a className="trello-home-google" href={`${API_URL}/auth/google`}>
+              <svg className="trello-google-icon" viewBox="0 0 24 24" aria-hidden>
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
               Продолжить с Google
             </a>
           </div>
@@ -430,118 +494,13 @@ function Home(props: { onAuthed: (token: string) => void }) {
   );
 }
 
-function Dashboard(props: { accessToken: string | null; setToken: (t: string | null) => void }) {
-  const [status, setStatus] = useState<string | null>(null);
-
-  const accessTokenShort = useMemo(() => {
-    if (!props.accessToken) return '(empty)';
-    return `${props.accessToken.slice(0, 18)}...${props.accessToken.slice(-10)}`;
-  }, [props.accessToken]);
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const tokenFromQuery = url.searchParams.get('accessToken');
-    if (tokenFromQuery) {
-      props.setToken(tokenFromQuery);
-      url.searchParams.delete('accessToken');
-      window.history.replaceState({}, '', url.pathname + url.search);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function refresh() {
-    setStatus(null);
-    try {
-      const res = await api<AuthResponse>('/auth/login/access-token', { method: 'POST' });
-      props.setToken(res.accessToken);
-      setStatus('Refreshed');
-    } catch (e) {
-      setStatus(formatError(e));
-    }
-  }
-
-  async function logout() {
-    setStatus(null);
-    try {
-      await api<boolean>('/auth/logout', { method: 'POST' });
-      props.setToken(null);
-      navigate('/');
-    } catch (e) {
-      setStatus(formatError(e));
-    }
-  }
-
-  return (
-    <div className="jira-shell">
-      <aside className="jira-sidebar">
-        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
-          <span className="jira-logo-mark" aria-hidden />
-          <div>
-            <div className="jira-sidebar-title">Mini trello</div>
-            <div className="jira-sidebar-sub">team spaces</div>
-          </div>
-        </button>
-        <nav className="jira-nav">
-          <div className="jira-nav-section">Разделы</div>
-          <button type="button" className="jira-nav-item jira-nav-item-active">
-            Дашборд
-          </button>
-          <button type="button" className="jira-nav-item" onClick={() => navigate('/workspaces')}>
-            Рабочие пространства
-          </button>
-          <button type="button" className="jira-nav-item" onClick={() => navigate('/profile/me')}>
-            Профиль
-          </button>
-        </nav>
-      </aside>
-
-      <div className="jira-main">
-        <header className="jira-topbar">
-          <div>
-            <h1 className="jira-page-title">Dashboard</h1>
-            <p className="jira-page-desc">Access token: {accessTokenShort}</p>
-          </div>
-          <div className="jira-topbar-actions">
-            <button className="jira-btn jira-btn-danger" onClick={() => void logout()} type="button">
-              Выйти
-            </button>
-          </div>
-        </header>
-
-        {!props.accessToken && (
-          <div className="jira-banner jira-banner-warn">
-            Войдите на главной странице, чтобы работать с рабочими пространствами.
-            <button type="button" className="jira-link-btn" onClick={() => navigate('/')}>
-              На главную
-            </button>
-          </div>
-        )}
-
-        <section className="jira-panel">
-          <div className="jira-panel-head">
-            <span className="jira-panel-title">Actions</span>
-            <button className="jira-btn jira-btn-ghost jira-btn-sm" onClick={() => void refresh()} type="button">
-              Refresh tokens (cookie)
-            </button>
-          </div>
-
-          <div className="jira-modal-body">
-            {status && <div className="jira-banner">{status}</div>}
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
 function ProfileMePage(props: { accessToken: string | null }) {
   const [user, setUser] = useState<UserSafe | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState(false);
+  const [avatarEditMenuOpen, setAvatarEditMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -588,15 +547,14 @@ function ProfileMePage(props: { accessToken: string | null }) {
     return `${API_URL}/${p}`;
   }, [previewUrl, user]);
 
-  async function uploadAvatar() {
+  async function uploadAvatar(fileToUpload: File) {
     if (!props.accessToken) return;
-    if (!selectedFile) return;
 
     setBusy(true);
     setMsg(null);
     try {
       const form = new FormData();
-      form.append('file', selectedFile);
+      form.append('file', fileToUpload);
 
       const updated = await api<UserSafe>('/user/update-avatar', {
         method: 'PATCH',
@@ -604,8 +562,6 @@ function ProfileMePage(props: { accessToken: string | null }) {
         body: form,
       });
       setUser(updated);
-      setSelectedFile(null);
-      setSelectedFileName(null);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
       setMsg('Аватар обновлён.');
@@ -619,9 +575,7 @@ function ProfileMePage(props: { accessToken: string | null }) {
   function onPickFile(file: File | null) {
     setMsg(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setSelectedFile(null);
     setPreviewUrl(null);
-    setSelectedFileName(null);
     if (!file) return;
 
     // Чтобы не упираться в MaxLength на бэке (и не отправлять огромные строки).
@@ -631,9 +585,9 @@ function ProfileMePage(props: { accessToken: string | null }) {
       return;
     }
 
-    setSelectedFile(file);
-    setSelectedFileName(file.name);
-    setPreviewUrl(URL.createObjectURL(file));
+    const nextPreview = URL.createObjectURL(file);
+    setPreviewUrl(nextPreview);
+    void uploadAvatar(file);
   }
 
   function triggerPick() {
@@ -652,8 +606,6 @@ function ProfileMePage(props: { accessToken: string | null }) {
         accessToken: props.accessToken,
       });
       setUser(updated);
-      setSelectedFile(null);
-      setSelectedFileName(null);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
       setMsg('Аватар удалён.');
@@ -692,43 +644,30 @@ function ProfileMePage(props: { accessToken: string | null }) {
     (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
 
   return (
-    <div className="jira-shell">
-      <aside className="jira-sidebar">
-        <button type="button" className="jira-sidebar-brand jira-brand-btn" onClick={() => navigate('/workspaces')}>
-          <span className="jira-logo-mark" aria-hidden />
+    <div className="trello-app-shell">
+      <div className="trello-boards-main">
+        <header className="trello-boards-topbar">
           <div>
-            <div className="jira-sidebar-title">Mini trello</div>
-            <div className="jira-sidebar-sub">team spaces</div>
-          </div>
-        </button>
-        <nav className="jira-nav">
-          <div className="jira-nav-section">Разделы</div>
-          <button type="button" className="jira-nav-item" onClick={() => navigate('/workspaces')}>
-            Рабочие пространства
-          </button>
-          <button type="button" className="jira-nav-item jira-nav-item-active">
-            Профиль
-          </button>
-        </nav>
-      </aside>
-
-      <div className="jira-main">
-        <header className="jira-topbar">
-          <div>
-            <h1 className="jira-page-title">Профиль</h1>
-            <p className="jira-page-desc">Личные данные</p>
-          </div>
-          <div className="jira-topbar-actions">
-            <button className="jira-btn jira-btn-ghost" onClick={() => navigate('/workspaces')} type="button">
-              Назад
+            <button type="button" className="trello-top-left-brand" onClick={() => navigate('/workspaces')}>
+              <span className="trello-logo" aria-hidden />
+              <span className="trello-top-left-brand-text">mini trello</span>
             </button>
+            <h1 className="trello-boards-title">Профиль</h1>
+            <p className="trello-boards-sub">Личные данные и приглашения</p>
           </div>
+          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/workspaces')} type="button">
+            Назад
+          </button>
         </header>
 
-        {msg && <div className={isErrorMsg ? 'jira-banner jira-banner-error' : 'jira-banner'}>{msg}</div>}
+        {msg && (
+          <div className={isErrorMsg ? 'trello-banner trello-banner-error' : 'trello-banner trello-banner-warn'}>
+            {msg}
+          </div>
+        )}
 
-        <section className="jira-panel">
-          <div className="jira-modal-body">
+        <section className="trello-panel">
+          <div style={{ padding: 16 }}>
             <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
               <div style={{ width: 160, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ marginTop: 12 }}>
@@ -745,13 +684,53 @@ function ProfileMePage(props: { accessToken: string | null }) {
                           onError={() => setAvatarError(true)}
                         />
                       ) : (
-                        <div className="jira-cell-meta" style={{ marginTop: 0, padding: 0 }}>
+                        <div className="trello-cell-meta" style={{ marginTop: 0, padding: 0 }}>
                           Не удалось загрузить аватар
                         </div>
                       )
                     ) : (
-                      <div className="jira-cell-meta" style={{ marginTop: 0, padding: 0 }}>
+                      <div className="trello-cell-meta" style={{ marginTop: 0, padding: 0 }}>
                         Нет аватара
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      className="avatar-edit-toggle"
+                      onClick={() => setAvatarEditMenuOpen((o) => !o)}
+                      disabled={busy}
+                      aria-label="Изменить аватар"
+                    >
+                      <span className="avatar-edit-toggle-icon" aria-hidden>
+                        ✎
+                      </span>
+                      <span className="avatar-edit-toggle-text">Изменить</span>
+                    </button>
+
+                    {avatarEditMenuOpen && (
+                      <div className="avatar-edit-menu" role="menu" aria-label="Действия с аватаром">
+                        <button
+                          type="button"
+                          className="trello-btn trello-btn-primary trello-btn-sm avatar-edit-menu-btn"
+                          disabled={busy}
+                          onClick={() => {
+                            setAvatarEditMenuOpen(false);
+                            triggerPick();
+                          }}
+                        >
+                          {busy ? '…' : 'Загрузить фото'}
+                        </button>
+                        <button
+                          type="button"
+                          className="trello-btn trello-btn-danger-ghost trello-btn-sm avatar-edit-menu-btn"
+                          disabled={busy || !user?.avatarPath}
+                          onClick={() => {
+                            setAvatarEditMenuOpen(false);
+                            void removeAvatar();
+                          }}
+                        >
+                          {busy ? '…' : 'Удалить фото'}
+                        </button>
                       </div>
                     )}
                   </div>
@@ -764,55 +743,16 @@ function ProfileMePage(props: { accessToken: string | null }) {
                     onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
                     disabled={busy}
                   />
-
-                  <button
-                    className="avatarEditBtn"
-                    type="button"
-                    disabled={busy}
-                    onClick={() => triggerPick()}
-                  >
-                    Редактировать
-                  </button>
                 </div>
-
-                {selectedFile && (
-                  <div className="avatarActions">
-                    <div className="avatarHint">
-                      {selectedFileName ? `Выбрано: ${selectedFileName}` : 'Выберите файл'}
-                    </div>
-
-                    <button
-                      className="jira-btn jira-btn-primary"
-                      type="button"
-                      disabled={busy || !selectedFile}
-                      onClick={() => void uploadAvatar()}
-                    >
-                      {busy ? '...' : 'Загрузить фото...'}
-                    </button>
-                  </div>
-                )}
-
-                {user?.avatarPath && (
-                  <div style={{ marginTop: 12 }}>
-                    <button
-                      className="jira-btn jira-btn-danger avatarDeleteBtn"
-                      type="button"
-                      disabled={busy}
-                      onClick={() => void removeAvatar()}
-                    >
-                      {busy ? '...' : 'Удалить'}
-                    </button>
-                  </div>
-                )}
               </div>
 
               <div style={{ flex: 1 }}>
                 <div style={{ marginBottom: 12, fontWeight: 600 }}>{user?.name || '-'}</div>
 
-                <div className="jira-label">Почта</div>
+                <div className="trello-label">Почта</div>
                 <div style={{ marginBottom: 12 }}>{user?.email || '-'}</div>
 
-                <div className="jira-label">Зарегистрирован</div>
+                <div className="trello-label">Зарегистрирован</div>
                 <div style={{ marginBottom: 12 }}>
                   {user?.createdAt ? formatRegisteredRU(user.createdAt) : '-'}
                 </div>
@@ -851,6 +791,10 @@ function App() {
   };
 
   const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
+  const [toolbarUser, setToolbarUser] = useState<UserSafe | null>(null);
+  const [toolbarAvatarBroken, setToolbarAvatarBroken] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   const setToken = (t: string | null) => {
     setAccessTokenToStorage(t);
@@ -870,9 +814,103 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!accessToken) {
+      setToolbarUser(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const u = await api<UserSafe>('/user/me', { method: 'GET', accessToken });
+        if (!cancelled) setToolbarUser(u);
+      } catch {
+        if (!cancelled) setToolbarUser(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, route]);
+
+  useEffect(() => {
+    setToolbarAvatarBroken(false);
+  }, [toolbarUser?.avatarPath]);
+
+  useEffect(() => {
+    setProfileMenuOpen(false);
+  }, [route]);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    function onDocMouseDown(e: MouseEvent) {
+      const el = profileMenuRef.current;
+      if (el && !el.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [profileMenuOpen]);
+
+  useEffect(() => {
+    const protectedPath =
+      route === '/workspaces' ||
+      route.startsWith('/workspaces/') ||
+      route.startsWith('/profile');
+    if (!accessToken && protectedPath) {
+      navigate('/');
+    }
+  }, [route, accessToken]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      // ignore
+    }
+    document.documentElement.classList.toggle('theme-dark', theme === 'dark');
+  }, [theme]);
+
+  const toolbarInitials = useMemo(() => {
+    const n = toolbarUser?.name?.trim();
+    if (!n) return '?';
+    const parts = n.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return `${parts[0]![0]!}${parts[1]![0]!}`.toUpperCase();
+    return n.slice(0, 2).toUpperCase();
+  }, [toolbarUser?.name]);
+
+  const toolbarAvatarSrc =
+    toolbarUser?.avatarPath && !toolbarAvatarBroken ? avatarSrcForToolbar(toolbarUser.avatarPath) : '';
+
+  async function handleLogout() {
+    try {
+      await api<boolean>('/auth/logout', { method: 'POST' });
+    } catch {
+      // ignore
+    }
+    setToken(null);
+    setProfileMenuOpen(false);
+    navigate('/');
+  }
+
+  const boardDetailMatch = route.match(/^\/workspaces\/(\d+)\/boards\/(\d+)$/);
+  const boardsListMatch = route.match(/^\/workspaces\/(\d+)\/boards\/?$/);
   const memberRouteMatch = route.match(/^\/workspaces\/(\d+)\/members$/);
-  let page: JSX.Element;
-  if (memberRouteMatch) {
+  let page: ReactElement;
+  if (boardDetailMatch) {
+    page = (
+      <BoardPage
+        accessToken={accessToken}
+        workspaceId={Number(boardDetailMatch[1])}
+        boardId={Number(boardDetailMatch[2])}
+      />
+    );
+  } else if (boardsListMatch) {
+    page = (
+      <WorkspaceBoardsPage accessToken={accessToken} workspaceId={Number(boardsListMatch[1])} />
+    );
+  } else if (memberRouteMatch) {
     page = <WorkspaceMembersPage accessToken={accessToken} workspaceId={Number(memberRouteMatch[1])} />;
   } else if (route.startsWith('/dashboard')) {
     // Google callback redirects here; we no longer show dashboard UI.
@@ -890,35 +928,103 @@ function App() {
   } else if (route.startsWith('/reset-password')) {
     page = <PasswordResetConfirmPage />;
   } else {
-    page = <Home onAuthed={(t) => setToken(t)} />;
+    page = <Home onAuthed={(t) => setToken(t)} hasSession={!!accessToken} />;
   }
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-    } catch {
-      // ignore
-    }
-    document.documentElement.classList.toggle('theme-dark', theme === 'dark');
-  }, [theme]);
+  const themeSwitch = (
+    <label className="theme-switch" aria-label="Тёмная тема">
+      <input
+        className="theme-switch-input"
+        type="checkbox"
+        checked={theme === 'dark'}
+        onChange={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+      />
+      <span className="theme-switch-track" aria-hidden>
+        <span className="theme-switch-thumb" />
+      </span>
+    </label>
+  );
 
   return (
     <>
-      <div className="theme-toggle" aria-label="Theme switch">
-        <span className="theme-toggle-icon" aria-hidden>
-          ◐
-        </span>
-        <label className="theme-switch" aria-label="Toggle dark theme">
-          <input
-            className="theme-switch-input"
-            type="checkbox"
-            checked={theme === 'dark'}
-            onChange={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-          />
-          <span className="theme-switch-track" aria-hidden>
-            <span className="theme-switch-thumb" />
-          </span>
-        </label>
+      <div className="trello-fixed-toolbar" aria-label="Параметры приложения">
+        {!accessToken && (
+          <div className="theme-toggle trello-theme-toggle-inline" aria-label="Theme switch">
+            <span className="theme-toggle-icon" aria-hidden>
+              ◐
+            </span>
+            {themeSwitch}
+          </div>
+        )}
+        {accessToken && (
+          <div className="trello-profile-dropdown" ref={profileMenuRef}>
+            <button
+              type="button"
+              className="trello-toolbar-avatar-btn"
+              title="Меню"
+              aria-expanded={profileMenuOpen}
+              aria-haspopup="menu"
+              onClick={() => setProfileMenuOpen((o) => !o)}
+            >
+              {toolbarAvatarSrc ? (
+                <img
+                  src={toolbarAvatarSrc}
+                  alt=""
+                  className="trello-toolbar-avatar-img"
+                  onError={() => setToolbarAvatarBroken(true)}
+                />
+              ) : (
+                <span className="trello-toolbar-avatar-fallback">{toolbarInitials}</span>
+              )}
+            </button>
+            {profileMenuOpen && (
+              <div className="trello-profile-menu" role="menu">
+                <button
+                  type="button"
+                  className="trello-profile-menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    navigate('/profile/me');
+                    setProfileMenuOpen(false);
+                  }}
+                >
+                  Профиль
+                </button>
+                <div className="trello-profile-menu-theme" role="presentation">
+                  <span className="trello-profile-menu-theme-label">
+                    <svg className="trello-moon-icon" viewBox="0 0 24 24" aria-hidden>
+                      <path
+                        fill="currentColor"
+                        d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.54 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.86.89-3.51 2.26-4.4-.44-.06-.9-.1-1.36-.1z"
+                      />
+                    </svg>
+                    Темное оформление
+                  </span>
+                  {themeSwitch}
+                </div>
+                <button
+                  type="button"
+                  className="trello-profile-menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    navigate('/workspaces');
+                    setProfileMenuOpen(false);
+                  }}
+                >
+                  Мои рабочие пространства
+                </button>
+                <button
+                  type="button"
+                  className="trello-profile-menu-item trello-profile-menu-logout"
+                  role="menuitem"
+                  onClick={() => void handleLogout()}
+                >
+                  Выйти
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {page}
     </>

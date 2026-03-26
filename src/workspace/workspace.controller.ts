@@ -16,20 +16,20 @@ import { UseGuards } from '@nestjs/common';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
+import { WorkspaceAccessGuard } from './guards/workspace-access.guard';
 
 
+@UseGuards(JwtAuthGuard)
 @Controller('workspace')
 export class WorkspaceController {
   constructor(private readonly workspaceService: WorkspaceService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post('create')
   async createWorkspace(
     @Req() req: Request & { user: { id: number } },@Body() dto: CreateWorkspaceDto,) {
       return this.workspaceService.createWorkspace(dto, req.user.id);
     }
 
-  @UseGuards(JwtAuthGuard)
   @Get('get-user-workspaces')
   async getUserWorkspaces(
     @Req() req: Request & { user: { id: number } },
@@ -38,7 +38,7 @@ export class WorkspaceController {
     return this.workspaceService.getUserWorkspaces(req.user.id, paginationDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(WorkspaceAccessGuard)
   @Patch(':workspaceId')
   async updateWorkspace(
     @Req() req: Request & { user: { id: number } },
@@ -48,7 +48,7 @@ export class WorkspaceController {
     return this.workspaceService.updateWorkspace(workspaceId, dto, req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(WorkspaceAccessGuard)
   @Delete(':workspaceId')
   async deleteWorkspace(
     @Req() req: Request & { user: { id: number } },
@@ -57,7 +57,7 @@ export class WorkspaceController {
     return this.workspaceService.deleteWorkspace(workspaceId, req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(WorkspaceAccessGuard)
   @Get(':workspaceId/members')
   async getMembersWorkspace(
     @Req() req: Request & { user: { id: number } },
@@ -67,7 +67,7 @@ export class WorkspaceController {
     return this.workspaceService.getWorkspaceMembers(workspaceId, req.user.id, paginationDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(WorkspaceAccessGuard)
   @Delete(':workspaceId/members/:memberId')
   async deleteWorkspaceMember(
     @Req() req: Request & { user: { id: number } },
@@ -77,7 +77,7 @@ export class WorkspaceController {
     return this.workspaceService.deleteWorkspaceMember(workspaceId, req.user.id, memberId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(WorkspaceAccessGuard)
   @Delete('/workspace/:workspaceId/members/me')
   async leaveWorkspace(
     @Req() req: Request & { user: { id: number } },

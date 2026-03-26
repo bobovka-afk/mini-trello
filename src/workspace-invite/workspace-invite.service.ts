@@ -27,7 +27,6 @@ export class WorkspaceInviteService {
         await this.workspaceService.checkWorkspaceAccess(
             workspaceId,
             userId,
-            'manage_invites',
         );
 
         const invitedUser = await this.prisma.user.findUnique({
@@ -89,7 +88,6 @@ export class WorkspaceInviteService {
         await this.workspaceService.checkWorkspaceAccess(
             workspaceId,
             userId,
-            'manage_invites',
         );
         const invite = await this.prisma.workspaceInvite.findFirst({
             where: {

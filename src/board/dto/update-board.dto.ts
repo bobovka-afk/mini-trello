@@ -1,15 +1,10 @@
-import {
-  IsString,
-  MinLength,
-  MaxLength,
-  IsOptional,
-} from 'class-validator';
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
-export class UpdateWorkspaceDto {
+export class UpdateBoardDto {
   @IsOptional()
   @IsString()
   @MinLength(3)
-  @MaxLength(18)
+  @MaxLength(50)
   name?: string;
 
   @IsOptional()
@@ -17,4 +12,5 @@ export class UpdateWorkspaceDto {
   @MinLength(3)
   @MaxLength(255)
   description?: string;
+
 }

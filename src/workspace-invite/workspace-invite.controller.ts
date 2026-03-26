@@ -12,13 +12,14 @@ import { Delete } from '@nestjs/common';
 import { SendInviteDto } from './dto/send-invite.dto';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
+import { WorkspaceAccessGuard } from '../workspace/guards/workspace-access.guard';
 
 
+@UseGuards(JwtAuthGuard)
 @Controller('workspace-invite')
 export class WorkspaceInviteController {
   constructor(private readonly workspaceInviteService: WorkspaceInviteService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get('my')
   async getMyInvites(
     @Req() req: Request & { user: { id: number } },
@@ -27,7 +28,7 @@ export class WorkspaceInviteController {
       return this.workspaceInviteService.getMyInvites(req.user.id, paginationDto)
     }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(WorkspaceAccessGuard)
   @Post('create/:workspaceId')
   async sendInvite(
     @Param('workspaceId', ParseIntPipe) workspaceId: number, 
@@ -35,7 +36,6 @@ export class WorkspaceInviteController {
       return this.workspaceInviteService.sendInvite(dto, req.user.id, workspaceId);
     }
 
-  @UseGuards(JwtAuthGuard)
   @Post(':inviteId/accept')
   async acceptInvite(
     @Param('inviteId', ParseIntPipe) inviteId: number,
@@ -44,7 +44,6 @@ export class WorkspaceInviteController {
     return this.workspaceInviteService.acceptInvite(inviteId, req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post(':inviteId/decline')
   async declineInvite(
     @Param('inviteId', ParseIntPipe) inviteId: number,
@@ -53,7 +52,7 @@ export class WorkspaceInviteController {
     return this.workspaceInviteService.declineInvite(inviteId, req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(WorkspaceAccessGuard)
   @Delete(':workspaceId/:inviteId')
   async deleteInvite(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,

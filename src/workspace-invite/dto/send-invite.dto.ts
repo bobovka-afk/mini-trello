@@ -3,15 +3,13 @@ import { Transform } from 'class-transformer';
 import { WorkspaceRole } from '../../generated/prisma/enums';
 
 export class SendInviteDto {
-  @IsEmail({}, { message: 'Некорректный email' })
+  @IsEmail({})
   @IsNotEmpty()
   @Transform(({ value }) =>
     typeof value === 'string' ? value.trim().toLowerCase() : value,
   )
   email: string;
 
-  @IsIn([WorkspaceRole.ADMIN, WorkspaceRole.MEMBER], {
-    message: 'Можно выбрать только ADMIN или MEMBER',
-  })
+  @IsIn([WorkspaceRole.ADMIN, WorkspaceRole.MEMBER])
   role: WorkspaceRole;
 }
