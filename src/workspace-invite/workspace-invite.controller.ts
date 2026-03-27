@@ -12,7 +12,10 @@ import { Delete } from '@nestjs/common';
 import { SendInviteDto } from './dto/send-invite.dto';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
-import { WorkspaceAccessGuard } from '../workspace/guards/workspace-access.guard';
+import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
+import { WorkspaceRoleGuard } from '../common/guards/workspace-role.guard';
+import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
+import { WorkspaceRole } from '../generated/prisma/enums';
 
 
 @UseGuards(JwtAuthGuard)
@@ -28,7 +31,8 @@ export class WorkspaceInviteController {
       return this.workspaceInviteService.getMyInvites(req.user.id, paginationDto)
     }
 
-  @UseGuards(WorkspaceAccessGuard)
+  @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Post('create/:workspaceId')
   async sendInvite(
     @Param('workspaceId', ParseIntPipe) workspaceId: number, 
@@ -52,13 +56,13 @@ export class WorkspaceInviteController {
     return this.workspaceInviteService.declineInvite(inviteId, req.user.id);
   }
 
-  @UseGuards(WorkspaceAccessGuard)
+  @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Delete(':workspaceId/:inviteId')
   async deleteInvite(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('inviteId', ParseIntPipe) inviteId: number,
-    @Req() req: Request & { user: { id: number } },
   ) {
-    return this.workspaceInviteService.deleteInvite(inviteId, workspaceId, req.user.id);
+    return this.workspaceInviteService.deleteInvite(inviteId, workspaceId);
   }
 }

@@ -323,23 +323,14 @@ removeRefreshTokenFromResponse(res: Response) {
     const normalizedEmail = this.normalizeEmail(loginDto.email);
     const user = await this.userService.findByEmail(normalizedEmail);
     if (!user) {
-      throw new UnauthorizedException({
-        code: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password',
-      });
+      this.throwInvalidCredentials();
     }
     if (!user.passwordHash) {
-      throw new UnauthorizedException({
-        code: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password',
-      });
+      this.throwInvalidCredentials();
     }
     const isMatch = await bcrypt.compare(loginDto.password, user.passwordHash);
     if (!isMatch) {
-      throw new UnauthorizedException({
-        code: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password',
-      });
+      this.throwInvalidCredentials();
     }
     return {
       id: user.id,
@@ -351,6 +342,13 @@ removeRefreshTokenFromResponse(res: Response) {
 
   private normalizeEmail(email: string) {
     return email.trim().toLowerCase();
+  }
+
+  private throwInvalidCredentials(): never {
+    throw new UnauthorizedException({
+      code: 'INVALID_CREDENTIALS',
+      message: 'Invalid email or password',
+    });
   }
 
 

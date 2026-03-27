@@ -24,11 +24,6 @@ export class WorkspaceInviteService {
         private readonly workspaceService: WorkspaceService,
     ) {}
     async sendInvite(dto: SendInviteDto, userId: number, workspaceId: number) {
-        await this.workspaceService.checkWorkspaceAccess(
-            workspaceId,
-            userId,
-        );
-
         const invitedUser = await this.prisma.user.findUnique({
             where: { email: dto.email },
         });
@@ -84,24 +79,8 @@ export class WorkspaceInviteService {
         }
     }
 
-    async deleteInvite(inviteId: number,workspaceId: number, userId: number): Promise<{ ok: boolean }>  {
-        await this.workspaceService.checkWorkspaceAccess(
-            workspaceId,
-            userId,
-        );
-        const invite = await this.prisma.workspaceInvite.findFirst({
-            where: {
-                id: inviteId,
-                workspaceId,
-            },
-            select: { id: true },
-        });
-        if (!invite) {
-            throw new NotFoundException({
-                code: 'INVITE_NOT_FOUND',
-                message: 'Invite not found',
-            });
-        }
+    async deleteInvite(inviteId: number,workspaceId: number): Promise<{ ok: boolean }>  {
+        const invite = await this.getInviteInWorkspaceOrThrow(inviteId, workspaceId);
         try {
         await this.prisma.workspaceInvite.delete({
             where: { id: invite.id },
@@ -112,10 +91,7 @@ export class WorkspaceInviteService {
           error instanceof Prisma.PrismaClientKnownRequestError &&
           error.code === 'P2025'
         ) {
-          throw new NotFoundException({
-            code: 'INVITE_NOT_FOUND',
-            message: 'Invite not found',
-          });
+          this.throwInviteNotFound();
         }
         throw error;
       }
@@ -228,10 +204,7 @@ export class WorkspaceInviteService {
             },
         });
         if (!invite) {
-            throw new NotFoundException({
-                code: 'INVITE_NOT_FOUND',
-                message: 'Invite not found',
-            });
+            this.throwInviteNotFound();
         }
         if (invite.email !== email) {
             throw new ForbiddenException({
@@ -269,6 +242,29 @@ export class WorkspaceInviteService {
 
     private hashToken(token: string) {
         return crypto.createHash('sha256').update(token).digest('hex');
+    }
+
+    private async getInviteInWorkspaceOrThrow(inviteId: number, workspaceId: number) {
+        const invite = await this.prisma.workspaceInvite.findFirst({
+            where: {
+                id: inviteId,
+                workspaceId,
+            },
+            select: { id: true },
+        });
+
+        if (!invite) {
+            this.throwInviteNotFound();
+        }
+
+        return invite;
+    }
+
+    private throwInviteNotFound(): never {
+        throw new NotFoundException({
+            code: 'INVITE_NOT_FOUND',
+            message: 'Invite not found',
+        });
     }
 
     private getInvitePublicSelect() {

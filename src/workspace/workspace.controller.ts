@@ -16,7 +16,10 @@ import { UseGuards } from '@nestjs/common';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
-import { WorkspaceAccessGuard } from './guards/workspace-access.guard';
+import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
+import { WorkspaceRoleGuard } from '../common/guards/workspace-role.guard';
+import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
+import { WorkspaceRole } from '../generated/prisma/enums';
 
 
 @UseGuards(JwtAuthGuard)
@@ -38,43 +41,42 @@ export class WorkspaceController {
     return this.workspaceService.getUserWorkspaces(req.user.id, paginationDto);
   }
 
-  @UseGuards(WorkspaceAccessGuard)
+  @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Patch(':workspaceId')
   async updateWorkspace(
-    @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Body() dto: UpdateWorkspaceDto,
   ) {
-    return this.workspaceService.updateWorkspace(workspaceId, dto, req.user.id);
+    return this.workspaceService.updateWorkspace(workspaceId, dto);
   }
 
-  @UseGuards(WorkspaceAccessGuard)
+  @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER)
   @Delete(':workspaceId')
   async deleteWorkspace(
-    @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
   ) {
-    return this.workspaceService.deleteWorkspace(workspaceId, req.user.id);
+    return this.workspaceService.deleteWorkspace(workspaceId);
   }
 
   @UseGuards(WorkspaceAccessGuard)
   @Get(':workspaceId/members')
   async getMembersWorkspace(
-    @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Query() paginationDto: PaginationDto,
   ) {
-    return this.workspaceService.getWorkspaceMembers(workspaceId, req.user.id, paginationDto);
+    return this.workspaceService.getWorkspaceMembers(workspaceId, paginationDto);
   }
 
-  @UseGuards(WorkspaceAccessGuard)
+  @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Delete(':workspaceId/members/:memberId')
   async deleteWorkspaceMember(
-    @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('memberId', ParseIntPipe) memberId: number,
   ) {
-    return this.workspaceService.deleteWorkspaceMember(workspaceId, req.user.id, memberId);
+    return this.workspaceService.deleteWorkspaceMember(workspaceId, memberId);
   }
 
   @UseGuards(WorkspaceAccessGuard)

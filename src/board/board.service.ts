@@ -1,19 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { WorkspaceService } from '../workspace/workspace.service';
 import { UpdateBoardDto } from './dto/update-board.dto';
  
 
-
-
 @Injectable()
 export class BoardService {
-    constructor(private readonly prisma: PrismaService, private readonly workspaceService: WorkspaceService) {}
+    constructor(private readonly prisma: PrismaService) {}
 
 
-    async createBoard(workspaceId: number, dto: CreateBoardDto, userId: number) {
-        await this.workspaceService.assertWorkspaceMember(workspaceId, userId);
+    async createBoard(workspaceId: number, dto: CreateBoardDto) {
         const board = await this.prisma.board.create({
             data: {
                 name: dto.name,
@@ -25,25 +21,19 @@ export class BoardService {
         return board;
     }
 
-    async getBoard(workspaceId: number, boardId: number, userId: number) {
-        await this.workspaceService.assertWorkspaceMember(workspaceId, userId);
-
+    async getBoard(workspaceId: number, boardId: number) {
         const board = await this.prisma.board.findFirst({
             where: { id: boardId, workspaceId },
         });
 
         if (!board) {
-            throw new NotFoundException({
-                code: 'BOARD_NOT_FOUND',
-                message: 'Board not found',
-            });
+            this.throwBoardNotFound();
         }
 
         return board;
     }
 
-    async getBoards(workspaceId: number, userId: number) {
-        await this.workspaceService.assertWorkspaceMember(workspaceId, userId);
+    async getBoards(workspaceId: number) {
         const boards = await this.prisma.board.findMany({
             where: {
                 workspaceId: workspaceId,
@@ -57,10 +47,7 @@ export class BoardService {
         workspaceId: number,
         boardId: number,
         dto: UpdateBoardDto,
-        userId: number,
     ) {
-        await this.workspaceService.assertWorkspaceMember(workspaceId, userId);
-
         if (dto.name === undefined && dto.description === undefined) {
             throw new BadRequestException({
                 code: 'BOARD_UPDATE_FIELDS_REQUIRED',
@@ -82,10 +69,7 @@ export class BoardService {
     async deleteBoard(
         boardId: number,
         workspaceId: number,
-        userId: number,
     ): Promise<{ ok: boolean }> {
-        await this.workspaceService.assertWorkspaceMember(workspaceId, userId);
-
         await this.getBoardOrThrow(boardId, workspaceId);
 
         await this.prisma.board.delete({
@@ -101,13 +85,17 @@ export class BoardService {
         });
 
         if (!board) {
-            throw new NotFoundException({
-                code: 'BOARD_NOT_FOUND',
-                message: 'Board not found',
-            });
+            this.throwBoardNotFound();
         }
 
         return board;
+    }
+
+    private throwBoardNotFound(): never {
+        throw new NotFoundException({
+            code: 'BOARD_NOT_FOUND',
+            message: 'Board not found',
+        });
     }
 
 }

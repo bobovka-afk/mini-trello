@@ -4,16 +4,12 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { WorkspaceService } from '../workspace/workspace.service';
 import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 
 @Injectable()
 export class ListService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly workspaceService: WorkspaceService,
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     private async assertBoardInWorkspace(boardId: number, workspaceId: number) {
         const board = await this.prisma.board.findFirst({
@@ -49,8 +45,7 @@ export class ListService {
         return list;
     }
 
-    async getLists(workspaceId: number, boardId: number, userId: number) {
-        await this.workspaceService.assertWorkspaceMember(workspaceId, userId);
+    async getLists(workspaceId: number, boardId: number) {
         await this.assertBoardInWorkspace(boardId, workspaceId);
 
         return this.prisma.list.findMany({
@@ -63,9 +58,7 @@ export class ListService {
         workspaceId: number,
         boardId: number,
         dto: CreateListDto,
-        userId: number,
     ) {
-        await this.workspaceService.assertWorkspaceMember(workspaceId, userId);
         await this.assertBoardInWorkspace(boardId, workspaceId);
 
         const position =
@@ -95,9 +88,7 @@ export class ListService {
         boardId: number,
         listId: number,
         dto: UpdateListDto,
-        userId: number,
     ) {
-        await this.workspaceService.assertWorkspaceMember(workspaceId, userId);
         await this.assertBoardInWorkspace(boardId, workspaceId);
 
         if (dto.name === undefined && dto.colorPreset === undefined) {

@@ -18,7 +18,10 @@ export class WorkspaceAccessGuard implements CanActivate {
     const userId = req.user?.id;
 
     if (!userId) {
-      throw new UnauthorizedException('Unauthorized');
+      throw new UnauthorizedException({
+        code: 'UNAUTHORIZED',
+        message: 'Unauthorized',
+      });
     }
 
     const rawWorkspaceId = (req as any).params?.workspaceId;

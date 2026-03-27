@@ -54,10 +54,8 @@ export class WorkspaceService {
 
     async getWorkspaceMembers(
         workspaceId: number,
-        userId: number,
         paginationDto: PaginationDto
     ) {
-        await this.getWorkspaceMemberOrThrow(workspaceId, userId);
         return this.prisma.workspaceMember.findMany({
             where: { workspaceId: workspaceId },
             include: {
@@ -80,10 +78,7 @@ export class WorkspaceService {
     async updateWorkspace(
         workspaceId: number,
         dto: UpdateWorkspaceDto,
-        userId: number,
     ) {
-        await this.checkWorkspaceAccess(workspaceId, userId);
-
         if (dto.name === undefined && dto.description === undefined) {
             throw new BadRequestException({
                 code: 'WORKSPACE_UPDATE_FIELDS_REQUIRED',
@@ -107,11 +102,8 @@ export class WorkspaceService {
 
     async deleteWorkspaceMember(
         workspaceId: number,
-        actorUserId: number,
         memberId: number,
       ): Promise<{ ok: boolean }> {
-        await this.checkWorkspaceAccess(workspaceId, actorUserId);
-
         const targetMember = await this.getWorkspaceMemberOrThrow(
             workspaceId,
             memberId,
@@ -136,8 +128,6 @@ export class WorkspaceService {
       }
 
     async leaveWorkspace(userId: number, workspaceId: number): Promise <{ok: boolean}> {
-        await this.getWorkspaceOrThrow(workspaceId);
-        await this.getWorkspaceMemberOrThrow(workspaceId, userId);
         await this.prisma.workspaceMember.delete({
             where: {
                 workspaceId_userId : {
@@ -151,42 +141,11 @@ export class WorkspaceService {
         return { ok: true }
     }
 
-    async deleteWorkspace(workspaceId: number, userId: number): Promise<{ ok: boolean }> {
-        await this.checkWorkspaceAccess(workspaceId, userId);
-
-        const member = await this.getWorkspaceMemberOrThrow(workspaceId, userId);
-        if (member.role !== WorkspaceRole.OWNER) {
-            throw new ForbiddenException({
-                code: 'WORKSPACE_OWNER_REQUIRED',
-                message: 'Only workspace OWNER can delete the workspace',
-            });
-        }
-
+    async deleteWorkspace(workspaceId: number): Promise<{ ok: boolean }> {
         await this.prisma.workspace.delete({
             where: { id: workspaceId },
         })
         return { ok: true }
-    }
-
-    async checkWorkspaceAccess(workspaceId: number, userId: number) {
-        await this.getWorkspaceOrThrow(workspaceId);
-        const member = await this.getWorkspaceMemberOrThrow(workspaceId, userId);
-
-        if (
-            member.role !== WorkspaceRole.OWNER &&
-            member.role !== WorkspaceRole.ADMIN
-        ) {
-            throw new ForbiddenException({
-                code: 'WORKSPACE_ACTION_FORBIDDEN',
-                message: 'You do not have permission to access this workspace',
-            });
-        }
-    }
-
-    /** Любой участник пространства (включая MEMBER) — для досок и списков. */
-    async assertWorkspaceMember(workspaceId: number, userId: number) {
-        await this.getWorkspaceOrThrow(workspaceId);
-        await this.getWorkspaceMemberOrThrow(workspaceId, userId);
     }
 
     async getWorkspaceOrThrow(workspaceId: number) {
