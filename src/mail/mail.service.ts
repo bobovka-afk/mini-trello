@@ -31,10 +31,16 @@ export class MailService {
 		});
 	}
 
-	async sendWorkspaceInvite(to: string, inviteUrl: string) {
-		const subject = 'Workspace invite';
-		const text = `You have been invited to a workspace. Open this link: ${inviteUrl}`;
-		const html = this.getWorkspaceInviteHtmlTemplate(inviteUrl);
+	async sendWorkspaceInvite(
+		to: string,
+		inviteUrl: string,
+		workspaceName: string,
+	) {
+		const subject = 'Приглашение в рабочее пространство';
+		const namePlain = workspaceName.trim() || 'рабочее пространство';
+		const nameHtml = this.escapeHtml(namePlain);
+		const text = `Вас пригласили присоединиться к рабочему пространству «${namePlain}».\n\nЧтобы принять приглашение, откройте ссылку в браузере:\n${inviteUrl}`;
+		const html = this.getWorkspaceInviteHtmlTemplate(inviteUrl, nameHtml);
 
 		return this.mailerService.sendMail({
 			to,
@@ -42,6 +48,14 @@ export class MailService {
 			text,
 			html,
 		});
+	}
+
+	private escapeHtml(s: string): string {
+		return s
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;');
 	}
 
 	private getEmailVerificationHtmlTemplate(verificationUrl: string): string {
@@ -58,10 +72,20 @@ export class MailService {
     `;
 	}
 
-	private getWorkspaceInviteHtmlTemplate(inviteUrl: string): string {
+	private getWorkspaceInviteHtmlTemplate(
+		inviteUrl: string,
+		workspaceNameEscaped: string,
+	): string {
+		const btn =
+			'display:inline-block;padding:8px 16px;background:#2563eb;color:#ffffff !important;' +
+			'text-decoration:none;border-radius:6px;font:600 14px/1.3 system-ui,-apple-system,sans-serif;';
 		return `
-      <p>You have been invited to join a workspace.</p>
-      <p>Follow this link to accept the invite: <a href="${inviteUrl}">${inviteUrl}</a></p>
+      <p style="margin:0 0 16px;font:16px/1.5 system-ui,-apple-system,sans-serif;color:#111;">
+        Вас пригласили присоединиться к рабочему пространству «${workspaceNameEscaped}».
+      </p>
+      <p style="margin:0;">
+        <a href="${inviteUrl}" style="${btn}">Принять приглашение</a>
+      </p>
     `;
 	}
 }

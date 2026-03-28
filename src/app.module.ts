@@ -9,6 +9,7 @@ import { WorkspaceModule } from './workspace/workspace.module';
 import { WorkspaceInviteModule } from './workspace-invite/workspace-invite.module';
 import { BoardModule } from './board/board.module';
 import { ListModule } from './list/list.module';
+import { CardModule } from './card/card.module';
 
 
 @Module({
@@ -23,6 +24,7 @@ import { ListModule } from './list/list.module';
     WorkspaceInviteModule,
     BoardModule,
     ListModule,
+    CardModule,
   ],
   controllers: [AppController],
   providers: [AppService ],

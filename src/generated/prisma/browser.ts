@@ -52,3 +52,8 @@ export type Board = Prisma.BoardModel
  * 
  */
 export type List = Prisma.ListModel
+/**
+ * Model Card
+ * 
+ */
+export type Card = Prisma.CardModel

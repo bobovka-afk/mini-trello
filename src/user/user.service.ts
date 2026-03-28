@@ -90,6 +90,21 @@ export class UserService {
     });
   }
 
+  /** Имя провалидировано в UpdateUserDto (ValidationPipe). */
+  async updateName(id: number, name: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { name },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatarPath: true,
+        createdAt: true,
+      },
+    });
+  }
+
   private normalizeEmail(email: string) {
     return email.trim().toLowerCase();
   }

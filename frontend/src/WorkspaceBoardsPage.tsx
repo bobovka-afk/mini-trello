@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import { AlertModal } from './AlertModal';
 import { api, type ApiError } from './lib/api';
+import { canManageWorkspace } from './lib/roles';
 
 export type BoardRow = {
   id: number;
@@ -9,12 +11,6 @@ export type BoardRow = {
   position: number;
   createdAt: string;
   updatedAt: string;
-};
-
-type WorkspaceMemberRow = {
-  id: number;
-  workspaceId: number;
-  workspace: { id: number; name: string };
 };
 
 type Props = {
@@ -38,19 +34,27 @@ function formatWorkspaceNameForUI(name: string) {
   return m ? m[1] : name;
 }
 
+function nextBoardPosition(rows: BoardRow[]): number {
+  if (rows.length === 0) return 0;
+  return rows.reduce((max, row) => (row.position > max ? row.position : max), rows[0].position) + 1;
+}
+
 const TILE_GRADIENTS = [
-  'linear-gradient(135deg, #0079bf 0%, #5067c5 100%)',
   'linear-gradient(135deg, #d29034 0%, #cd5a91 100%)',
-  'linear-gradient(135deg, #61bd4f 0%, #0079bf 100%)',
+  'linear-gradient(135deg, #61bd4f 0%, #2d8a54 100%)',
   'linear-gradient(135deg, #b04632 0%, #89609e 100%)',
   'linear-gradient(135deg, #89609e 0%, #cd5a91 100%)',
+  'linear-gradient(135deg, #c3771d 0%, #b04632 100%)',
 ];
 
 export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
   const [boards, setBoards] = useState<BoardRow[]>([]);
   const [workspaceTitle, setWorkspaceTitle] = useState<string>('');
+  const [myRole, setMyRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertText, setAlertText] = useState('');
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createName, setCreateName] = useState('');
@@ -58,24 +62,26 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
   const [editBoard, setEditBoard] = useState<BoardRow | null>(null);
   const [editName, setEditName] = useState('');
   const [editBusy, setEditBusy] = useState(false);
+  const [boardToDelete, setBoardToDelete] = useState<BoardRow | null>(null);
+  const [deleteBoardBusy, setDeleteBoardBusy] = useState(false);
 
   const loadWorkspaceLabel = useCallback(async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      setMyRole(null);
+      return;
+    }
     try {
-      const rows = await api<WorkspaceMemberRow[]>('/workspace/get-user-workspaces', {
-        method: 'GET',
-        accessToken,
-      });
-      const row = Array.isArray(rows)
-        ? rows.find((r) => r.workspace.id === workspaceId)
-        : undefined;
-      if (row) {
-        setWorkspaceTitle(formatWorkspaceNameForUI(row.workspace.name));
-      } else {
-        setWorkspaceTitle(`Workspace ${workspaceId}`);
-      }
+      const data = await api<{
+        id: number;
+        name: string;
+        description: string | null;
+        myRole: string | null;
+      }>(`/workspace/${workspaceId}/summary`, { method: 'GET', accessToken });
+      setWorkspaceTitle(formatWorkspaceNameForUI(data.name));
+      setMyRole(data.myRole ?? null);
     } catch {
       setWorkspaceTitle(`Workspace ${workspaceId}`);
+      setMyRole(null);
     }
   }, [accessToken, workspaceId]);
 
@@ -113,19 +119,21 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     if (!accessToken) return;
     const name = createName.trim();
     if (name.length < 3) return;
+    const position = nextBoardPosition(boards);
     setCreateBusy(true);
     setMsg(null);
     try {
       await api(`/board/workspace/${workspaceId}/boards`, {
         method: 'POST',
         accessToken,
-        json: { name },
+        json: { name, position },
       });
       setCreateOpen(false);
       setCreateName('');
       await loadBoards();
     } catch (e) {
-      setMsg(formatError(e));
+      setAlertText(formatError(e));
+      setAlertOpen(true);
     } finally {
       setCreateBusy(false);
     }
@@ -152,14 +160,33 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     }
   }
 
+  async function submitDeleteBoard() {
+    if (!accessToken || !boardToDelete) return;
+    setDeleteBoardBusy(true);
+    setMsg(null);
+    try {
+      await api(`/board/workspace/${workspaceId}/boards/${boardToDelete.id}`, {
+        method: 'DELETE',
+        accessToken,
+      });
+      setBoardToDelete(null);
+      setEditBoard(null);
+      await loadBoards();
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setDeleteBoardBusy(false);
+    }
+  }
+
   return (
     <div className="trello-app-shell">
       <div className="trello-boards-main">
-        <header className="trello-boards-topbar">
-          <div>
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left trello-topbar-stripe-left--boards-nav">
             <button
               type="button"
-              className="trello-top-left-brand"
+              className="trello-top-left-brand trello-top-left-brand--stripe"
               onClick={() => navigate('/workspaces')}
             >
               <span className="trello-logo" aria-hidden />
@@ -167,14 +194,14 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
             </button>
             <button
               type="button"
-              className="trello-btn trello-btn-primary trello-btn-sm"
+              className="trello-btn trello-btn-topbar-nav trello-topbar-back-btn"
               onClick={() => navigate('/workspaces')}
             >
               ← Рабочие пространства
             </button>
-            <h1 className="trello-boards-title trello-boards-title-offset">{workspaceTitle || '…'}</h1>
-            <p className="trello-boards-sub trello-boards-sub-hero">Ваши доски в этом рабочем пространстве</p>
           </div>
+          <h1 className="trello-topbar-stripe-center">{workspaceTitle || '…'}</h1>
+          <div className="trello-topbar-stripe-spacer" aria-hidden />
         </header>
 
         {!accessToken && (
@@ -207,19 +234,21 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
                   }
                 }}
               >
-                <button
-                  type="button"
-                  className="trello-board-tile-menu"
-                  aria-label="Редактировать доску"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditBoard(b);
-                    setEditName(b.name);
-                    setMsg(null);
-                  }}
-                >
-                  ✎
-                </button>
+                {canManageWorkspace(myRole) ? (
+                  <button
+                    type="button"
+                    className="trello-board-tile-menu"
+                    aria-label="Редактировать доску"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditBoard(b);
+                      setEditName(b.name);
+                      setMsg(null);
+                    }}
+                  >
+                    ✎
+                  </button>
+                ) : null}
                 <span className="trello-board-tile-name">{b.name}</span>
               </div>
             ))}
@@ -330,21 +359,89 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
                 />
               </label>
             </div>
+            <div className="trello-modal-foot trello-modal-foot-split">
+              <button
+                type="button"
+                className="trello-btn trello-btn-danger"
+                disabled={editBusy || deleteBoardBusy}
+                onClick={() => {
+                  if (!editBoard || editBusy) return;
+                  setBoardToDelete(editBoard);
+                  setEditBoard(null);
+                }}
+              >
+                Удалить
+              </button>
+              <div className="trello-modal-foot-actions">
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-ghost"
+                  onClick={() => !editBusy && setEditBoard(null)}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-primary"
+                  disabled={editName.trim().length < 3 || editBusy}
+                  onClick={() => void submitEditBoard()}
+                >
+                  {editBusy ? 'Сохранение…' : 'Сохранить'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <AlertModal
+        open={alertOpen}
+        message={alertText}
+        onClose={() => setAlertOpen(false)}
+      />
+
+      {boardToDelete && (
+        <div
+          className="trello-modal-backdrop"
+          role="presentation"
+          onClick={() => !deleteBoardBusy && setBoardToDelete(null)}
+        >
+          <div
+            className="trello-modal trello-modal-narrow"
+            role="dialog"
+            aria-modal
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="trello-modal-head">
+              <h2 className="trello-modal-title">Удалить доску?</h2>
+              <button
+                type="button"
+                className="trello-modal-close"
+                onClick={() => !deleteBoardBusy && setBoardToDelete(null)}
+                aria-label="Закрыть"
+              >
+                ×
+              </button>
+            </div>
+            <div className="trello-modal-body">
+              <p className="trello-confirm-text">
+                Доска «<strong>{boardToDelete.name}</strong>» будет удалена без возможности восстановления.
+              </p>
+            </div>
             <div className="trello-modal-foot">
               <button
                 type="button"
                 className="trello-btn trello-btn-ghost"
-                onClick={() => !editBusy && setEditBoard(null)}
+                onClick={() => !deleteBoardBusy && setBoardToDelete(null)}
               >
                 Отмена
               </button>
               <button
                 type="button"
-                className="trello-btn trello-btn-primary"
-                disabled={editName.trim().length < 3 || editBusy}
-                onClick={() => void submitEditBoard()}
+                className="trello-btn trello-btn-danger"
+                disabled={deleteBoardBusy}
+                onClick={() => void submitDeleteBoard()}
               >
-                {editBusy ? 'Сохранение…' : 'Сохранить'}
+                {deleteBoardBusy ? 'Удаление…' : 'Удалить'}
               </button>
             </div>
           </div>

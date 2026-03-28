@@ -57,7 +57,8 @@ export const ModelName = {
   WorkspaceMember: 'WorkspaceMember',
   WorkspaceInvite: 'WorkspaceInvite',
   Board: 'Board',
-  List: 'List'
+  List: 'List',
+  Card: 'Card'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -156,15 +157,30 @@ export type BoardScalarFieldEnum = (typeof BoardScalarFieldEnum)[keyof typeof Bo
 
 export const ListScalarFieldEnum = {
   id: 'id',
+  boardId: 'boardId',
   name: 'name',
   position: 'position',
   colorPreset: 'colorPreset',
-  boardId: 'boardId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type ListScalarFieldEnum = (typeof ListScalarFieldEnum)[keyof typeof ListScalarFieldEnum]
+
+
+export const CardScalarFieldEnum = {
+  id: 'id',
+  listId: 'listId',
+  title: 'title',
+  description: 'description',
+  dueDate: 'dueDate',
+  position: 'position',
+  assigneeId: 'assigneeId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CardScalarFieldEnum = (typeof CardScalarFieldEnum)[keyof typeof CardScalarFieldEnum]
 
 
 export const SortOrder = {

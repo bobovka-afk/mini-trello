@@ -10,3 +10,8 @@ export function formatWorkspaceRole(role: string): string {
       return role;
   }
 }
+
+/** Создание досок, колонок и правка — только владелец и администратор. */
+export function canManageWorkspace(role: string | null | undefined): boolean {
+  return role === 'OWNER' || role === 'ADMIN';
+}

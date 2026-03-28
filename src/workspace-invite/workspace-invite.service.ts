@@ -59,12 +59,21 @@ export class WorkspaceInviteService {
                 },
             });
 
+            const workspace = await this.prisma.workspace.findUnique({
+                where: { id: workspaceId },
+                select: { name: true },
+            });
+            const workspaceName = workspace?.name ?? '';
+
             const clientUrl = this.configService.get<string>('CLIENT_URL') || '';
             const inviteUrl = `${clientUrl}/invite?token=${token}`;
-            await this.mailService.sendWorkspaceInvite(dto.email, inviteUrl);
+            await this.mailService.sendWorkspaceInvite(
+                dto.email,
+                inviteUrl,
+                workspaceName,
+            );
 
-            const { tokenHash: _, ...inviteWithoutHash } = invite;
-            return inviteWithoutHash;
+            return { id: invite.id };
         } catch (error) {
             if (
                 error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -104,17 +113,33 @@ export class WorkspaceInviteService {
             where: { email: currentUserEmail },
             select: {
               id: true,
-              email: true,
-              workspaceId: true,
-              invitedByUserId: true,
               role: true,
               expiresAt: true,
               usedAt: true,
               createdAt: true,
-            }, orderBy: { createdAt: 'desc' },
+              workspace: {
+                select: { name: true },
+              },
+              invitedBy: {
+                select: { name: true, email: true },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
             take: paginationDto.limit,
             skip: paginationDto.offset,
         });
+    }
+
+    async acceptInviteByToken(token: string, userId: number) {
+        const tokenHash = this.hashToken(token);
+        const invite = await this.prisma.workspaceInvite.findUnique({
+            where: { tokenHash },
+            select: { id: true },
+        });
+        if (!invite) {
+            this.throwInviteNotFound();
+        }
+        return this.acceptInvite(invite.id, userId);
     }
 
     async acceptInvite(inviteId: number, userId: number) {
@@ -125,7 +150,7 @@ export class WorkspaceInviteService {
         await this.workspaceService.getWorkspaceOrThrow(invite.workspaceId);
 
         try {
-            return await this.prisma.$transaction(async (tx) => {
+            await this.prisma.$transaction(async (tx) => {
                 await tx.workspaceMember.create({
                     data: {
                         workspaceId: invite.workspaceId,
@@ -134,17 +159,15 @@ export class WorkspaceInviteService {
                     },
                 });
 
-                const updatedInvite = await tx.workspaceInvite.update({
+                await tx.workspaceInvite.update({
                     where: { id: invite.id },
                     data: {
                         status: WorkspaceInviteStatus.ACCEPTED,
                         usedAt: new Date(),
                     },
-                    select: this.getInvitePublicSelect(),
                 });
-
-                return updatedInvite;
             });
+            return { ok: true };
         } catch (error) {
             if (
                 error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -166,14 +189,14 @@ export class WorkspaceInviteService {
         this.ensureInviteIsActive(invite.status, invite.usedAt, invite.expiresAt);
         await this.workspaceService.getWorkspaceOrThrow(invite.workspaceId);
 
-        return this.prisma.workspaceInvite.update({
+        await this.prisma.workspaceInvite.update({
             where: { id: invite.id },
             data: {
                 status: WorkspaceInviteStatus.DECLINED,
                 usedAt: new Date(),
             },
-            select: this.getInvitePublicSelect(),
         });
+        return { ok: true };
     }
 
     private async getUserEmailOrThrow(userId: number) {
@@ -267,19 +290,6 @@ export class WorkspaceInviteService {
         });
     }
 
-    private getInvitePublicSelect() {
-        return {
-            id: true,
-            email: true,
-            workspaceId: true,
-            invitedByUserId: true,
-            role: true,
-            status: true,
-            expiresAt: true,
-            usedAt: true,
-            createdAt: true,
-        } as const;
-    }
 }
     
 

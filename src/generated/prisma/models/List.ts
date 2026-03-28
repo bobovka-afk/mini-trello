@@ -28,42 +28,42 @@ export type AggregateList = {
 
 export type ListAvgAggregateOutputType = {
   id: number | null
-  position: number | null
   boardId: number | null
+  position: number | null
 }
 
 export type ListSumAggregateOutputType = {
   id: number | null
-  position: number | null
   boardId: number | null
+  position: number | null
 }
 
 export type ListMinAggregateOutputType = {
   id: number | null
+  boardId: number | null
   name: string | null
   position: number | null
   colorPreset: $Enums.ListColorPreset | null
-  boardId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ListMaxAggregateOutputType = {
   id: number | null
+  boardId: number | null
   name: string | null
   position: number | null
   colorPreset: $Enums.ListColorPreset | null
-  boardId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ListCountAggregateOutputType = {
   id: number
+  boardId: number
   name: number
   position: number
   colorPreset: number
-  boardId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -72,42 +72,42 @@ export type ListCountAggregateOutputType = {
 
 export type ListAvgAggregateInputType = {
   id?: true
-  position?: true
   boardId?: true
+  position?: true
 }
 
 export type ListSumAggregateInputType = {
   id?: true
-  position?: true
   boardId?: true
+  position?: true
 }
 
 export type ListMinAggregateInputType = {
   id?: true
+  boardId?: true
   name?: true
   position?: true
   colorPreset?: true
-  boardId?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type ListMaxAggregateInputType = {
   id?: true
+  boardId?: true
   name?: true
   position?: true
   colorPreset?: true
-  boardId?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type ListCountAggregateInputType = {
   id?: true
+  boardId?: true
   name?: true
   position?: true
   colorPreset?: true
-  boardId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -201,10 +201,10 @@ export type ListGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 
 export type ListGroupByOutputType = {
   id: number
+  boardId: number
   name: string
   position: number
-  colorPreset: $Enums.ListColorPreset | null
-  boardId: number
+  colorPreset: $Enums.ListColorPreset
   createdAt: Date
   updatedAt: Date
   _count: ListCountAggregateOutputType | null
@@ -234,24 +234,26 @@ export type ListWhereInput = {
   OR?: Prisma.ListWhereInput[]
   NOT?: Prisma.ListWhereInput | Prisma.ListWhereInput[]
   id?: Prisma.IntFilter<"List"> | number
+  boardId?: Prisma.IntFilter<"List"> | number
   name?: Prisma.StringFilter<"List"> | string
   position?: Prisma.IntFilter<"List"> | number
-  colorPreset?: Prisma.EnumListColorPresetNullableFilter<"List"> | $Enums.ListColorPreset | null
-  boardId?: Prisma.IntFilter<"List"> | number
+  colorPreset?: Prisma.EnumListColorPresetFilter<"List"> | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFilter<"List"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"List"> | Date | string
   board?: Prisma.XOR<Prisma.BoardScalarRelationFilter, Prisma.BoardWhereInput>
+  cards?: Prisma.CardListRelationFilter
 }
 
 export type ListOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  boardId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   position?: Prisma.SortOrder
-  colorPreset?: Prisma.SortOrderInput | Prisma.SortOrder
-  boardId?: Prisma.SortOrder
+  colorPreset?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   board?: Prisma.BoardOrderByWithRelationInput
+  cards?: Prisma.CardOrderByRelationAggregateInput
 }
 
 export type ListWhereUniqueInput = Prisma.AtLeast<{
@@ -259,21 +261,22 @@ export type ListWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.ListWhereInput | Prisma.ListWhereInput[]
   OR?: Prisma.ListWhereInput[]
   NOT?: Prisma.ListWhereInput | Prisma.ListWhereInput[]
+  boardId?: Prisma.IntFilter<"List"> | number
   name?: Prisma.StringFilter<"List"> | string
   position?: Prisma.IntFilter<"List"> | number
-  colorPreset?: Prisma.EnumListColorPresetNullableFilter<"List"> | $Enums.ListColorPreset | null
-  boardId?: Prisma.IntFilter<"List"> | number
+  colorPreset?: Prisma.EnumListColorPresetFilter<"List"> | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFilter<"List"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"List"> | Date | string
   board?: Prisma.XOR<Prisma.BoardScalarRelationFilter, Prisma.BoardWhereInput>
+  cards?: Prisma.CardListRelationFilter
 }, "id">
 
 export type ListOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  boardId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   position?: Prisma.SortOrder
-  colorPreset?: Prisma.SortOrderInput | Prisma.SortOrder
-  boardId?: Prisma.SortOrder
+  colorPreset?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ListCountOrderByAggregateInput
@@ -288,10 +291,10 @@ export type ListScalarWhereWithAggregatesInput = {
   OR?: Prisma.ListScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ListScalarWhereWithAggregatesInput | Prisma.ListScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"List"> | number
+  boardId?: Prisma.IntWithAggregatesFilter<"List"> | number
   name?: Prisma.StringWithAggregatesFilter<"List"> | string
   position?: Prisma.IntWithAggregatesFilter<"List"> | number
-  colorPreset?: Prisma.EnumListColorPresetNullableWithAggregatesFilter<"List"> | $Enums.ListColorPreset | null
-  boardId?: Prisma.IntWithAggregatesFilter<"List"> | number
+  colorPreset?: Prisma.EnumListColorPresetWithAggregatesFilter<"List"> | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"List"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"List"> | Date | string
 }
@@ -299,47 +302,51 @@ export type ListScalarWhereWithAggregatesInput = {
 export type ListCreateInput = {
   name: string
   position?: number
-  colorPreset?: $Enums.ListColorPreset | null
+  colorPreset?: $Enums.ListColorPreset
   createdAt?: Date | string
   updatedAt?: Date | string
   board: Prisma.BoardCreateNestedOneWithoutListInput
+  cards?: Prisma.CardCreateNestedManyWithoutListInput
 }
 
 export type ListUncheckedCreateInput = {
   id?: number
+  boardId: number
   name: string
   position?: number
-  colorPreset?: $Enums.ListColorPreset | null
-  boardId: number
+  colorPreset?: $Enums.ListColorPreset
   createdAt?: Date | string
   updatedAt?: Date | string
+  cards?: Prisma.CardUncheckedCreateNestedManyWithoutListInput
 }
 
 export type ListUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.IntFieldUpdateOperationsInput | number
-  colorPreset?: Prisma.NullableEnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset | null
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   board?: Prisma.BoardUpdateOneRequiredWithoutListNestedInput
+  cards?: Prisma.CardUpdateManyWithoutListNestedInput
 }
 
 export type ListUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  boardId?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.IntFieldUpdateOperationsInput | number
-  colorPreset?: Prisma.NullableEnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset | null
-  boardId?: Prisma.IntFieldUpdateOperationsInput | number
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cards?: Prisma.CardUncheckedUpdateManyWithoutListNestedInput
 }
 
 export type ListCreateManyInput = {
   id?: number
+  boardId: number
   name: string
   position?: number
-  colorPreset?: $Enums.ListColorPreset | null
-  boardId: number
+  colorPreset?: $Enums.ListColorPreset
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -347,17 +354,17 @@ export type ListCreateManyInput = {
 export type ListUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.IntFieldUpdateOperationsInput | number
-  colorPreset?: Prisma.NullableEnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset | null
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ListUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  boardId?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.IntFieldUpdateOperationsInput | number
-  colorPreset?: Prisma.NullableEnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset | null
-  boardId?: Prisma.IntFieldUpdateOperationsInput | number
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -374,44 +381,49 @@ export type ListOrderByRelationAggregateInput = {
 
 export type ListCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  boardId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   position?: Prisma.SortOrder
   colorPreset?: Prisma.SortOrder
-  boardId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ListAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  position?: Prisma.SortOrder
   boardId?: Prisma.SortOrder
+  position?: Prisma.SortOrder
 }
 
 export type ListMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  boardId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   position?: Prisma.SortOrder
   colorPreset?: Prisma.SortOrder
-  boardId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ListMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  boardId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   position?: Prisma.SortOrder
   colorPreset?: Prisma.SortOrder
-  boardId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ListSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  position?: Prisma.SortOrder
   boardId?: Prisma.SortOrder
+  position?: Prisma.SortOrder
+}
+
+export type ListScalarRelationFilter = {
+  is?: Prisma.ListWhereInput
+  isNot?: Prisma.ListWhereInput
 }
 
 export type ListCreateNestedManyWithoutBoardInput = {
@@ -456,25 +468,41 @@ export type ListUncheckedUpdateManyWithoutBoardNestedInput = {
   deleteMany?: Prisma.ListScalarWhereInput | Prisma.ListScalarWhereInput[]
 }
 
-export type NullableEnumListColorPresetFieldUpdateOperationsInput = {
-  set?: $Enums.ListColorPreset | null
+export type EnumListColorPresetFieldUpdateOperationsInput = {
+  set?: $Enums.ListColorPreset
+}
+
+export type ListCreateNestedOneWithoutCardsInput = {
+  create?: Prisma.XOR<Prisma.ListCreateWithoutCardsInput, Prisma.ListUncheckedCreateWithoutCardsInput>
+  connectOrCreate?: Prisma.ListCreateOrConnectWithoutCardsInput
+  connect?: Prisma.ListWhereUniqueInput
+}
+
+export type ListUpdateOneRequiredWithoutCardsNestedInput = {
+  create?: Prisma.XOR<Prisma.ListCreateWithoutCardsInput, Prisma.ListUncheckedCreateWithoutCardsInput>
+  connectOrCreate?: Prisma.ListCreateOrConnectWithoutCardsInput
+  upsert?: Prisma.ListUpsertWithoutCardsInput
+  connect?: Prisma.ListWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ListUpdateToOneWithWhereWithoutCardsInput, Prisma.ListUpdateWithoutCardsInput>, Prisma.ListUncheckedUpdateWithoutCardsInput>
 }
 
 export type ListCreateWithoutBoardInput = {
   name: string
   position?: number
-  colorPreset?: $Enums.ListColorPreset | null
+  colorPreset?: $Enums.ListColorPreset
   createdAt?: Date | string
   updatedAt?: Date | string
+  cards?: Prisma.CardCreateNestedManyWithoutListInput
 }
 
 export type ListUncheckedCreateWithoutBoardInput = {
   id?: number
   name: string
   position?: number
-  colorPreset?: $Enums.ListColorPreset | null
+  colorPreset?: $Enums.ListColorPreset
   createdAt?: Date | string
   updatedAt?: Date | string
+  cards?: Prisma.CardUncheckedCreateNestedManyWithoutListInput
 }
 
 export type ListCreateOrConnectWithoutBoardInput = {
@@ -508,19 +536,73 @@ export type ListScalarWhereInput = {
   OR?: Prisma.ListScalarWhereInput[]
   NOT?: Prisma.ListScalarWhereInput | Prisma.ListScalarWhereInput[]
   id?: Prisma.IntFilter<"List"> | number
+  boardId?: Prisma.IntFilter<"List"> | number
   name?: Prisma.StringFilter<"List"> | string
   position?: Prisma.IntFilter<"List"> | number
-  colorPreset?: Prisma.EnumListColorPresetNullableFilter<"List"> | $Enums.ListColorPreset | null
-  boardId?: Prisma.IntFilter<"List"> | number
+  colorPreset?: Prisma.EnumListColorPresetFilter<"List"> | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFilter<"List"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"List"> | Date | string
+}
+
+export type ListCreateWithoutCardsInput = {
+  name: string
+  position?: number
+  colorPreset?: $Enums.ListColorPreset
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  board: Prisma.BoardCreateNestedOneWithoutListInput
+}
+
+export type ListUncheckedCreateWithoutCardsInput = {
+  id?: number
+  boardId: number
+  name: string
+  position?: number
+  colorPreset?: $Enums.ListColorPreset
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ListCreateOrConnectWithoutCardsInput = {
+  where: Prisma.ListWhereUniqueInput
+  create: Prisma.XOR<Prisma.ListCreateWithoutCardsInput, Prisma.ListUncheckedCreateWithoutCardsInput>
+}
+
+export type ListUpsertWithoutCardsInput = {
+  update: Prisma.XOR<Prisma.ListUpdateWithoutCardsInput, Prisma.ListUncheckedUpdateWithoutCardsInput>
+  create: Prisma.XOR<Prisma.ListCreateWithoutCardsInput, Prisma.ListUncheckedCreateWithoutCardsInput>
+  where?: Prisma.ListWhereInput
+}
+
+export type ListUpdateToOneWithWhereWithoutCardsInput = {
+  where?: Prisma.ListWhereInput
+  data: Prisma.XOR<Prisma.ListUpdateWithoutCardsInput, Prisma.ListUncheckedUpdateWithoutCardsInput>
+}
+
+export type ListUpdateWithoutCardsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.IntFieldUpdateOperationsInput | number
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  board?: Prisma.BoardUpdateOneRequiredWithoutListNestedInput
+}
+
+export type ListUncheckedUpdateWithoutCardsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  boardId?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.IntFieldUpdateOperationsInput | number
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ListCreateManyBoardInput = {
   id?: number
   name: string
   position?: number
-  colorPreset?: $Enums.ListColorPreset | null
+  colorPreset?: $Enums.ListColorPreset
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -528,48 +610,81 @@ export type ListCreateManyBoardInput = {
 export type ListUpdateWithoutBoardInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.IntFieldUpdateOperationsInput | number
-  colorPreset?: Prisma.NullableEnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset | null
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cards?: Prisma.CardUpdateManyWithoutListNestedInput
 }
 
 export type ListUncheckedUpdateWithoutBoardInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.IntFieldUpdateOperationsInput | number
-  colorPreset?: Prisma.NullableEnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset | null
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cards?: Prisma.CardUncheckedUpdateManyWithoutListNestedInput
 }
 
 export type ListUncheckedUpdateManyWithoutBoardInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.IntFieldUpdateOperationsInput | number
-  colorPreset?: Prisma.NullableEnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset | null
+  colorPreset?: Prisma.EnumListColorPresetFieldUpdateOperationsInput | $Enums.ListColorPreset
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
+/**
+ * Count Type ListCountOutputType
+ */
+
+export type ListCountOutputType = {
+  cards: number
+}
+
+export type ListCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  cards?: boolean | ListCountOutputTypeCountCardsArgs
+}
+
+/**
+ * ListCountOutputType without action
+ */
+export type ListCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ListCountOutputType
+   */
+  select?: Prisma.ListCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ListCountOutputType without action
+ */
+export type ListCountOutputTypeCountCardsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CardWhereInput
+}
+
 
 export type ListSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  boardId?: boolean
   name?: boolean
   position?: boolean
   colorPreset?: boolean
-  boardId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   board?: boolean | Prisma.BoardDefaultArgs<ExtArgs>
+  cards?: boolean | Prisma.List$cardsArgs<ExtArgs>
+  _count?: boolean | Prisma.ListCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["list"]>
 
 export type ListSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  boardId?: boolean
   name?: boolean
   position?: boolean
   colorPreset?: boolean
-  boardId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   board?: boolean | Prisma.BoardDefaultArgs<ExtArgs>
@@ -577,10 +692,10 @@ export type ListSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 
 export type ListSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  boardId?: boolean
   name?: boolean
   position?: boolean
   colorPreset?: boolean
-  boardId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   board?: boolean | Prisma.BoardDefaultArgs<ExtArgs>
@@ -588,17 +703,19 @@ export type ListSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 
 export type ListSelectScalar = {
   id?: boolean
+  boardId?: boolean
   name?: boolean
   position?: boolean
   colorPreset?: boolean
-  boardId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ListOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "position" | "colorPreset" | "boardId" | "createdAt" | "updatedAt", ExtArgs["result"]["list"]>
+export type ListOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "boardId" | "name" | "position" | "colorPreset" | "createdAt" | "updatedAt", ExtArgs["result"]["list"]>
 export type ListInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   board?: boolean | Prisma.BoardDefaultArgs<ExtArgs>
+  cards?: boolean | Prisma.List$cardsArgs<ExtArgs>
+  _count?: boolean | Prisma.ListCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ListIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   board?: boolean | Prisma.BoardDefaultArgs<ExtArgs>
@@ -611,13 +728,14 @@ export type $ListPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "List"
   objects: {
     board: Prisma.$BoardPayload<ExtArgs>
+    cards: Prisma.$CardPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
+    boardId: number
     name: string
     position: number
-    colorPreset: $Enums.ListColorPreset | null
-    boardId: number
+    colorPreset: $Enums.ListColorPreset
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["list"]>
@@ -1015,6 +1133,7 @@ readonly fields: ListFieldRefs;
 export interface Prisma__ListClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   board<T extends Prisma.BoardDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BoardDefaultArgs<ExtArgs>>): Prisma.Prisma__BoardClient<runtime.Types.Result.GetResult<Prisma.$BoardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  cards<T extends Prisma.List$cardsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.List$cardsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1045,10 +1164,10 @@ export interface Prisma__ListClient<T, Null = never, ExtArgs extends runtime.Typ
  */
 export interface ListFieldRefs {
   readonly id: Prisma.FieldRef<"List", 'Int'>
+  readonly boardId: Prisma.FieldRef<"List", 'Int'>
   readonly name: Prisma.FieldRef<"List", 'String'>
   readonly position: Prisma.FieldRef<"List", 'Int'>
   readonly colorPreset: Prisma.FieldRef<"List", 'ListColorPreset'>
-  readonly boardId: Prisma.FieldRef<"List", 'Int'>
   readonly createdAt: Prisma.FieldRef<"List", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"List", 'DateTime'>
 }
@@ -1449,6 +1568,30 @@ export type ListDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Limit how many Lists to delete.
    */
   limit?: number
+}
+
+/**
+ * List.cards
+ */
+export type List$cardsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Card
+   */
+  select?: Prisma.CardSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Card
+   */
+  omit?: Prisma.CardOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CardInclude<ExtArgs> | null
+  where?: Prisma.CardWhereInput
+  orderBy?: Prisma.CardOrderByWithRelationInput | Prisma.CardOrderByWithRelationInput[]
+  cursor?: Prisma.CardWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CardScalarFieldEnum | Prisma.CardScalarFieldEnum[]
 }
 
 /**

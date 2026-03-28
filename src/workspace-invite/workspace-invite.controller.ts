@@ -10,6 +10,7 @@ import { Body } from '@nestjs/common';
 import { Query } from '@nestjs/common';
 import { Delete } from '@nestjs/common';
 import { SendInviteDto } from './dto/send-invite.dto';
+import { AcceptInviteTokenDto } from './dto/accept-invite-token.dto';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
 import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
@@ -39,6 +40,17 @@ export class WorkspaceInviteController {
     @Req() req: Request & { user: { id: number } },@Body() dto: SendInviteDto,) {
       return this.workspaceInviteService.sendInvite(dto, req.user.id, workspaceId);
     }
+
+  @Post('accept-token')
+  async acceptInviteByToken(
+    @Req() req: Request & { user: { id: number } },
+    @Body() dto: AcceptInviteTokenDto,
+  ) {
+    return this.workspaceInviteService.acceptInviteByToken(
+      dto.token,
+      req.user.id,
+    );
+  }
 
   @Post(':inviteId/accept')
   async acceptInvite(

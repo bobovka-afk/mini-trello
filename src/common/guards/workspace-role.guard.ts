@@ -26,9 +26,11 @@ export class WorkspaceRoleGuard implements CanActivate {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest<Request & { user?: { id?: number } }>();
+    const req = context
+      .switchToHttp()
+      .getRequest<Request & { user?: { id?: number }; workspaceId?: number }>();
     const userId = req.user!.id!;
-    const workspaceId = Number((req as any).params.workspaceId);
+    const workspaceId = req.workspaceId!;
 
     const member = await this.prisma.workspaceMember.findUnique({
       where: {
@@ -43,7 +45,8 @@ export class WorkspaceRoleGuard implements CanActivate {
     if (!member || !allowedRoles.includes(member.role as WorkspaceRole)) {
       throw new ForbiddenException({
         code: 'WORKSPACE_ACTION_FORBIDDEN',
-        message: 'You do not have permission to access this workspace',
+        message:
+          'У вас нет прав для этого действия в рабочем пространстве.',
       });
     }
 

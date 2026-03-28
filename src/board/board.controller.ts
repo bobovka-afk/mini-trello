@@ -6,12 +6,18 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { Post, Body, Get, Patch, Delete, Param, ParseIntPipe } from '@nestjs/common';
 import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
+import { WorkspaceRoleGuard } from '../common/guards/workspace-role.guard';
+import { WorkspaceResourceGuard } from '../common/guards/workspace-resource.guard';
+import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
+import { WorkspaceRole } from '../generated/prisma/enums';
 
-@UseGuards(JwtAuthGuard, WorkspaceAccessGuard)
+@UseGuards(JwtAuthGuard, WorkspaceAccessGuard, WorkspaceResourceGuard)
 @Controller('board')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
+  @UseGuards(WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Post('workspace/:workspaceId/boards')
   async createBoard(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
@@ -22,10 +28,9 @@ export class BoardController {
 
   @Get('workspace/:workspaceId/boards/:boardId')
   async getBoard(
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('boardId', ParseIntPipe) boardId: number,
   ) {
-    return this.boardService.getBoard(workspaceId, boardId);
+    return this.boardService.getBoard(boardId);
   }
 
   @Get('workspace/:workspaceId/boards')
@@ -35,25 +40,26 @@ export class BoardController {
     return this.boardService.getBoards(workspaceId);
   }
 
+  @UseGuards(WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Patch('workspace/:workspaceId/boards/:boardId')
   async updateBoard(
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('boardId', ParseIntPipe) boardId: number,
     @Body() dto: UpdateBoardDto,
   ) {
     return this.boardService.updateBoard(
-      workspaceId,
       boardId,
       dto,
     );
   }
 
+  @UseGuards(WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Delete('workspace/:workspaceId/boards/:boardId')
   async deleteBoard(
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('boardId', ParseIntPipe) boardId: number,
   ) {
-    return this.boardService.deleteBoard(boardId, workspaceId);
+    return this.boardService.deleteBoard(boardId);
   }
 
 }

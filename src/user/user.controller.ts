@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Delete,
@@ -13,24 +14,31 @@ import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { UserService } from './user.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 import * as fs from 'fs';
 import { diskStorage } from 'multer';
 import type { File as MulterFile } from 'multer';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(@Req() req: Request & { user: { id: number } }) {
     return this.userService.getById(String(req.user.id));
   }
 
+  @Patch('me')
+  async updateProfile(
+    @Req() req: Request & { user: { id: number } },
+    @Body() body: UpdateUserDto,
+  ) {
+    return this.userService.updateName(req.user.id, body.name);
+  }
 
-  @UseGuards(JwtAuthGuard)
   @Patch('update-avatar')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -79,13 +87,10 @@ export class UserController {
     return this.userService.updateAvatar(req.user.id, avatarUrl);
   }
 
-@UseGuards(JwtAuthGuard)
-@Delete('remove-avatar')
-async removeAvatar(
-  @Req() req: Request & { user: { id: number } },
-) {
-  return this.userService.removeAvatar(req.user.id);
-}
+  @Delete('remove-avatar')
+  async removeAvatar(@Req() req: Request & { user: { id: number } }) {
+    return this.userService.removeAvatar(req.user.id);
+  }
 }
 
 

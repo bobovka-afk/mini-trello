@@ -14,7 +14,9 @@ export class WorkspaceAccessGuard implements CanActivate {
   constructor(private readonly prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest<Request & { user?: { id?: number } }>();
+    const req = context
+      .switchToHttp()
+      .getRequest<Request & { user?: { id?: number }; workspaceId?: number }>();
     const userId = req.user?.id;
 
     if (!userId) {
@@ -59,10 +61,11 @@ export class WorkspaceAccessGuard implements CanActivate {
     if (!member) {
       throw new ForbiddenException({
         code: 'WORKSPACE_MEMBER_REQUIRED',
-        message: 'You are not a member of this workspace',
+        message: 'Вы не участник этого рабочего пространства.',
       });
     }
 
+    req.workspaceId = workspaceId;
     return true;
   }
 }

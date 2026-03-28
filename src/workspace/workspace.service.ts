@@ -36,11 +36,52 @@ export class WorkspaceService {
         };
     }
 
+    async getWorkspaceSummary(workspaceId: number, userId: number) {
+        const workspace = await this.prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+            },
+        });
+        if (!workspace) {
+            throw new NotFoundException({
+                code: 'WORKSPACE_NOT_FOUND',
+                message: 'Workspace not found',
+            });
+        }
+        const member = await this.prisma.workspaceMember.findUnique({
+            where: {
+                workspaceId_userId: {
+                    workspaceId,
+                    userId,
+                },
+            },
+            select: { role: true },
+        });
+        return {
+            ...workspace,
+            myRole: member?.role ?? null,
+        };
+    }
+
     async getUserWorkspaces(userId: number, paginationDto: PaginationDto) {
         return this.prisma.workspaceMember.findMany({
             where: { userId: userId },
-            include: {
-                workspace: true,
+            select: {
+                id: true,
+                workspaceId: true,
+                userId: true,
+                role: true,
+                createdAt: true,
+                workspace: {
+                    select: {
+                        id: true,
+                        name: true,
+                        description: true,
+                    },
+                },
             },
             orderBy: {
                 workspace: {

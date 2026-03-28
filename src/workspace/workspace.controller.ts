@@ -41,6 +41,18 @@ export class WorkspaceController {
     return this.workspaceService.getUserWorkspaces(req.user.id, paginationDto);
   }
 
+  @UseGuards(WorkspaceAccessGuard)
+  @Get(':workspaceId/summary')
+  async getWorkspaceSummary(
+    @Param('workspaceId', ParseIntPipe) workspaceId: number,
+    @Req() req: Request & { user: { id: number } },
+  ) {
+    return this.workspaceService.getWorkspaceSummary(
+      workspaceId,
+      req.user.id,
+    );
+  }
+
   @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
   @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Patch(':workspaceId')

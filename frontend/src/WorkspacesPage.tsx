@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, type ApiError } from './lib/api';
-import { formatWorkspaceRole } from './lib/roles';
+import { canManageWorkspace, formatWorkspaceRole } from './lib/roles';
 
 type WorkspaceMemberRow = {
   id: number;
@@ -12,8 +12,6 @@ type WorkspaceMemberRow = {
     id: number;
     name: string;
     description: string | null;
-    createdAt: string;
-    updatedAt: string;
   };
 };
 
@@ -34,10 +32,6 @@ function formatError(e: unknown) {
   return 'Ошибка запроса';
 }
 
-function canManageWorkspace(role: string) {
-  return role === 'OWNER' || role === 'ADMIN';
-}
-
 function formatWorkspaceNameForUI(name: string) {
   // Sometimes stored name comes like: `12345(Название)`.
   // For UI show only `Название`.
@@ -47,9 +41,13 @@ function formatWorkspaceNameForUI(name: string) {
 
 type Props = { accessToken: string | null };
 
+const WORKSPACES_PAGE_SIZE = 10;
+
 export function WorkspacesPage({ accessToken }: Props) {
   const [rows, setRows] = useState<WorkspaceMemberRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadMoreBusy, setLoadMoreBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -69,23 +67,52 @@ export function WorkspacesPage({ accessToken }: Props) {
     if (!accessToken) {
       setLoading(false);
       setRows([]);
+      setHasMore(false);
       return;
     }
     setLoading(true);
     setMsg(null);
     try {
-      const data = await api<WorkspaceMemberRow[]>('/workspace/get-user-workspaces', {
-        method: 'GET',
-        accessToken,
-      });
-      setRows(Array.isArray(data) ? data : []);
+      const data = await api<WorkspaceMemberRow[]>(
+        `/workspace/get-user-workspaces?limit=${WORKSPACES_PAGE_SIZE}&offset=0`,
+        {
+          method: 'GET',
+          accessToken,
+        },
+      );
+      const list = Array.isArray(data) ? data : [];
+      setRows(list);
+      setHasMore(list.length === WORKSPACES_PAGE_SIZE);
     } catch (e) {
       setMsg(formatError(e));
       setRows([]);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
   }, [accessToken]);
+
+  const loadMore = useCallback(async () => {
+    if (!accessToken || loadMoreBusy || !hasMore) return;
+    setLoadMoreBusy(true);
+    setMsg(null);
+    try {
+      const data = await api<WorkspaceMemberRow[]>(
+        `/workspace/get-user-workspaces?limit=${WORKSPACES_PAGE_SIZE}&offset=${rows.length}`,
+        {
+          method: 'GET',
+          accessToken,
+        },
+      );
+      const chunk = Array.isArray(data) ? data : [];
+      setRows((prev) => [...prev, ...chunk]);
+      setHasMore(chunk.length === WORKSPACES_PAGE_SIZE);
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setLoadMoreBusy(false);
+    }
+  }, [accessToken, loadMoreBusy, hasMore, rows.length]);
 
   useEffect(() => {
     void load();
@@ -201,25 +228,25 @@ export function WorkspacesPage({ accessToken }: Props) {
     Object.keys(buildEditPatch(editRow, editName, editDesc)).length > 0;
 
   return (
-    <div className="trello-app-shell">
+    <div className="trello-app-shell trello-page-workspaces">
       <div className="trello-boards-main">
-        <header className="trello-boards-topbar">
-          <div>
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left">
             <button
               type="button"
-              className="trello-top-left-brand"
+              className="trello-top-left-brand trello-top-left-brand--stripe"
               onClick={() => navigate('/workspaces')}
             >
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
             </button>
-            <h1 className="trello-boards-title">Рабочие пространства</h1>
           </div>
+          <h1 className="trello-topbar-stripe-center">Рабочие пространства</h1>
           <div className="trello-topbar-actions">
             {accessToken && rows.length > 0 && (
               <button
                 type="button"
-                className="trello-btn trello-btn-primary"
+                className="trello-btn trello-btn-ghost"
                 onClick={() => {
                   setCreateOpen(true);
                   setMsg(null);
@@ -268,97 +295,101 @@ export function WorkspacesPage({ accessToken }: Props) {
               <div className="trello-empty">Пока нет рабочих пространств.</div>
             )
           ) : (
-            <div className="trello-table-wrap">
-              <table className="trello-table">
-                <thead>
-                  <tr>
-                    <th>Название</th>
-                    <th>Описание</th>
-                    <th>Роль</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => navigate(`/workspaces/${row.workspace.id}/boards`)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          navigate(`/workspaces/${row.workspace.id}/boards`);
-                        }
-                      }}
-                    >
-                      <td>
-                        <div className="trello-cell-title">
-                          {formatWorkspaceNameForUI(row.workspace.name)}
-                        </div>
-                      </td>
-                      <td className="trello-cell-desc">
-                        {row.workspace.description?.trim()
-                          ? row.workspace.description
-                          : '—'}
-                      </td>
-                      <td>
-                        <span className="trello-pill">{formatWorkspaceRole(row.role)}</span>
-                      </td>
-                      <td className="trello-row-actions">
-                        <button
-                          type="button"
-                          className="trello-btn trello-btn-primary trello-btn-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/workspaces/${row.workspace.id}/boards`);
-                          }}
-                        >
-                          Доски
-                        </button>
-                        <button
-                          type="button"
-                          className="trello-btn trello-btn-ghost trello-btn-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/workspaces/${row.workspace.id}/members`);
-                          }}
-                        >
-                          Участники
-                        </button>
-                        {canManageWorkspace(row.role) ? (
-                          <>
-                            <button
-                              type="button"
-                              className="trello-btn trello-btn-ghost trello-btn-sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEdit(row);
-                              }}
-                            >
-                              Изменить
-                            </button>
-                            <button
-                              type="button"
-                              className="trello-btn trello-btn-danger-ghost trello-btn-sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteRow(row);
-                                setMsg(null);
-                              }}
-                            >
-                              Удалить
-                            </button>
-                          </>
-                        ) : (
-                          <span className="trello-cell-meta">Только просмотр</span>
-                        )}
-                      </td>
+            <>
+              <div className="trello-table-wrap">
+                <table className="trello-table">
+                  <thead>
+                    <tr>
+                      <th>Название</th>
+                      <th>Описание</th>
+                      <th>Роль</th>
+                      <th />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {rows.map((row) => (
+                      <tr
+                        key={row.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => navigate(`/workspaces/${row.workspace.id}/boards`)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(`/workspaces/${row.workspace.id}/boards`);
+                          }
+                        }}
+                      >
+                        <td>
+                          <div className="trello-cell-title">
+                            {formatWorkspaceNameForUI(row.workspace.name)}
+                          </div>
+                        </td>
+                        <td className="trello-cell-desc">
+                          {row.workspace.description?.trim()
+                            ? row.workspace.description
+                            : '—'}
+                        </td>
+                        <td>
+                          <span className="trello-pill">{formatWorkspaceRole(row.role)}</span>
+                        </td>
+                        <td className="trello-row-actions">
+                          <button
+                            type="button"
+                            className="trello-btn trello-btn-ghost trello-btn-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/workspaces/${row.workspace.id}/members`);
+                            }}
+                          >
+                            Участники
+                          </button>
+                          {canManageWorkspace(row.role) ? (
+                            <>
+                              <button
+                                type="button"
+                                className="trello-btn trello-btn-ghost trello-btn-sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEdit(row);
+                                }}
+                              >
+                                Изменить
+                              </button>
+                              {row.role === 'OWNER' ? (
+                                <button
+                                  type="button"
+                                  className="trello-btn trello-btn-danger-ghost trello-btn-sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeleteRow(row);
+                                    setMsg(null);
+                                  }}
+                                >
+                                  Удалить
+                                </button>
+                              ) : null}
+                            </>
+                          ) : null}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {hasMore && (
+                <div className="trello-workspaces-load-more">
+                  <button
+                    type="button"
+                    className="trello-btn trello-btn-ghost"
+                    disabled={loadMoreBusy}
+                    onClick={() => void loadMore()}
+                  >
+                    {loadMoreBusy ? 'Загрузка…' : 'Загрузить ещё'}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>
@@ -404,7 +435,7 @@ export function WorkspacesPage({ accessToken }: Props) {
               </button>
               <button
                 type="button"
-                className="trello-btn trello-btn-primary"
+                className="trello-btn trello-btn-ghost"
                 disabled={!canCreate || createBusy}
                 onClick={() => void submitCreate()}
               >
@@ -488,7 +519,7 @@ export function WorkspacesPage({ accessToken }: Props) {
             </div>
             <div className="trello-modal-body">
               <p className="trello-confirm-text">
-                <strong>{formatWorkspaceNameForUI(deleteRow.workspace.name)}</strong> будет удалено безвозвратно (если у вас есть права).
+                Рабочее пространство «<strong>{formatWorkspaceNameForUI(deleteRow.workspace.name)}</strong>» будет удалено без возможности восстановления.
               </p>
             </div>
             <div className="trello-modal-foot">

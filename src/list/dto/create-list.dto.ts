@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import {
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -10,7 +9,6 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { ListColorPreset } from '../../generated/prisma/enums';
 
 export class CreateListDto {
   @IsString()
@@ -18,10 +16,6 @@ export class CreateListDto {
   @MinLength(3)
   @MaxLength(50)
   name: string;
-
-  @IsOptional()
-  @IsEnum(ListColorPreset)
-  colorPreset?: ListColorPreset;
 
   @IsOptional()
   @Type(() => Number)

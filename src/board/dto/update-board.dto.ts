@@ -11,6 +11,5 @@ export class UpdateBoardDto {
   @IsString()
   @MinLength(3)
   @MaxLength(255)
-  description?: string;
-
+  description?: string | null;
 }

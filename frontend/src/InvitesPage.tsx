@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, type ApiError } from './lib/api';
+import { formatWorkspaceRole } from './lib/roles';
 
 type InviteRow = {
   id: number;
-  email: string;
-  workspaceId: number;
-  invitedByUserId: number;
   role: string;
   expiresAt: string;
   usedAt: string | null;
   createdAt: string;
+  workspace: { name: string };
+  invitedBy: { name: string; email: string };
 };
+
+function formatWorkspaceNameForUI(name: string) {
+  const m = name.match(/^\s*\d+\s*\((.*)\)\s*$/);
+  return m ? m[1] : name;
+}
 
 type Props = { accessToken: string | null };
 type InviteRole = 'ADMIN' | 'MEMBER';
@@ -135,23 +140,6 @@ export function InvitesPage({ accessToken }: Props) {
     }
   }
 
-  async function deleteInvite(row: InviteRow) {
-    if (!accessToken) return;
-    setBusyId(row.id);
-    setMsg(null);
-    try {
-      await api<{ ok: boolean }>(`/workspace-invite/${row.workspaceId}/${row.id}`, {
-        method: 'DELETE',
-        accessToken,
-      });
-      await load();
-    } catch (e) {
-      setMsg(formatError(e));
-    } finally {
-      setBusyId(null);
-    }
-  }
-
   async function submitCreate() {
     if (!accessToken) return;
     const workspaceId = Number(createWorkspaceId);
@@ -258,9 +246,9 @@ export function InvitesPage({ accessToken }: Props) {
               <table className="jira-table">
                 <thead>
                   <tr>
-                    <th>Workspace ID</th>
+                    <th>Рабочее пространство</th>
                     <th>Роль</th>
-                    <th>Получатель</th>
+                    <th>Отправитель</th>
                     <th>Истекает</th>
                     <th>Создано</th>
                     <th />
@@ -272,16 +260,20 @@ export function InvitesPage({ accessToken }: Props) {
                     return (
                       <tr key={row.id}>
                         <td>
-                          <div className="jira-cell-title">#{row.workspaceId}</div>
-                          <div className="jira-cell-meta">Invite ID {row.id}</div>
+                          <div className="jira-cell-title">
+                            {formatWorkspaceNameForUI(row.workspace.name)}
+                          </div>
                         </td>
                         <td>
-                          <span className="jira-pill">{row.role}</span>
+                          <span className="jira-pill">{formatWorkspaceRole(row.role)}</span>
                         </td>
-                        <td className="jira-cell-desc">{row.email}</td>
+                        <td>
+                          <div className="jira-cell-title">{row.invitedBy.name}</div>
+                          <div className="jira-cell-meta">{row.invitedBy.email}</div>
+                        </td>
                         <td className="jira-cell-meta">
                           {formatDate(row.expiresAt)}
-                          {isExpired(row.expiresAt) ? ' (expired)' : ''}
+                          {isExpired(row.expiresAt) ? ' (истекло)' : ''}
                         </td>
                         <td className="jira-cell-meta">{formatDate(row.createdAt)}</td>
                         <td className="jira-row-actions">
@@ -300,14 +292,6 @@ export function InvitesPage({ accessToken }: Props) {
                             onClick={() => void declineInvite(row)}
                           >
                             Отклонить
-                          </button>
-                          <button
-                            type="button"
-                            className="jira-btn jira-btn-danger-ghost jira-btn-sm"
-                            disabled={busyId === row.id}
-                            onClick={() => void deleteInvite(row)}
-                          >
-                            Удалить
                           </button>
                         </td>
                       </tr>

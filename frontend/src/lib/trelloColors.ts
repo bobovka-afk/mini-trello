@@ -1,4 +1,4 @@
-/** Matches backend `ListColorPreset` — for column headers */
+/** Matches backend `ListColorPreset` — saturated header bar on neutral column */
 export const LIST_PRESET_HEX: Record<string, string> = {
   GREEN: '#226D43',
   YELLOW: '#9A7903',

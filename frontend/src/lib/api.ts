@@ -8,6 +8,9 @@ async function readErrorMessage(res: Response) {
     const data = await res.json();
     if (typeof data?.message === 'string') return data.message;
     if (Array.isArray(data?.message)) return data.message.join(', ');
+    if (data?.message && typeof data.message === 'object' && typeof data.message.message === 'string') {
+      return data.message.message;
+    }
     return JSON.stringify(data);
   } catch {
     try {

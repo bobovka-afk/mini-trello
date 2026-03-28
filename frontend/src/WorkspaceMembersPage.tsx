@@ -50,6 +50,18 @@ function formatError(e: unknown) {
   return 'Ошибка запроса';
 }
 
+function formatInviteSendError(e: unknown): string {
+  const raw = formatError(e);
+  const lower = raw.toLowerCase();
+  if (raw.includes('INVITE_ALREADY_SENT') || lower.includes('already been sent')) {
+    return 'Этому адресу уже отправлено активное приглашение. Дождитесь ответа или отмените приглашение в настройках рабочего пространства.';
+  }
+  if (raw.includes('USER_ALREADY_MEMBER') || lower.includes('already a workspace member')) {
+    return 'Этот пользователь уже состоит в этом рабочем пространстве.';
+  }
+  return raw;
+}
+
 function formatDate(iso: string) {
   try {
     const d = new Date(iso);
@@ -88,8 +100,9 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
 
   const [brokenAvatarUserIds, setBrokenAvatarUserIds] = useState<Record<number, boolean>>({});
 
-  const [offset, setOffset] = useState(0);
-  const limit = 20;
+  const MEMBERS_PAGE_SIZE = 20;
+  const [hasMore, setHasMore] = useState(false);
+  const [loadMoreBusy, setLoadMoreBusy] = useState(false);
 
   const [deleteMember, setDeleteMember] = useState<WorkspaceMemberRow | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -130,6 +143,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     if (!accessToken) {
       setLoading(false);
       setRows([]);
+      setHasMore(false);
       return;
     }
 
@@ -138,20 +152,45 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     setBrokenAvatarUserIds({});
     try {
       const data = await api<WorkspaceMemberRow[]>(
-        `/workspace/${workspaceId}/members?limit=${limit}&offset=${offset}`,
+        `/workspace/${workspaceId}/members?limit=${MEMBERS_PAGE_SIZE}&offset=0`,
         {
           method: 'GET',
           accessToken,
         },
       );
-      setRows(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setRows(list);
+      setHasMore(list.length === MEMBERS_PAGE_SIZE);
     } catch (e) {
       setRows([]);
+      setHasMore(false);
       setMsg(formatError(e));
     } finally {
       setLoading(false);
     }
-  }, [accessToken, workspaceId, offset]);
+  }, [accessToken, workspaceId]);
+
+  const loadMoreMembers = useCallback(async () => {
+    if (!accessToken || loadMoreBusy || !hasMore) return;
+    setLoadMoreBusy(true);
+    setMsg(null);
+    try {
+      const data = await api<WorkspaceMemberRow[]>(
+        `/workspace/${workspaceId}/members?limit=${MEMBERS_PAGE_SIZE}&offset=${rows.length}`,
+        {
+          method: 'GET',
+          accessToken,
+        },
+      );
+      const chunk = Array.isArray(data) ? data : [];
+      setRows((prev) => [...prev, ...chunk]);
+      setHasMore(chunk.length === MEMBERS_PAGE_SIZE);
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setLoadMoreBusy(false);
+    }
+  }, [accessToken, workspaceId, rows.length, hasMore, loadMoreBusy]);
 
   useEffect(() => {
     void loadCurrentUser();
@@ -235,7 +274,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       // список членов не меняется, но пусть UI обновится
       await loadMembers();
     } catch (e) {
-      setMsg(formatError(e));
+      setMsg(formatInviteSendError(e));
     } finally {
       setCreateBusy(false);
     }
@@ -244,11 +283,11 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   return (
     <div className="trello-app-shell">
       <div className="trello-boards-main">
-        <header className="trello-boards-topbar">
-          <div>
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left">
             <button
               type="button"
-              className="trello-top-left-brand"
+              className="trello-top-left-brand trello-top-left-brand--stripe"
               onClick={() => navigate('/workspaces')}
             >
               <span className="trello-logo" aria-hidden />
@@ -256,14 +295,13 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
             </button>
             <button
               type="button"
-              className="trello-btn trello-btn-primary trello-btn-sm"
+              className="trello-btn trello-btn-sm trello-btn-topbar-nav"
               onClick={() => navigate('/workspaces')}
             >
               ← Рабочие пространства
             </button>
-            <h1 className="trello-boards-title trello-boards-title-offset">Участники рабочего пространства</h1>
-            <p className="trello-boards-sub">Приглашения и роли</p>
           </div>
+          <h1 className="trello-topbar-stripe-center">Участники рабочего пространства</h1>
           <div className="trello-topbar-actions">
             <button
               type="button"
@@ -380,11 +418,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                             >
                               Удалить
                             </button>
-                          ) : canManageWorkspace ? (
-                            <span className="trello-cell-meta">Нельзя удалить</span>
-                          ) : (
-                            <span className="trello-cell-meta">Только просмотр</span>
-                          )}
+                          ) : null}
                         </td>
                       </tr>
                     );
@@ -394,23 +428,15 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
             </div>
           )}
 
-          {!loading && rows.length > 0 && (
-            <div className="trello-row-actions" style={{ padding: '12px 16px' }}>
+          {!loading && rows.length > 0 && hasMore && (
+            <div className="trello-workspaces-load-more">
               <button
                 type="button"
-                className="trello-btn trello-btn-ghost trello-btn-sm"
-                disabled={offset === 0}
-                onClick={() => setOffset((v) => Math.max(v - limit, 0))}
+                className="trello-btn trello-btn-ghost"
+                disabled={loadMoreBusy}
+                onClick={() => void loadMoreMembers()}
               >
-                Назад
-              </button>
-              <button
-                type="button"
-                className="trello-btn trello-btn-ghost trello-btn-sm"
-                disabled={rows.length < limit}
-                onClick={() => setOffset((v) => v + limit)}
-              >
-                Вперед
+                {loadMoreBusy ? 'Загрузка…' : 'Загрузить ещё'}
               </button>
             </div>
           )}
@@ -444,17 +470,41 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                     autoComplete="email"
                   />
                 </label>
-                <label className="trello-field">
-                  <span className="trello-label">Роль</span>
-                  <select
-                    className="trello-input"
-                    value={createRole}
-                    onChange={(e) => setCreateRole(e.target.value as InviteRole)}
+                <div className="trello-field">
+                  <span className="trello-label" id="invite-role-label">
+                    Роль
+                  </span>
+                  <div
+                    className="trello-invite-role-toggle"
+                    role="group"
+                    aria-labelledby="invite-role-label"
                   >
-                    <option value="MEMBER">MEMBER</option>
-                    <option value="ADMIN">ADMIN</option>
-                  </select>
-                </label>
+                    <button
+                      type="button"
+                      className={
+                        createRole === 'MEMBER'
+                          ? 'trello-invite-role-btn trello-invite-role-btn--active'
+                          : 'trello-invite-role-btn'
+                      }
+                      disabled={createBusy}
+                      onClick={() => setCreateRole('MEMBER')}
+                    >
+                      Участник
+                    </button>
+                    <button
+                      type="button"
+                      className={
+                        createRole === 'ADMIN'
+                          ? 'trello-invite-role-btn trello-invite-role-btn--active'
+                          : 'trello-invite-role-btn'
+                      }
+                      disabled={createBusy}
+                      onClick={() => setCreateRole('ADMIN')}
+                    >
+                      Администратор
+                    </button>
+                  </div>
+                </div>
               </div>
               <div className="trello-modal-foot">
                 <button

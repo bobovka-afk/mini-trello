@@ -4,13 +4,12 @@ import { formatWorkspaceRole } from './lib/roles';
 
 type InviteRow = {
   id: number;
-  email: string;
-  workspaceId: number;
-  invitedByUserId: number;
   role: string;
   expiresAt: string;
   usedAt: string | null;
   createdAt: string;
+  workspace: { name: string };
+  invitedBy: { name: string; email: string };
 };
 
 type Props = { accessToken: string | null };
@@ -19,6 +18,11 @@ function formatError(e: unknown) {
   const err = e as Partial<ApiError>;
   if (typeof err?.message === 'string') return err.message;
   return 'Ошибка запроса';
+}
+
+function formatWorkspaceNameForUI(name: string) {
+  const m = name.match(/^\s*\d+\s*\((.*)\)\s*$/);
+  return m ? m[1] : name;
 }
 
 function formatDate(iso: string) {
@@ -117,25 +121,8 @@ export function ProfileInvitesSection({ accessToken }: Props) {
     }
   }
 
-  async function deleteInvite(row: InviteRow) {
-    if (!accessToken) return;
-    setBusyId(row.id);
-    setMsg(null);
-    try {
-      await api<{ ok: boolean }>(`/workspace-invite/${row.workspaceId}/${row.id}`, {
-        method: 'DELETE',
-        accessToken,
-      });
-      await load();
-    } catch (e) {
-      setMsg(formatError(e));
-    } finally {
-      setBusyId(null);
-    }
-  }
-
   return (
-    <section className="trello-panel">
+    <section className="trello-panel trello-profile-invites-section">
       <div className="trello-panel-head">
         <span className="trello-panel-title">Мои приглашения</span>
       </div>
@@ -165,9 +152,9 @@ export function ProfileInvitesSection({ accessToken }: Props) {
           <table className="trello-table">
             <thead>
               <tr>
-                <th>ID рабочего пространства</th>
+                <th>Рабочее пространство</th>
                 <th>Роль</th>
-                <th>Получатель</th>
+                <th>Отправитель</th>
                 <th>Истекает</th>
                 <th>Создано</th>
                 <th />
@@ -179,13 +166,17 @@ export function ProfileInvitesSection({ accessToken }: Props) {
                 return (
                   <tr key={row.id}>
                     <td>
-                      <div className="trello-cell-title">#{row.workspaceId}</div>
-                      <div className="trello-cell-meta">ID приглашения {row.id}</div>
+                      <div className="trello-cell-title">
+                        {formatWorkspaceNameForUI(row.workspace.name)}
+                      </div>
                     </td>
                     <td>
                       <span className="trello-pill">{formatWorkspaceRole(row.role)}</span>
                     </td>
-                    <td className="trello-cell-desc">{row.email}</td>
+                    <td>
+                      <div className="trello-cell-title">{row.invitedBy.name}</div>
+                      <div className="trello-cell-meta">{row.invitedBy.email}</div>
+                    </td>
                     <td className="trello-cell-meta">
                       {formatDate(row.expiresAt)}
                       {isExpired(row.expiresAt) ? ' (истекло)' : ''}
@@ -208,14 +199,6 @@ export function ProfileInvitesSection({ accessToken }: Props) {
                       >
                         Отклонить
                       </button>
-                      <button
-                        type="button"
-                        className="trello-btn trello-btn-danger-ghost trello-btn-sm"
-                        disabled={busyId === row.id}
-                        onClick={() => void deleteInvite(row)}
-                      >
-                        Удалить
-                      </button>
                     </td>
                   </tr>
                 );
@@ -227,4 +210,3 @@ export function ProfileInvitesSection({ accessToken }: Props) {
     </section>
   );
 }
-

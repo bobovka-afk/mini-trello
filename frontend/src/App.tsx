@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
+import { createPortal } from 'react-dom';
 import { api, API_URL, type ApiError } from './lib/api';
+import {
+  getPendingInviteToken,
+  tryAcceptPendingInvite,
+} from './lib/invitePending';
 import { WorkspacesPage } from './WorkspacesPage';
 import { WorkspaceBoardsPage } from './WorkspaceBoardsPage';
 import { BoardPage } from './BoardPage';
 import { WorkspaceMembersPage } from './WorkspaceMembersPage';
 import { ProfileInvitesSection } from './ProfileInvitesSection';
+import { InviteAcceptPage } from './InviteAcceptPage';
 import './index.css';
 
 type UserSafe = {
@@ -82,18 +88,26 @@ function EmailVerificationRequestPage() {
   return (
     <div className="trello-app-shell">
       <div className="trello-boards-main">
-        <header className="trello-boards-topbar">
-          <div>
-            <h1 className="trello-boards-title">Подтверждение email</h1>
-            <p className="trello-boards-sub">Запрос письма с ссылкой</p>
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left">
+            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/')}>
+              <span className="trello-logo" aria-hidden />
+              <span className="trello-top-left-brand-text">mini trello</span>
+            </button>
           </div>
-          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
-            На главную
-          </button>
+          <h1 className="trello-topbar-stripe-center">Подтверждение email</h1>
+          <div className="trello-topbar-actions">
+            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+              На главную
+            </button>
+          </div>
         </header>
 
         <section className="trello-panel">
           <div style={{ padding: 16 }}>
+            <p className="trello-boards-sub" style={{ marginTop: 0 }}>
+              Запрос письма с ссылкой
+            </p>
             <label className="trello-field">
               <span className="trello-label">Email</span>
               <input
@@ -142,18 +156,26 @@ function EmailVerifiedStatusPage() {
   return (
     <div className="trello-app-shell">
       <div className="trello-boards-main">
-        <header className="trello-boards-topbar">
-          <div>
-            <h1 className="trello-boards-title">Подтверждение email</h1>
-            <p className="trello-boards-sub">Результат: {title}</p>
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left">
+            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/')}>
+              <span className="trello-logo" aria-hidden />
+              <span className="trello-top-left-brand-text">mini trello</span>
+            </button>
           </div>
-          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
-            На главную
-          </button>
+          <h1 className="trello-topbar-stripe-center">Подтверждение email</h1>
+          <div className="trello-topbar-actions">
+            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+              На главную
+            </button>
+          </div>
         </header>
 
         <section className="trello-panel">
           <div style={{ padding: 16 }}>
+            <p className="trello-boards-sub" style={{ marginTop: 0 }}>
+              Результат: {title}
+            </p>
             <div className="trello-banner trello-banner-warn">
               <strong>Статус:</strong> {status}
             </div>
@@ -192,18 +214,26 @@ function PasswordResetRequestPage() {
   return (
     <div className="trello-app-shell">
       <div className="trello-boards-main">
-        <header className="trello-boards-topbar">
-          <div>
-            <h1 className="trello-boards-title">Сброс пароля</h1>
-            <p className="trello-boards-sub">Запрос ссылки на почту</p>
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left">
+            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/')}>
+              <span className="trello-logo" aria-hidden />
+              <span className="trello-top-left-brand-text">mini trello</span>
+            </button>
           </div>
-          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
-            На главную
-          </button>
+          <h1 className="trello-topbar-stripe-center">Сброс пароля</h1>
+          <div className="trello-topbar-actions">
+            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+              На главную
+            </button>
+          </div>
         </header>
 
         <section className="trello-panel">
           <div style={{ padding: 16 }}>
+            <p className="trello-boards-sub" style={{ marginTop: 0 }}>
+              Запрос ссылки на почту
+            </p>
             <label className="trello-field">
               <span className="trello-label">Email</span>
               <input
@@ -270,18 +300,26 @@ function PasswordResetConfirmPage() {
   return (
     <div className="trello-app-shell">
       <div className="trello-boards-main">
-        <header className="trello-boards-topbar">
-          <div>
-            <h1 className="trello-boards-title">Сброс пароля</h1>
-            <p className="trello-boards-sub">Введите новый пароль по ссылке из письма</p>
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left">
+            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/')}>
+              <span className="trello-logo" aria-hidden />
+              <span className="trello-top-left-brand-text">mini trello</span>
+            </button>
           </div>
-          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
-            На главную
-          </button>
+          <h1 className="trello-topbar-stripe-center">Сброс пароля</h1>
+          <div className="trello-topbar-actions">
+            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+              На главную
+            </button>
+          </div>
         </header>
 
         <section className="trello-panel">
           <div style={{ padding: 16 }}>
+            <p className="trello-boards-sub" style={{ marginTop: 0 }}>
+              Введите новый пароль по ссылке из письма
+            </p>
             {!token ? (
               <div className="trello-banner trello-banner-error">
                 В ссылке нет параметра <code>token</code>. Откройте письмо и перейдите по ссылке оттуда.
@@ -365,6 +403,18 @@ function Home(props: { onAuthed: (token: string) => void; hasSession: boolean })
         json: { email, password },
       });
       props.onAuthed(res.accessToken);
+      const inviteResult = await tryAcceptPendingInvite(res.accessToken);
+      if (inviteResult === 'ok') {
+        navigate('/profile/me');
+        return;
+      }
+      if (inviteResult === 'fail') {
+        const p = getPendingInviteToken();
+        if (p) {
+          navigate(`/invite?token=${encodeURIComponent(p)}`);
+          return;
+        }
+      }
       navigate('/workspaces');
     } catch (e) {
       setMsg(formatError(e));
@@ -494,7 +544,10 @@ function Home(props: { onAuthed: (token: string) => void; hasSession: boolean })
   );
 }
 
-function ProfileMePage(props: { accessToken: string | null }) {
+function ProfileMePage(props: {
+  accessToken: string | null;
+  onUserUpdated?: (user: UserSafe) => void;
+}) {
   const [user, setUser] = useState<UserSafe | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -502,6 +555,10 @@ function ProfileMePage(props: { accessToken: string | null }) {
   const [avatarError, setAvatarError] = useState(false);
   const [avatarEditMenuOpen, setAvatarEditMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [nameEditing, setNameEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [nameBusy, setNameBusy] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -562,9 +619,9 @@ function ProfileMePage(props: { accessToken: string | null }) {
         body: form,
       });
       setUser(updated);
+      props.onUserUpdated?.(updated);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
-      setMsg('Аватар обновлён.');
     } catch (e) {
       setMsg(formatError(e));
     } finally {
@@ -606,6 +663,7 @@ function ProfileMePage(props: { accessToken: string | null }) {
         accessToken: props.accessToken,
       });
       setUser(updated);
+      props.onUserUpdated?.(updated);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
       setMsg('Аватар удалён.');
@@ -613,6 +671,48 @@ function ProfileMePage(props: { accessToken: string | null }) {
       setMsg(formatError(e));
     } finally {
       setBusy(false);
+    }
+  }
+
+  function beginEditName() {
+    if (!user || nameBusy || busy) return;
+    setNameDraft(user.name);
+    setNameEditing(true);
+    setMsg(null);
+    queueMicrotask(() => nameInputRef.current?.focus());
+  }
+
+  function cancelEditName() {
+    setNameEditing(false);
+    setNameDraft('');
+  }
+
+  async function saveName() {
+    if (!props.accessToken || !user) return;
+    const next = nameDraft.trim();
+    if (next.length < 3 || next.length > 18) {
+      setMsg('Имя: от 3 до 18 символов.');
+      return;
+    }
+    if (next === user.name) {
+      setNameEditing(false);
+      return;
+    }
+    setNameBusy(true);
+    setMsg(null);
+    try {
+      const updated = await api<UserSafe>('/user/me', {
+        method: 'PATCH',
+        accessToken: props.accessToken,
+        json: { name: next },
+      });
+      setUser(updated);
+      props.onUserUpdated?.(updated);
+      setNameEditing(false);
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setNameBusy(false);
     }
   }
 
@@ -646,18 +746,19 @@ function ProfileMePage(props: { accessToken: string | null }) {
   return (
     <div className="trello-app-shell">
       <div className="trello-boards-main">
-        <header className="trello-boards-topbar">
-          <div>
-            <button type="button" className="trello-top-left-brand" onClick={() => navigate('/workspaces')}>
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left">
+            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/workspaces')}>
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
             </button>
-            <h1 className="trello-boards-title">Профиль</h1>
-            <p className="trello-boards-sub">Личные данные и приглашения</p>
           </div>
-          <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/workspaces')} type="button">
-            Назад
-          </button>
+          <h1 className="trello-topbar-stripe-center">Профиль</h1>
+          <div className="trello-topbar-actions">
+            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/workspaces')} type="button">
+              Назад
+            </button>
+          </div>
         </header>
 
         {msg && (
@@ -667,95 +768,129 @@ function ProfileMePage(props: { accessToken: string | null }) {
         )}
 
         <section className="trello-panel">
-          <div style={{ padding: 16 }}>
-            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-              <div style={{ width: 160, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ marginTop: 12 }}>
-                  <div className="avatarWrap">
-                    {previewUrl || user?.avatarPath ? (
-                      !avatarError ? (
-                        <img
-                          className="avatarImg"
-                          src={avatarSrc}
-                          alt="avatar"
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          crossOrigin="anonymous"
-                          onError={() => setAvatarError(true)}
-                        />
-                      ) : (
-                        <div className="trello-cell-meta" style={{ marginTop: 0, padding: 0 }}>
-                          Не удалось загрузить аватар
-                        </div>
-                      )
+          <div className="trello-profile-body">
+            <div className="trello-profile-body-row">
+              <div className="trello-profile-avatar-col">
+                <div className="avatarWrap">
+                  {previewUrl || user?.avatarPath ? (
+                    !avatarError ? (
+                      <img
+                        className="avatarImg"
+                        src={avatarSrc}
+                        alt=""
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                        onError={() => setAvatarError(true)}
+                      />
                     ) : (
-                      <div className="trello-cell-meta" style={{ marginTop: 0, padding: 0 }}>
-                        Нет аватара
-                      </div>
-                    )}
+                      <div className="trello-cell-meta trello-profile-avatar-fallback">Не удалось загрузить аватар</div>
+                    )
+                  ) : (
+                    <div className="trello-cell-meta trello-profile-avatar-fallback">Нет аватара</div>
+                  )}
 
-                    <button
-                      type="button"
-                      className="avatar-edit-toggle"
-                      onClick={() => setAvatarEditMenuOpen((o) => !o)}
-                      disabled={busy}
-                      aria-label="Изменить аватар"
-                    >
-                      <span className="avatar-edit-toggle-icon" aria-hidden>
-                        ✎
-                      </span>
-                      <span className="avatar-edit-toggle-text">Изменить</span>
-                    </button>
-
-                    {avatarEditMenuOpen && (
-                      <div className="avatar-edit-menu" role="menu" aria-label="Действия с аватаром">
-                        <button
-                          type="button"
-                          className="trello-btn trello-btn-primary trello-btn-sm avatar-edit-menu-btn"
-                          disabled={busy}
-                          onClick={() => {
-                            setAvatarEditMenuOpen(false);
-                            triggerPick();
-                          }}
-                        >
-                          {busy ? '…' : 'Загрузить фото'}
-                        </button>
-                        <button
-                          type="button"
-                          className="trello-btn trello-btn-danger-ghost trello-btn-sm avatar-edit-menu-btn"
-                          disabled={busy || !user?.avatarPath}
-                          onClick={() => {
-                            setAvatarEditMenuOpen(false);
-                            void removeAvatar();
-                          }}
-                        >
-                          {busy ? '…' : 'Удалить фото'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                  <button
+                    type="button"
+                    className="avatar-edit-toggle"
+                    onClick={() => setAvatarEditMenuOpen((o) => !o)}
                     disabled={busy}
-                  />
+                    aria-label="Изменить аватар"
+                  >
+                    <span className="avatar-edit-toggle-icon" aria-hidden>
+                      ✎
+                    </span>
+                    <span className="avatar-edit-toggle-text">Изменить</span>
+                  </button>
+
+                  {avatarEditMenuOpen && (
+                    <div className="avatar-edit-menu" role="menu" aria-label="Действия с аватаром">
+                      <button
+                        type="button"
+                        className="trello-btn trello-btn-primary trello-btn-sm avatar-edit-menu-btn"
+                        disabled={busy}
+                        onClick={() => {
+                          setAvatarEditMenuOpen(false);
+                          triggerPick();
+                        }}
+                      >
+                        {busy ? '…' : 'Загрузить фото'}
+                      </button>
+                      <button
+                        type="button"
+                        className="trello-btn trello-btn-danger-ghost trello-btn-sm avatar-edit-menu-btn"
+                        disabled={busy || !user?.avatarPath}
+                        onClick={() => {
+                          setAvatarEditMenuOpen(false);
+                          void removeAvatar();
+                        }}
+                      >
+                        {busy ? '…' : 'Удалить фото'}
+                      </button>
+                    </div>
+                  )}
                 </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                  disabled={busy}
+                />
               </div>
 
-              <div style={{ flex: 1 }}>
-                <div style={{ marginBottom: 12, fontWeight: 600 }}>{user?.name || '-'}</div>
+              <div className="trello-profile-fields-col">
+                <div className="trello-profile-name-block">
+                  {nameEditing ? (
+                    <div className="trello-profile-name-edit">
+                      <input
+                        ref={nameInputRef}
+                        className="trello-input trello-profile-name-input"
+                        value={nameDraft}
+                        onChange={(e) => setNameDraft(e.target.value)}
+                        maxLength={18}
+                        disabled={nameBusy}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            void saveName();
+                          }
+                          if (e.key === 'Escape') {
+                            e.preventDefault();
+                            cancelEditName();
+                          }
+                        }}
+                        aria-label="Имя"
+                      />
+                      <div className="trello-profile-name-edit-actions">
+                        <button type="button" className="trello-btn trello-btn-primary trello-btn-sm" disabled={nameBusy} onClick={() => void saveName()}>
+                          {nameBusy ? '…' : 'Сохранить'}
+                        </button>
+                        <button type="button" className="trello-btn trello-btn-ghost trello-btn-sm" disabled={nameBusy} onClick={() => cancelEditName()}>
+                          Отмена
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="trello-profile-display-name"
+                      onClick={() => beginEditName()}
+                      disabled={!user || busy || nameBusy}
+                      title="Нажмите, чтобы изменить имя"
+                    >
+                      {user?.name ?? '—'}
+                    </button>
+                  )}
+                </div>
 
                 <div className="trello-label">Почта</div>
-                <div style={{ marginBottom: 12 }}>{user?.email || '-'}</div>
+                <div style={{ marginBottom: 12 }}>{user?.email ?? '—'}</div>
 
                 <div className="trello-label">Зарегистрирован</div>
-                <div style={{ marginBottom: 12 }}>
-                  {user?.createdAt ? formatRegisteredRU(user.createdAt) : '-'}
-                </div>
+                <div style={{ marginBottom: 0 }}>{user?.createdAt ? formatRegisteredRU(user.createdAt) : '—'}</div>
               </div>
             </div>
           </div>
@@ -808,9 +943,24 @@ function App() {
     setToken(tokenFromQuery);
     url.searchParams.delete('accessToken');
     window.history.replaceState({}, '', url.pathname + url.search);
-    if (url.pathname.startsWith('/dashboard')) {
-      navigate('/workspaces');
-    }
+
+    void (async () => {
+      const inviteResult = await tryAcceptPendingInvite(tokenFromQuery);
+      if (inviteResult === 'ok') {
+        navigate('/profile/me');
+        return;
+      }
+      if (inviteResult === 'fail') {
+        const p = getPendingInviteToken();
+        if (p) {
+          navigate(`/invite?token=${encodeURIComponent(p)}`);
+          return;
+        }
+      }
+      if (url.pathname.startsWith('/dashboard')) {
+        navigate('/workspaces');
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -898,7 +1048,9 @@ function App() {
   const boardsListMatch = route.match(/^\/workspaces\/(\d+)\/boards\/?$/);
   const memberRouteMatch = route.match(/^\/workspaces\/(\d+)\/members$/);
   let page: ReactElement;
-  if (boardDetailMatch) {
+  if (route === '/invite' || route.startsWith('/invite/')) {
+    page = <InviteAcceptPage accessToken={accessToken} />;
+  } else if (boardDetailMatch) {
     page = (
       <BoardPage
         accessToken={accessToken}
@@ -918,7 +1070,12 @@ function App() {
   } else if (route.startsWith('/workspaces')) {
     page = <WorkspacesPage accessToken={accessToken} />;
   } else if (route.startsWith('/profile')) {
-    page = <ProfileMePage accessToken={accessToken} />;
+    page =
+      !accessToken ? (
+        <Home onAuthed={(t) => setToken(t)} hasSession={false} />
+      ) : (
+        <ProfileMePage accessToken={accessToken} onUserUpdated={(u) => setToolbarUser(u)} />
+      );
   } else if (route.startsWith('/test/email-verification/request')) {
     page = <EmailVerificationRequestPage />;
   } else if (route.startsWith('/email-verified')) {
@@ -930,6 +1087,13 @@ function App() {
   } else {
     page = <Home onAuthed={(t) => setToken(t)} hasSession={!!accessToken} />;
   }
+
+  const toolbarLayoutClass =
+    accessToken && boardDetailMatch
+      ? 'trello-fixed-toolbar--board'
+      : accessToken
+        ? 'trello-fixed-toolbar--shell'
+        : 'trello-fixed-toolbar--guest';
 
   const themeSwitch = (
     <label className="theme-switch" aria-label="Тёмная тема">
@@ -945,19 +1109,19 @@ function App() {
     </label>
   );
 
-  return (
-    <>
-      <div className="trello-fixed-toolbar" aria-label="Параметры приложения">
-        {!accessToken && (
-          <div className="theme-toggle trello-theme-toggle-inline" aria-label="Theme switch">
-            <span className="theme-toggle-icon" aria-hidden>
-              ◐
-            </span>
-            {themeSwitch}
-          </div>
-        )}
-        {accessToken && (
-          <div className="trello-profile-dropdown" ref={profileMenuRef}>
+  const toolbarNode = (
+    <div className={`trello-fixed-toolbar ${toolbarLayoutClass}`} aria-label="Параметры приложения">
+      {!accessToken && (
+        <div className="theme-toggle trello-theme-toggle-inline" aria-label="Theme switch">
+          <span className="theme-toggle-icon" aria-hidden>
+            ◐
+          </span>
+          {themeSwitch}
+        </div>
+      )}
+      {accessToken && (
+        <div className="trello-profile-dropdown" ref={profileMenuRef}>
+          <div className="trello-toolbar-avatar-wrap">
             <button
               type="button"
               className="trello-toolbar-avatar-btn"
@@ -977,55 +1141,61 @@ function App() {
                 <span className="trello-toolbar-avatar-fallback">{toolbarInitials}</span>
               )}
             </button>
-            {profileMenuOpen && (
-              <div className="trello-profile-menu" role="menu">
-                <button
-                  type="button"
-                  className="trello-profile-menu-item"
-                  role="menuitem"
-                  onClick={() => {
-                    navigate('/profile/me');
-                    setProfileMenuOpen(false);
-                  }}
-                >
-                  Профиль
-                </button>
-                <div className="trello-profile-menu-theme" role="presentation">
-                  <span className="trello-profile-menu-theme-label">
-                    <svg className="trello-moon-icon" viewBox="0 0 24 24" aria-hidden>
-                      <path
-                        fill="currentColor"
-                        d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.54 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.86.89-3.51 2.26-4.4-.44-.06-.9-.1-1.36-.1z"
-                      />
-                    </svg>
-                    Темное оформление
-                  </span>
-                  {themeSwitch}
-                </div>
-                <button
-                  type="button"
-                  className="trello-profile-menu-item"
-                  role="menuitem"
-                  onClick={() => {
-                    navigate('/workspaces');
-                    setProfileMenuOpen(false);
-                  }}
-                >
-                  Мои рабочие пространства
-                </button>
-                <button
-                  type="button"
-                  className="trello-profile-menu-item trello-profile-menu-logout"
-                  role="menuitem"
-                  onClick={() => void handleLogout()}
-                >
-                  Выйти
-                </button>
-              </div>
-            )}
           </div>
-        )}
-      </div>
+          {profileMenuOpen && (
+            <div className="trello-profile-menu" role="menu">
+              <button
+                type="button"
+                className="trello-profile-menu-item"
+                role="menuitem"
+                onClick={() => {
+                  navigate('/profile/me');
+                  setProfileMenuOpen(false);
+                }}
+              >
+                Профиль
+              </button>
+              <div className="trello-profile-menu-theme" role="presentation">
+                <span className="trello-profile-menu-theme-label">
+                  <svg className="trello-moon-icon" viewBox="0 0 24 24" aria-hidden>
+                    <path
+                      fill="currentColor"
+                      d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.54 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.86.89-3.51 2.26-4.4-.44-.06-.9-.1-1.36-.1z"
+                    />
+                  </svg>
+                  Темное оформление
+                </span>
+                {themeSwitch}
+              </div>
+              <button
+                type="button"
+                className="trello-profile-menu-item"
+                role="menuitem"
+                onClick={() => {
+                  navigate('/workspaces');
+                  setProfileMenuOpen(false);
+                }}
+              >
+                Мои рабочие пространства
+              </button>
+              <button
+                type="button"
+                className="trello-profile-menu-item trello-profile-menu-logout"
+                role="menuitem"
+                onClick={() => void handleLogout()}
+              >
+                Выйти
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      {createPortal(toolbarNode, document.body)}
       {page}
     </>
   );
