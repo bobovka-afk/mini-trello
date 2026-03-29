@@ -69,6 +69,17 @@ export class WorkspaceResourceGuard implements CanActivate {
       return this.workspaceContextResolver.byCardIdOrThrow(cardId);
     }
 
+    if (params.commentId !== undefined) {
+      const commentId = Number(params.commentId);
+      if (!Number.isInteger(commentId)) {
+        throw new BadRequestException({
+          code: 'COMMENT_ID_REQUIRED',
+          message: 'commentId route param is required',
+        });
+      }
+      return this.workspaceContextResolver.byCommentIdOrThrow(commentId);
+    }
+
     return null;
   }
 }

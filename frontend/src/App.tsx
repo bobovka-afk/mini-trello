@@ -1056,6 +1056,7 @@ function App() {
         accessToken={accessToken}
         workspaceId={Number(boardDetailMatch[1])}
         boardId={Number(boardDetailMatch[2])}
+        currentUserId={toolbarUser?.id ?? null}
       />
     );
   } else if (boardsListMatch) {

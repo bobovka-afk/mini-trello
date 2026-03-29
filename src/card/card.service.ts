@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { MoveCardDto } from './dto/move-card.dto';
+import { SetCardCompletionDto } from './dto/set-card-completion.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 
 @Injectable()
@@ -65,10 +66,17 @@ export class CardService {
     return { ok: true };
   }
 
-  /**
-   * Перенос карточки в другую колонку той же доски или изменение порядка внутри колонки.
-   * После операции позиции в затронутых списках нумеруются 0..n-1 без пропусков.
-   */
+  async setCardCompletion(
+    cardId: number,
+    dto: SetCardCompletionDto,
+  ): Promise<{ ok: boolean }> {
+    await this.prisma.card.update({
+      where: { id: cardId },
+      data: { isCompleted: dto.isCompleted },
+    });
+    return { ok: true };
+  }
+
   async moveCard(cardId: number, dto: MoveCardDto) {
     return this.prisma.$transaction(async (tx) => {
       const card = await tx.card.findUnique({

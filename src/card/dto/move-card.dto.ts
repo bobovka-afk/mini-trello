@@ -7,7 +7,6 @@ export class MoveCardDto {
   @Min(1)
   toListId: number;
 
-  /** Индекс в целевом списке (0 — в начало, length — в конец). */
   @Type(() => Number)
   @IsInt()
   @Min(0)

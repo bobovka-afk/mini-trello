@@ -90,7 +90,6 @@ export class UserService {
     });
   }
 
-  /** Имя провалидировано в UpdateUserDto (ValidationPipe). */
   async updateName(id: number, name: string) {
     return this.prisma.user.update({
       where: { id },

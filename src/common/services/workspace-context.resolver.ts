@@ -78,4 +78,30 @@ export class WorkspaceContextResolver {
 
     return card.list.board.workspaceId;
   }
+
+  async byCommentIdOrThrow(commentId: number): Promise<number> {
+    const comment = await this.prisma.comment.findUnique({
+      where: { id: commentId },
+      select: {
+        card: {
+          select: {
+            list: {
+              select: {
+                board: { select: { workspaceId: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!comment) {
+      throw new NotFoundException({
+        code: 'COMMENT_NOT_FOUND',
+        message: 'Comment not found',
+      });
+    }
+
+    return comment.card.list.board.workspaceId;
+  }
 }

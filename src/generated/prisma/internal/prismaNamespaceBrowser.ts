@@ -58,7 +58,8 @@ export const ModelName = {
   WorkspaceInvite: 'WorkspaceInvite',
   Board: 'Board',
   List: 'List',
-  Card: 'Card'
+  Card: 'Card',
+  Comment: 'Comment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -67,12 +68,12 @@ export type ModelName = (typeof ModelName)[keyof typeof ModelName]
  * Enums
  */
 
-export const TransactionIsolationLevel = runtime.makeStrictEnum({
+export const TransactionIsolationLevel = {
   ReadUncommitted: 'ReadUncommitted',
   ReadCommitted: 'ReadCommitted',
   RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
-} as const)
+} as const
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
@@ -176,11 +177,24 @@ export const CardScalarFieldEnum = {
   dueDate: 'dueDate',
   position: 'position',
   assigneeId: 'assigneeId',
+  isCompleted: 'isCompleted',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type CardScalarFieldEnum = (typeof CardScalarFieldEnum)[keyof typeof CardScalarFieldEnum]
+
+
+export const CommentScalarFieldEnum = {
+  id: 'id',
+  cardId: 'cardId',
+  userId: 'userId',
+  body: 'body',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommentScalarFieldEnum = (typeof CommentScalarFieldEnum)[keyof typeof CommentScalarFieldEnum]
 
 
 export const SortOrder = {

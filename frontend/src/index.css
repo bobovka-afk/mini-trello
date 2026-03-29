@@ -1627,6 +1627,22 @@ button {
   min-width: 0;
 }
 
+.trello-card-detail-title-block {
+  margin-bottom: 16px;
+}
+
+.trello-card-detail-card-title-btn {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  box-sizing: border-box;
+  word-break: break-word;
+}
+
+.trello-card-detail-title-edit {
+  max-width: none;
+}
+
 .trello-card-detail-aside {
   min-width: 0;
   padding: 12px 14px;
@@ -1695,6 +1711,224 @@ button {
   .trello-card-detail-body {
     grid-template-columns: 1fr;
   }
+
+  .trello-card-detail-body--with-comments {
+    grid-template-columns: 1fr;
+  }
+
+  .trello-card-comments-panel {
+    max-height: none;
+  }
+}
+
+.trello-modal-card-detail--wide {
+  max-width: 1040px;
+}
+
+.trello-card-detail-body--with-comments {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.trello-card-detail-meta-in-main {
+  margin-top: 4px;
+}
+
+.trello-card-comments-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-height: min(70vh, 640px);
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.trello-card-comments-panel-header {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.trello-card-comments-panel-header-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trello-card-comments-panel-msg-icon {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.trello-card-comments-compose {
+  margin-bottom: 10px;
+}
+
+.trello-card-comments-compose-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.trello-card-comments-textarea {
+  min-height: 72px;
+  resize: vertical;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Apple Color Emoji',
+    'Noto Color Emoji',
+    sans-serif;
+}
+
+.trello-card-comments-guest-hint {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.trello-card-comments-list-wrap {
+  flex: 1;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.trello-card-comments-loading,
+.trello-card-comments-empty {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.trello-card-comments-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0 4px 0 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trello-card-comment-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.trello-card-comment-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(12, 102, 228, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trello-card-comment-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.trello-card-comment-avatar-fallback {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.trello-card-comment-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.trello-card-comment-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.trello-card-comment-author {
+  font-weight: 700;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.trello-card-comment-when {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.trello-card-comment-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(240, 244, 250, 0.92);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Apple Color Emoji',
+    'Noto Color Emoji',
+    sans-serif;
+}
+
+.trello-card-comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 0;
+  border-top: none;
+}
+
+.trello-card-comment-link {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(125, 211, 252, 0.95);
+  text-decoration: none;
+}
+
+.trello-card-comment-link:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.trello-card-comment-link-danger {
+  color: rgba(252, 165, 165, 0.95);
+}
+
+.trello-card-comment-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .trello-confirm-text {
@@ -1819,6 +2053,168 @@ button {
 .trello-modal select.trello-input:focus {
   border-color: rgba(125, 211, 252, 0.85);
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Нативный список select: явные цвета option (Windows / светлая тема) */
+.trello-modal select.trello-input option {
+  color: #172b4d;
+  background: #ffffff;
+}
+
+.theme-dark .trello-modal select.trello-input option {
+  color: #f0f4fa;
+  background: #22272b;
+}
+
+/* Светлая тема: модалки — «стекло» на светло-сером фоне (без ярко-белого), тёмный текст */
+:root:not(.theme-dark) .trello-modal-backdrop {
+  background: rgba(9, 30, 66, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+:root:not(.theme-dark) .trello-modal {
+  background: rgba(232, 236, 242, 0.94);
+  border-color: rgba(210, 218, 230, 0.92);
+  box-shadow: 0 12px 40px rgba(9, 30, 66, 0.18);
+  color: #172b4d;
+  backdrop-filter: blur(22px);
+}
+
+:root:not(.theme-dark) .trello-modal-head {
+  background: rgba(226, 232, 240, 0.88);
+  border-bottom-color: rgba(9, 30, 66, 0.1);
+}
+
+:root:not(.theme-dark) .trello-modal-title {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-modal-close {
+  color: #5e6c84;
+}
+
+:root:not(.theme-dark) .trello-modal-close:hover {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-modal-foot {
+  background: rgba(228, 234, 242, 0.9);
+  border-top-color: rgba(9, 30, 66, 0.1);
+}
+
+:root:not(.theme-dark) .trello-modal .trello-label {
+  color: #5e6c84;
+}
+
+:root:not(.theme-dark) .trello-modal .trello-input,
+:root:not(.theme-dark) .trello-modal .trello-textarea,
+:root:not(.theme-dark) .trello-modal select.trello-input {
+  background: rgba(236, 240, 245, 0.98);
+  border-color: rgba(9, 30, 66, 0.14);
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-modal .trello-input:focus,
+:root:not(.theme-dark) .trello-modal .trello-textarea:focus,
+:root:not(.theme-dark) .trello-modal select.trello-input:focus {
+  border-color: #0079bf;
+  background: #e8ecf2;
+}
+
+:root:not(.theme-dark) .trello-modal .trello-input::placeholder,
+:root:not(.theme-dark) .trello-modal .trello-textarea::placeholder {
+  color: rgba(9, 30, 66, 0.42);
+}
+
+:root:not(.theme-dark) .trello-confirm-text {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-modal .trello-confirm-text strong {
+  color: #0f172a;
+}
+
+:root:not(.theme-dark) .trello-card-detail-aside-title,
+:root:not(.theme-dark) .trello-card-detail-aside-heading-plain {
+  color: #42526e;
+}
+
+:root:not(.theme-dark) .trello-card-detail-log-label {
+  color: #7a8699;
+}
+
+:root:not(.theme-dark) .trello-card-detail-log-value {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-card-comments-panel {
+  background: rgba(228, 233, 241, 0.88);
+  border-color: rgba(9, 30, 66, 0.1);
+}
+
+:root:not(.theme-dark) .trello-card-comments-panel-header {
+  color: #5e6c84;
+}
+
+:root:not(.theme-dark) .trello-card-comments-loading,
+:root:not(.theme-dark) .trello-card-comments-empty,
+:root:not(.theme-dark) .trello-card-comments-guest-hint {
+  color: #7a8699;
+}
+
+:root:not(.theme-dark) .trello-card-comment-author {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-card-comment-when {
+  color: #7a8699;
+}
+
+:root:not(.theme-dark) .trello-card-comment-text {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-card-comment-link {
+  color: #0c66e4;
+}
+
+:root:not(.theme-dark) .trello-card-comment-link:hover {
+  color: #0055cc;
+}
+
+:root:not(.theme-dark) .trello-card-comment-link-danger {
+  color: #ca350f;
+}
+
+:root:not(.theme-dark) .trello-card-comment-link-danger:hover {
+  color: #a0280a;
+}
+
+:root:not(.theme-dark) .trello-modal .trello-profile-display-name {
+  color: #172b4d;
+  background: rgba(230, 235, 242, 0.95);
+  border-color: rgba(9, 30, 66, 0.12);
+}
+
+:root:not(.theme-dark) .trello-modal .trello-profile-display-name:hover:not(:disabled) {
+  background: rgba(220, 228, 238, 0.98);
+  border-color: rgba(0, 121, 191, 0.35);
+}
+
+:root:not(.theme-dark) .trello-invite-role-btn {
+  border-color: rgba(9, 30, 66, 0.14);
+  background: rgba(232, 237, 244, 0.92);
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-invite-role-btn:hover:not(:disabled) {
+  background: rgba(224, 231, 240, 0.96);
+}
+
+:root:not(.theme-dark) .trello-invite-role-btn--active {
+  border-color: rgba(0, 121, 191, 0.55);
+  background: rgba(0, 121, 191, 0.2);
+  color: #0747a6;
 }
 
 /* Выбор роли при приглашении (вместо native select — опции не теряются в списке ОС) */
@@ -2488,7 +2884,91 @@ html:not(.theme-dark) .trello-profile-invites-section .trello-table th {
   user-select: none;
 }
 
+.trello-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 0;
+}
+
+.trello-card-complete-slot {
+  flex-shrink: 0;
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: 1px;
+  transition:
+    width 0.15s ease,
+    min-width 0.15s ease,
+    opacity 0.12s ease;
+}
+
+.trello-card:hover .trello-card-complete-slot,
+.trello-card--completed .trello-card-complete-slot {
+  width: 28px;
+  min-width: 28px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.trello-card-complete-btn {
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #b3b9c4;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: transparent;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.trello-card-complete-btn:hover:not(:disabled) {
+  border-color: #8993a4;
+}
+
+.trello-card-complete-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.trello-card-complete-btn--done {
+  border-color: #2d8c6a;
+  background: #2d8c6a;
+  color: #ffffff;
+}
+
+.trello-card-complete-check {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Выполненная карточка: без зачёркивания (только визуальный маркер — чекбокс) */
+.trello-card-title--done {
+  opacity: 0.92;
+}
+
 .trello-card--clickable {
+  cursor: grab;
+}
+
+.trello-card--clickable .trello-card-title--in-list {
   cursor: pointer;
 }
 
@@ -2642,6 +3122,20 @@ html:not(.theme-dark) .trello-profile-invites-section .trello-table th {
 
 .theme-dark .trello-card-title {
   color: #dfe1e6;
+}
+
+.theme-dark .trello-card-complete-btn {
+  border-color: rgba(184, 199, 214, 0.45);
+}
+
+.theme-dark .trello-card-complete-btn:hover:not(:disabled) {
+  border-color: rgba(223, 225, 230, 0.55);
+}
+
+.theme-dark .trello-card-complete-btn--done {
+  border-color: #3d9f7a;
+  background: #3d9f7a;
+  color: #ffffff;
 }
 
 .theme-dark .trello-card-desc,
@@ -3056,6 +3550,41 @@ html:not(.theme-dark) .trello-profile-invites-section .trello-table th {
   color: #6b778a;
 }
 
+.theme-dark .trello-card-comments-panel {
+  background: rgba(0, 0, 0, 0.22);
+  border-color: rgba(56, 65, 74, 0.75);
+}
+
+.theme-dark .trello-card-comments-panel-header {
+  color: #9fadbc;
+}
+
+.theme-dark .trello-card-comments-loading,
+.theme-dark .trello-card-comments-empty,
+.theme-dark .trello-card-comments-guest-hint {
+  color: #6b778a;
+}
+
+.theme-dark .trello-card-comment-author {
+  color: #dfe1e6;
+}
+
+.theme-dark .trello-card-comment-when {
+  color: #7a8699;
+}
+
+.theme-dark .trello-card-comment-text {
+  color: #b6c2cf;
+}
+
+.theme-dark .trello-card-comment-link {
+  color: #4c9aff;
+}
+
+.theme-dark .trello-card-comment-link-danger {
+  color: #f87462;
+}
+
 .theme-dark .trello-home-card {
   background: #22272b;
   color: #b6c2cf;
@@ -3264,6 +3793,14 @@ html:not(.theme-dark) .trello-profile-invites-section .trello-table th {
   background: rgba(0, 0, 0, 0.12);
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   color: #9fadbc;
+}
+
+.trello-profile-invites-section .trello-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.trello-profile-invites-section .trello-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .trello-profile-invites-section .trello-table tbody tr:nth-child(odd) {

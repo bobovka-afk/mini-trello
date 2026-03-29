@@ -57,3 +57,8 @@ export type List = Prisma.ListModel
  * 
  */
 export type Card = Prisma.CardModel
+/**
+ * Model Comment
+ * 
+ */
+export type Comment = Prisma.CommentModel

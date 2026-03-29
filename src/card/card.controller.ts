@@ -15,6 +15,7 @@ import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
 import { WorkspaceResourceGuard } from '../common/guards/workspace-resource.guard';
 import { CreateCardDto } from './dto/create-card.dto';
 import { MoveCardDto } from './dto/move-card.dto';
+import { SetCardCompletionDto } from './dto/set-card-completion.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 
 @UseGuards(JwtAuthGuard, WorkspaceAccessGuard, WorkspaceResourceGuard)
@@ -43,6 +44,14 @@ export class CardController {
     @Body() dto: MoveCardDto,
   ) {
     return this.cardService.moveCard(cardId, dto);
+  }
+
+  @Patch('workspace/:workspaceId/cards/:cardId/completion')
+  async setCardCompletion(
+    @Param('cardId', ParseIntPipe) cardId: number,
+    @Body() dto: SetCardCompletionDto,
+  ) {
+    return this.cardService.setCardCompletion(cardId, dto);
   }
 
   @Patch('workspace/:workspaceId/cards/:cardId')

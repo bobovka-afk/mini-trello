@@ -244,6 +244,7 @@ export type UserWhereInput = {
   workspaceMembers?: Prisma.WorkspaceMemberListRelationFilter
   workspaceInvitesSent?: Prisma.WorkspaceInviteListRelationFilter
   assignedCards?: Prisma.CardListRelationFilter
+  comments?: Prisma.CommentListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -259,6 +260,7 @@ export type UserOrderByWithRelationInput = {
   workspaceMembers?: Prisma.WorkspaceMemberOrderByRelationAggregateInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteOrderByRelationAggregateInput
   assignedCards?: Prisma.CardOrderByRelationAggregateInput
+  comments?: Prisma.CommentOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -277,6 +279,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   workspaceMembers?: Prisma.WorkspaceMemberListRelationFilter
   workspaceInvitesSent?: Prisma.WorkspaceInviteListRelationFilter
   assignedCards?: Prisma.CardListRelationFilter
+  comments?: Prisma.CommentListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -321,6 +324,7 @@ export type UserCreateInput = {
   workspaceMembers?: Prisma.WorkspaceMemberCreateNestedManyWithoutUserInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteCreateNestedManyWithoutInvitedByInput
   assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
+  comments?: Prisma.CommentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -336,6 +340,7 @@ export type UserUncheckedCreateInput = {
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedCreateNestedManyWithoutInvitedByInput
   assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -350,6 +355,7 @@ export type UserUpdateInput = {
   workspaceMembers?: Prisma.WorkspaceMemberUpdateManyWithoutUserNestedInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUpdateManyWithoutInvitedByNestedInput
   assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -365,6 +371,7 @@ export type UserUncheckedUpdateInput = {
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedUpdateManyWithoutInvitedByNestedInput
   assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -532,6 +539,20 @@ export type UserUpdateOneWithoutAssignedCardsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAssignedCardsInput, Prisma.UserUpdateWithoutAssignedCardsInput>, Prisma.UserUncheckedUpdateWithoutAssignedCardsInput>
 }
 
+export type UserCreateNestedOneWithoutCommentsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCommentsInput, Prisma.UserUncheckedCreateWithoutCommentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCommentsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCommentsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCommentsInput, Prisma.UserUncheckedCreateWithoutCommentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCommentsInput
+  upsert?: Prisma.UserUpsertWithoutCommentsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCommentsInput, Prisma.UserUpdateWithoutCommentsInput>, Prisma.UserUncheckedUpdateWithoutCommentsInput>
+}
+
 export type UserCreateWithoutAuthTokensInput = {
   email: string
   passwordHash?: string | null
@@ -543,6 +564,7 @@ export type UserCreateWithoutAuthTokensInput = {
   workspaceMembers?: Prisma.WorkspaceMemberCreateNestedManyWithoutUserInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteCreateNestedManyWithoutInvitedByInput
   assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
+  comments?: Prisma.CommentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuthTokensInput = {
@@ -557,6 +579,7 @@ export type UserUncheckedCreateWithoutAuthTokensInput = {
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedCreateNestedManyWithoutInvitedByInput
   assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuthTokensInput = {
@@ -586,6 +609,7 @@ export type UserUpdateWithoutAuthTokensInput = {
   workspaceMembers?: Prisma.WorkspaceMemberUpdateManyWithoutUserNestedInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUpdateManyWithoutInvitedByNestedInput
   assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuthTokensInput = {
@@ -600,6 +624,7 @@ export type UserUncheckedUpdateWithoutAuthTokensInput = {
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedUpdateManyWithoutInvitedByNestedInput
   assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutWorkspaceMembersInput = {
@@ -613,6 +638,7 @@ export type UserCreateWithoutWorkspaceMembersInput = {
   authTokens?: Prisma.AuthTokenCreateNestedManyWithoutUserInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteCreateNestedManyWithoutInvitedByInput
   assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
+  comments?: Prisma.CommentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWorkspaceMembersInput = {
@@ -627,6 +653,7 @@ export type UserUncheckedCreateWithoutWorkspaceMembersInput = {
   authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutUserInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedCreateNestedManyWithoutInvitedByInput
   assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWorkspaceMembersInput = {
@@ -656,6 +683,7 @@ export type UserUpdateWithoutWorkspaceMembersInput = {
   authTokens?: Prisma.AuthTokenUpdateManyWithoutUserNestedInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUpdateManyWithoutInvitedByNestedInput
   assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkspaceMembersInput = {
@@ -670,6 +698,7 @@ export type UserUncheckedUpdateWithoutWorkspaceMembersInput = {
   authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutUserNestedInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedUpdateManyWithoutInvitedByNestedInput
   assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutWorkspaceInvitesSentInput = {
@@ -683,6 +712,7 @@ export type UserCreateWithoutWorkspaceInvitesSentInput = {
   authTokens?: Prisma.AuthTokenCreateNestedManyWithoutUserInput
   workspaceMembers?: Prisma.WorkspaceMemberCreateNestedManyWithoutUserInput
   assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
+  comments?: Prisma.CommentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWorkspaceInvitesSentInput = {
@@ -697,6 +727,7 @@ export type UserUncheckedCreateWithoutWorkspaceInvitesSentInput = {
   authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutUserInput
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
   assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWorkspaceInvitesSentInput = {
@@ -726,6 +757,7 @@ export type UserUpdateWithoutWorkspaceInvitesSentInput = {
   authTokens?: Prisma.AuthTokenUpdateManyWithoutUserNestedInput
   workspaceMembers?: Prisma.WorkspaceMemberUpdateManyWithoutUserNestedInput
   assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkspaceInvitesSentInput = {
@@ -740,6 +772,7 @@ export type UserUncheckedUpdateWithoutWorkspaceInvitesSentInput = {
   authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutUserNestedInput
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
   assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAssignedCardsInput = {
@@ -753,6 +786,7 @@ export type UserCreateWithoutAssignedCardsInput = {
   authTokens?: Prisma.AuthTokenCreateNestedManyWithoutUserInput
   workspaceMembers?: Prisma.WorkspaceMemberCreateNestedManyWithoutUserInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteCreateNestedManyWithoutInvitedByInput
+  comments?: Prisma.CommentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedCardsInput = {
@@ -767,6 +801,7 @@ export type UserUncheckedCreateWithoutAssignedCardsInput = {
   authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutUserInput
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedCreateNestedManyWithoutInvitedByInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedCardsInput = {
@@ -796,6 +831,7 @@ export type UserUpdateWithoutAssignedCardsInput = {
   authTokens?: Prisma.AuthTokenUpdateManyWithoutUserNestedInput
   workspaceMembers?: Prisma.WorkspaceMemberUpdateManyWithoutUserNestedInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUpdateManyWithoutInvitedByNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedCardsInput = {
@@ -810,6 +846,81 @@ export type UserUncheckedUpdateWithoutAssignedCardsInput = {
   authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutUserNestedInput
   workspaceMembers?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
   workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedUpdateManyWithoutInvitedByNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutCommentsInput = {
+  email: string
+  passwordHash?: string | null
+  name: string
+  avatarPath?: string | null
+  emailVerifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  authTokens?: Prisma.AuthTokenCreateNestedManyWithoutUserInput
+  workspaceMembers?: Prisma.WorkspaceMemberCreateNestedManyWithoutUserInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteCreateNestedManyWithoutInvitedByInput
+  assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
+}
+
+export type UserUncheckedCreateWithoutCommentsInput = {
+  id?: number
+  email: string
+  passwordHash?: string | null
+  name: string
+  avatarPath?: string | null
+  emailVerifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutUserInput
+  workspaceMembers?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutUserInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedCreateNestedManyWithoutInvitedByInput
+  assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
+}
+
+export type UserCreateOrConnectWithoutCommentsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCommentsInput, Prisma.UserUncheckedCreateWithoutCommentsInput>
+}
+
+export type UserUpsertWithoutCommentsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCommentsInput, Prisma.UserUncheckedUpdateWithoutCommentsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCommentsInput, Prisma.UserUncheckedCreateWithoutCommentsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCommentsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCommentsInput, Prisma.UserUncheckedUpdateWithoutCommentsInput>
+}
+
+export type UserUpdateWithoutCommentsInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authTokens?: Prisma.AuthTokenUpdateManyWithoutUserNestedInput
+  workspaceMembers?: Prisma.WorkspaceMemberUpdateManyWithoutUserNestedInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUpdateManyWithoutInvitedByNestedInput
+  assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCommentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+  workspaceMembers?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutUserNestedInput
+  workspaceInvitesSent?: Prisma.WorkspaceInviteUncheckedUpdateManyWithoutInvitedByNestedInput
+  assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
 }
 
 
@@ -822,6 +933,7 @@ export type UserCountOutputType = {
   workspaceMembers: number
   workspaceInvitesSent: number
   assignedCards: number
+  comments: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -829,6 +941,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   workspaceMembers?: boolean | UserCountOutputTypeCountWorkspaceMembersArgs
   workspaceInvitesSent?: boolean | UserCountOutputTypeCountWorkspaceInvitesSentArgs
   assignedCards?: boolean | UserCountOutputTypeCountAssignedCardsArgs
+  comments?: boolean | UserCountOutputTypeCountCommentsArgs
 }
 
 /**
@@ -869,6 +982,13 @@ export type UserCountOutputTypeCountAssignedCardsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.CardWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCommentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CommentWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -883,6 +1003,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   workspaceMembers?: boolean | Prisma.User$workspaceMembersArgs<ExtArgs>
   workspaceInvitesSent?: boolean | Prisma.User$workspaceInvitesSentArgs<ExtArgs>
   assignedCards?: boolean | Prisma.User$assignedCardsArgs<ExtArgs>
+  comments?: boolean | Prisma.User$commentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -925,6 +1046,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   workspaceMembers?: boolean | Prisma.User$workspaceMembersArgs<ExtArgs>
   workspaceInvitesSent?: boolean | Prisma.User$workspaceInvitesSentArgs<ExtArgs>
   assignedCards?: boolean | Prisma.User$assignedCardsArgs<ExtArgs>
+  comments?: boolean | Prisma.User$commentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -937,6 +1059,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     workspaceMembers: Prisma.$WorkspaceMemberPayload<ExtArgs>[]
     workspaceInvitesSent: Prisma.$WorkspaceInvitePayload<ExtArgs>[]
     assignedCards: Prisma.$CardPayload<ExtArgs>[]
+    comments: Prisma.$CommentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1345,6 +1468,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   workspaceMembers<T extends Prisma.User$workspaceMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$workspaceMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkspaceMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workspaceInvitesSent<T extends Prisma.User$workspaceInvitesSentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$workspaceInvitesSentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkspaceInvitePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedCards<T extends Prisma.User$assignedCardsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedCardsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  comments<T extends Prisma.User$commentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1578,11 +1702,6 @@ export type UserFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Skip the first `n` Users.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of Users.
-   */
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 
@@ -1868,6 +1987,30 @@ export type User$assignedCardsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.CardScalarFieldEnum | Prisma.CardScalarFieldEnum[]
+}
+
+/**
+ * User.comments
+ */
+export type User$commentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Comment
+   */
+  select?: Prisma.CommentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Comment
+   */
+  omit?: Prisma.CommentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CommentInclude<ExtArgs> | null
+  where?: Prisma.CommentWhereInput
+  orderBy?: Prisma.CommentOrderByWithRelationInput | Prisma.CommentOrderByWithRelationInput[]
+  cursor?: Prisma.CommentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CommentScalarFieldEnum | Prisma.CommentScalarFieldEnum[]
 }
 
 /**

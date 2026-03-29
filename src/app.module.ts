@@ -10,6 +10,7 @@ import { WorkspaceInviteModule } from './workspace-invite/workspace-invite.modul
 import { BoardModule } from './board/board.module';
 import { ListModule } from './list/list.module';
 import { CardModule } from './card/card.module';
+import { CommentsModule } from './comments/comments.module';
 
 
 @Module({
@@ -25,6 +26,7 @@ import { CardModule } from './card/card.module';
     BoardModule,
     ListModule,
     CardModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService ],

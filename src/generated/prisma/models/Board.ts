@@ -1362,11 +1362,6 @@ export type BoardFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Skip the first `n` Boards.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of Boards.
-   */
   distinct?: Prisma.BoardScalarFieldEnum | Prisma.BoardScalarFieldEnum[]
 }
 
