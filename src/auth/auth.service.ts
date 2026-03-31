@@ -16,7 +16,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { AuthTokenType } from '../generated/prisma/enums';
 
-
 @Injectable()
 export class AuthService {
   private readonly EXPIRE_DAY_REFRESH_TOKEN = 7
@@ -117,7 +116,6 @@ async validateOAuthLogin(req: {
         data: { emailVerifiedAt: new Date() },
       });
     }
-
     const tokens = this.issueTokens(user.id)
 
     return { user, ...tokens }

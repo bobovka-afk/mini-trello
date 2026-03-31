@@ -24,7 +24,11 @@ export class CommentsService {
     });
   }
 
-  async createComment(cardId: number, userId: number, dto: CreateCommentDto) {
+  async createComment(
+    cardId: number,
+    userId: number,
+    dto: CreateCommentDto,
+  ) {
     return this.prisma.comment.create({
       data: {
         cardId,
@@ -39,7 +43,11 @@ export class CommentsService {
     });
   }
 
-  async updateComment(commentId: number, userId: number, dto: UpdateCommentDto) {
+  async updateComment(
+    commentId: number,
+    userId: number,
+    dto: UpdateCommentDto,
+  ) {
     const comment = await this.getCommentAuthorOrThrow(commentId);
     if (comment.userId !== userId) {
       throw new ForbiddenException({

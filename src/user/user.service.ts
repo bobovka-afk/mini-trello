@@ -48,7 +48,11 @@ export class UserService {
     };
   }
 
-  async createOAuthUser(email: string, name: string, picture: string) {
+  async createOAuthUser(
+    email: string,
+    name: string,
+    picture: string,
+  ) {
     const normalizedEmail = this.normalizeEmail(email);
     const user = await this.prisma.user.create({
       data: {

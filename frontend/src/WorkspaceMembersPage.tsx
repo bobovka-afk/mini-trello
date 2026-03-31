@@ -223,25 +223,10 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     setLeaveBusy(true);
     setMsg(null);
     try {
-      // Важно: на бэке есть 2 DELETE роутa.
-      // `/workspace/:workspaceId/members/:memberId` использует ParseIntPipe для `:memberId`,
-      // поэтому передавать строку `me` туда нельзя (получится numeric string validation error).
-      // Поэтому сразу дергаем роут с `members/me`.
-      try {
-        await api<{ ok: boolean }>(`/workspace/workspace/${workspaceId}/members/me`, {
-          method: 'DELETE',
-          accessToken,
-        });
-      } catch (e) {
-        const err = e as Partial<ApiError>;
-        // Если бэкенд “старый” и нужный роут не найден — пробуем альтернативу.
-        if (err?.status !== 404) throw e;
-        await api<{ ok: boolean }>(`/workspace/${workspaceId}/members/me`, {
-          method: 'DELETE',
-          accessToken,
-        });
-      }
-
+      await api<{ ok: boolean }>(`/workspace/${workspaceId}/members/me`, {
+        method: 'DELETE',
+        accessToken,
+      });
       navigate('/workspaces');
     } catch (e) {
       setMsg(formatError(e));

@@ -72,33 +72,4 @@ export class WorkspaceController {
     return this.workspaceService.deleteWorkspace(workspaceId);
   }
 
-  @UseGuards(WorkspaceAccessGuard)
-  @Get(':workspaceId/members')
-  async getMembersWorkspace(
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
-    @Query() paginationDto: PaginationDto,
-  ) {
-    return this.workspaceService.getWorkspaceMembers(workspaceId, paginationDto);
-  }
-
-  @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
-  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
-  @Delete(':workspaceId/members/:memberId')
-  async deleteWorkspaceMember(
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
-    @Param('memberId', ParseIntPipe) memberId: number,
-  ) {
-    return this.workspaceService.deleteWorkspaceMember(workspaceId, memberId);
-  }
-
-  @UseGuards(WorkspaceAccessGuard)
-  @Delete('/workspace/:workspaceId/members/me')
-  async leaveWorkspace(
-    @Req() req: Request & { user: { id: number } },
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
-  ) {
-    return this.workspaceService.leaveWorkspace(req.user.id, workspaceId);
-  }
-
-
 }

@@ -11,6 +11,7 @@ import { BoardModule } from './board/board.module';
 import { ListModule } from './list/list.module';
 import { CardModule } from './card/card.module';
 import { CommentsModule } from './comments/comments.module';
+import { WorkspaceMembersModule } from './workspace-members/workspace-members.module';
 
 
 @Module({
@@ -27,6 +28,7 @@ import { CommentsModule } from './comments/comments.module';
     ListModule,
     CardModule,
     CommentsModule,
+    WorkspaceMembersModule,
   ],
   controllers: [AppController],
   providers: [AppService ],
