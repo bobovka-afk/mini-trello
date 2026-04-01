@@ -6,7 +6,6 @@ type InviteRow = {
   id: number;
   role: string;
   expiresAt: string;
-  usedAt: string | null;
   createdAt: string;
   workspace: { name: string };
   invitedBy: { name: string; email: string };
@@ -256,7 +255,7 @@ export function InvitesPage({ accessToken }: Props) {
                 </thead>
                 <tbody>
                   {rows.map((row) => {
-                    const disabled = !!row.usedAt || isExpired(row.expiresAt);
+                    const disabled = isExpired(row.expiresAt);
                     return (
                       <tr key={row.id}>
                         <td>

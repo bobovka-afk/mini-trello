@@ -46,7 +46,7 @@ export class WorkspaceRoleGuard implements CanActivate {
       throw new ForbiddenException({
         code: 'WORKSPACE_ACTION_FORBIDDEN',
         message:
-          'У вас нет прав для этого действия в рабочем пространстве.',
+          'You do not have permission to perform this action in this workspace.',
       });
     }
 

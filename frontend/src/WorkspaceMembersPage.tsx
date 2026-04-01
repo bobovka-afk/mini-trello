@@ -24,6 +24,15 @@ type WorkspaceMemberRow = {
   };
 };
 
+type WorkspaceInviteRow = {
+  id: number;
+  email: string;
+  role: string;
+  expiresAt: string;
+  createdAt: string;
+  invitedBy: { id: number; email: string };
+};
+
 function navigate(to: string) {
   window.history.pushState({}, '', to);
   window.dispatchEvent(new PopStateEvent('popstate'));
@@ -114,6 +123,17 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   const [createBusy, setCreateBusy] = useState(false);
   const [createEmail, setCreateEmail] = useState('');
   const [createRole, setCreateRole] = useState<InviteRole>('MEMBER');
+
+  const INVITES_PAGE_SIZE = 20;
+  const [invitesOpen, setInvitesOpen] = useState(false);
+  const [inviteRows, setInviteRows] = useState<WorkspaceInviteRow[]>([]);
+  const [invitesLoading, setInvitesLoading] = useState(false);
+  const [invitesHasMore, setInvitesHasMore] = useState(false);
+  const [invitesLoadMoreBusy, setInvitesLoadMoreBusy] = useState(false);
+  const [deleteInviteTarget, setDeleteInviteTarget] = useState<WorkspaceInviteRow | null>(
+    null,
+  );
+  const [deleteInviteBusy, setDeleteInviteBusy] = useState(false);
 
   const currentUserId = currentUser?.id ?? null;
 
@@ -265,6 +285,70 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     }
   }
 
+  const loadWorkspaceInvites = useCallback(
+    async (offset: number, append: boolean) => {
+      if (!accessToken) return;
+      if (append) {
+        setInvitesLoadMoreBusy(true);
+      } else {
+        setInvitesLoading(true);
+      }
+      setMsg(null);
+      try {
+        const data = await api<WorkspaceInviteRow[]>(
+          `/workspace-invite/${workspaceId}?limit=${INVITES_PAGE_SIZE}&offset=${offset}`,
+          { method: 'GET', accessToken },
+        );
+        const list = Array.isArray(data) ? data : [];
+        if (append) {
+          setInviteRows((prev) => [...prev, ...list]);
+        } else {
+          setInviteRows(list);
+        }
+        setInvitesHasMore(list.length === INVITES_PAGE_SIZE);
+      } catch (e) {
+        if (!append) setInviteRows([]);
+        setInvitesHasMore(false);
+        setMsg(formatError(e));
+      } finally {
+        setInvitesLoading(false);
+        setInvitesLoadMoreBusy(false);
+      }
+    },
+    [accessToken, workspaceId],
+  );
+
+  async function openInvitesModal() {
+    setInvitesOpen(true);
+    setInviteRows([]);
+    setInvitesHasMore(false);
+    setMsg(null);
+    await loadWorkspaceInvites(0, false);
+  }
+
+  async function loadMoreInvites() {
+    if (invitesLoadMoreBusy || !invitesHasMore) return;
+    await loadWorkspaceInvites(inviteRows.length, true);
+  }
+
+  async function revokeInvite() {
+    if (!accessToken || !deleteInviteTarget) return;
+    setDeleteInviteBusy(true);
+    setMsg(null);
+    try {
+      await api<{ ok: boolean }>(
+        `/workspace-invite/${workspaceId}/${deleteInviteTarget.id}`,
+        { method: 'DELETE', accessToken },
+      );
+      setDeleteInviteTarget(null);
+      await loadWorkspaceInvites(0, false);
+    } catch (e) {
+      setMsg(formatError(e));
+    } finally {
+      setDeleteInviteBusy(false);
+    }
+  }
+
   return (
     <div className="trello-app-shell">
       <div className="trello-boards-main">
@@ -288,17 +372,29 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
           </div>
           <h1 className="trello-topbar-stripe-center">Участники рабочего пространства</h1>
           <div className="trello-topbar-actions">
-            <button
-              type="button"
-              className="trello-btn trello-btn-primary"
-              disabled={!accessToken || !canManageWorkspace || createBusy}
-              onClick={() => {
-                setCreateOpen(true);
-                setMsg(null);
-              }}
-            >
-              Отправить приглашение
-            </button>
+            {canManageWorkspace && (
+              <button
+                type="button"
+                className="trello-btn trello-btn-ghost"
+                disabled={!accessToken || invitesLoading}
+                onClick={() => void openInvitesModal()}
+              >
+                Приглашения
+              </button>
+            )}
+            {canManageWorkspace && (
+              <button
+                type="button"
+                className="trello-btn trello-btn-primary"
+                disabled={!accessToken || createBusy}
+                onClick={() => {
+                  setCreateOpen(true);
+                  setMsg(null);
+                }}
+              >
+                Отправить приглашение
+              </button>
+            )}
           </div>
         </header>
 
@@ -506,6 +602,163 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                   onClick={() => void submitCreateInvite()}
                 >
                   {createBusy ? 'Отправка…' : 'Отправить приглашение'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {invitesOpen && (
+          <div
+            className="trello-modal-backdrop"
+            role="presentation"
+            onClick={() =>
+              !invitesLoading && !invitesLoadMoreBusy && !deleteInviteBusy && setInvitesOpen(false)
+            }
+          >
+            <div
+              className="trello-modal trello-modal--invites-wide"
+              role="dialog"
+              aria-modal
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="trello-modal-head">
+                <h2 className="trello-modal-title">Активные приглашения</h2>
+                <button
+                  type="button"
+                  className="trello-modal-close"
+                  onClick={() =>
+                    !invitesLoading &&
+                    !invitesLoadMoreBusy &&
+                    !deleteInviteBusy &&
+                    setInvitesOpen(false)
+                  }
+                  aria-label="Закрыть"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="trello-modal-body">
+                {invitesLoading && inviteRows.length === 0 ? (
+                  <div className="trello-empty">Загрузка…</div>
+                ) : inviteRows.length === 0 ? (
+                  <div className="trello-empty">Нет активных приглашений.</div>
+                ) : (
+                  <div className="trello-table-wrap">
+                    <table className="trello-table">
+                      <thead>
+                        <tr>
+                          <th>Email</th>
+                          <th>Роль</th>
+                          <th>Отправлено</th>
+                          <th>Действует до</th>
+                          <th>Пригласил</th>
+                          <th />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inviteRows.map((inv) => (
+                          <tr key={inv.id}>
+                            <td>{inv.email}</td>
+                            <td>
+                              <span className="trello-pill">{formatWorkspaceRole(inv.role)}</span>
+                            </td>
+                            <td className="trello-cell-meta">{formatDate(inv.createdAt)}</td>
+                            <td className="trello-cell-meta">{formatDate(inv.expiresAt)}</td>
+                            <td className="trello-invite-inviter-email">{inv.invitedBy.email}</td>
+                            <td className="trello-row-actions">
+                              <button
+                                type="button"
+                                className="trello-btn trello-btn-danger trello-btn-sm"
+                                disabled={deleteInviteBusy}
+                                onClick={() => {
+                                  setDeleteInviteTarget(inv);
+                                  setMsg(null);
+                                }}
+                              >
+                                Удалить
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {!invitesLoading && inviteRows.length > 0 && invitesHasMore && (
+                  <div className="trello-workspaces-load-more" style={{ marginTop: 12 }}>
+                    <button
+                      type="button"
+                      className="trello-btn trello-btn-ghost"
+                      disabled={invitesLoadMoreBusy}
+                      onClick={() => void loadMoreInvites()}
+                    >
+                      {invitesLoadMoreBusy ? 'Загрузка…' : 'Загрузить ещё'}
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="trello-modal-foot">
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-ghost"
+                  onClick={() =>
+                    !invitesLoading &&
+                    !invitesLoadMoreBusy &&
+                    !deleteInviteBusy &&
+                    setInvitesOpen(false)
+                  }
+                >
+                  Закрыть
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {deleteInviteTarget && (
+          <div
+            className="trello-modal-backdrop"
+            role="presentation"
+            onClick={() => !deleteInviteBusy && setDeleteInviteTarget(null)}
+          >
+            <div
+              className="trello-modal trello-modal-narrow"
+              role="dialog"
+              aria-modal
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="trello-modal-head">
+                <h2 className="trello-modal-title">Отозвать приглашение?</h2>
+                <button
+                  type="button"
+                  className="trello-modal-close"
+                  onClick={() => !deleteInviteBusy && setDeleteInviteTarget(null)}
+                  aria-label="Закрыть"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="trello-modal-body">
+                <p className="trello-confirm-text">
+                  Приглашение на <strong>{deleteInviteTarget.email}</strong> будет отменено.
+                </p>
+              </div>
+              <div className="trello-modal-foot">
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-ghost"
+                  onClick={() => !deleteInviteBusy && setDeleteInviteTarget(null)}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-danger"
+                  disabled={deleteInviteBusy}
+                  onClick={() => void revokeInvite()}
+                >
+                  {deleteInviteBusy ? 'Удаление…' : 'Удалить'}
                 </button>
               </div>
             </div>

@@ -61,7 +61,7 @@ export class WorkspaceAccessGuard implements CanActivate {
     if (!member) {
       throw new ForbiddenException({
         code: 'WORKSPACE_MEMBER_REQUIRED',
-        message: 'Вы не участник этого рабочего пространства.',
+        message: 'You are not a member of this workspace.',
       });
     }
 

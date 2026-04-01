@@ -34,6 +34,16 @@ export class WorkspaceInviteController {
 
   @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
   @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
+  @Get(':workspaceId')
+  async getWorkspaceInvites(
+    @Param('workspaceId', ParseIntPipe) workspaceId: number,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.workspaceInviteService.getWorkspaceInvites(workspaceId, paginationDto);
+  }
+
+  @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
+  @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Post('create/:workspaceId')
   async sendInvite(
     @Param('workspaceId', ParseIntPipe) workspaceId: number, 

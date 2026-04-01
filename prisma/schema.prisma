@@ -103,7 +103,6 @@ model WorkspaceInvite {
   role            WorkspaceRole         @default(MEMBER)
   status          WorkspaceInviteStatus @default(PENDING)
   expiresAt       DateTime              @map("expires_at")
-  usedAt          DateTime?             @map("used_at")
   createdAt       DateTime              @default(now()) @map("created_at")
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

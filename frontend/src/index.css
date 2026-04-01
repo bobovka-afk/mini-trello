@@ -1612,6 +1612,35 @@ button {
   max-width: 380px;
 }
 
+/* Список приглашений: ширина и высота, чтобы таблица читалась без лишнего скролла окна */
+.trello-modal--invites-wide {
+  max-width: min(960px, calc(100vw - 32px));
+  width: 100%;
+  min-height: min(560px, calc(100vh - 48px));
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+.trello-modal--invites-wide .trello-modal-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.trello-modal--invites-wide .trello-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.trello-invite-inviter-email {
+  word-break: break-word;
+  max-width: 240px;
+}
+
 .trello-modal-card-detail {
   max-width: 920px;
 }
@@ -2554,16 +2583,89 @@ html:not(.theme-dark) .trello-app-shell .trello-inline-link {
   color: #d4f0ff;
 }
 
+/* Модалка поверх градиента shell: таблица и подписи — тёмный текст (не «белый с доски») */
+:root:not(.theme-dark) .trello-modal .trello-table th,
+:root:not(.theme-dark) .trello-modal .trello-table td {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-modal .trello-cell-meta {
+  color: #5e6c84;
+}
+
+:root:not(.theme-dark) .trello-modal .trello-invite-inviter-email {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-modal .trello-pill {
+  background: rgba(9, 30, 66, 0.08);
+  color: #172b4d;
+  border: 1px solid rgba(9, 30, 66, 0.12);
+}
+
+:root:not(.theme-dark) .trello-modal .trello-empty {
+  color: #5e6c84;
+}
+
 html:not(.theme-dark) .trello-board-viewport .trello-board-loading {
   color: rgba(255, 255, 255, 0.88);
 }
 
-html:not(.theme-dark) .trello-profile-invites-section .trello-panel-title {
-  color: #fff;
+/* Профиль — блок «Мои приглашения»: светлая карточка и явная полоса под заголовком */
+:root:not(.theme-dark) .trello-profile-invites-section {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(9, 30, 66, 0.14);
+  backdrop-filter: blur(12px);
 }
 
-html:not(.theme-dark) .trello-profile-invites-section .trello-table th {
-  color: #fff;
+:root:not(.theme-dark) .trello-profile-invites-section .trello-panel-head {
+  background: rgba(248, 249, 251, 0.95);
+  border-bottom: 1px solid rgba(9, 30, 66, 0.14);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-panel-title {
+  color: #5e6c84;
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-table th {
+  background: rgba(250, 251, 252, 0.98);
+  border-bottom: 1px solid rgba(9, 30, 66, 0.12);
+  color: #5e6c84;
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-table td {
+  border-bottom: 1px solid rgba(9, 30, 66, 0.08);
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-table tbody tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-table tbody tr:nth-child(even) {
+  background: rgba(244, 246, 249, 0.9);
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-table tbody tr:hover {
+  background: rgba(235, 238, 243, 0.95);
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-cell-title {
+  color: #172b4d;
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-cell-meta {
+  color: #5e6c84;
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-pill {
+  background: rgba(9, 30, 66, 0.08);
+  color: #172b4d;
+  border: 1px solid rgba(9, 30, 66, 0.1);
+}
+
+:root:not(.theme-dark) .trello-profile-invites-section .trello-empty {
+  color: #5e6c84;
 }
 
 .trello-board-topbar {
@@ -3782,7 +3884,8 @@ html:not(.theme-dark) .trello-profile-invites-section .trello-table th {
 
 .trello-profile-invites-section .trello-panel-head {
   background: rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
 }
 
 .trello-profile-invites-section .trello-panel-title {

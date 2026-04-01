@@ -47,7 +47,6 @@ export type WorkspaceInviteMinAggregateOutputType = {
   role: $Enums.WorkspaceRole | null
   status: $Enums.WorkspaceInviteStatus | null
   expiresAt: Date | null
-  usedAt: Date | null
   createdAt: Date | null
 }
 
@@ -60,7 +59,6 @@ export type WorkspaceInviteMaxAggregateOutputType = {
   role: $Enums.WorkspaceRole | null
   status: $Enums.WorkspaceInviteStatus | null
   expiresAt: Date | null
-  usedAt: Date | null
   createdAt: Date | null
 }
 
@@ -73,7 +71,6 @@ export type WorkspaceInviteCountAggregateOutputType = {
   role: number
   status: number
   expiresAt: number
-  usedAt: number
   createdAt: number
   _all: number
 }
@@ -100,7 +97,6 @@ export type WorkspaceInviteMinAggregateInputType = {
   role?: true
   status?: true
   expiresAt?: true
-  usedAt?: true
   createdAt?: true
 }
 
@@ -113,7 +109,6 @@ export type WorkspaceInviteMaxAggregateInputType = {
   role?: true
   status?: true
   expiresAt?: true
-  usedAt?: true
   createdAt?: true
 }
 
@@ -126,7 +121,6 @@ export type WorkspaceInviteCountAggregateInputType = {
   role?: true
   status?: true
   expiresAt?: true
-  usedAt?: true
   createdAt?: true
   _all?: true
 }
@@ -226,7 +220,6 @@ export type WorkspaceInviteGroupByOutputType = {
   role: $Enums.WorkspaceRole
   status: $Enums.WorkspaceInviteStatus
   expiresAt: Date
-  usedAt: Date | null
   createdAt: Date
   _count: WorkspaceInviteCountAggregateOutputType | null
   _avg: WorkspaceInviteAvgAggregateOutputType | null
@@ -262,7 +255,6 @@ export type WorkspaceInviteWhereInput = {
   role?: Prisma.EnumWorkspaceRoleFilter<"WorkspaceInvite"> | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFilter<"WorkspaceInvite"> | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFilter<"WorkspaceInvite"> | Date | string
-  usedAt?: Prisma.DateTimeNullableFilter<"WorkspaceInvite"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WorkspaceInvite"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
   invitedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -277,7 +269,6 @@ export type WorkspaceInviteOrderByWithRelationInput = {
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
-  usedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
   invitedBy?: Prisma.UserOrderByWithRelationInput
@@ -296,7 +287,6 @@ export type WorkspaceInviteWhereUniqueInput = Prisma.AtLeast<{
   role?: Prisma.EnumWorkspaceRoleFilter<"WorkspaceInvite"> | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFilter<"WorkspaceInvite"> | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFilter<"WorkspaceInvite"> | Date | string
-  usedAt?: Prisma.DateTimeNullableFilter<"WorkspaceInvite"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WorkspaceInvite"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
   invitedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -311,7 +301,6 @@ export type WorkspaceInviteOrderByWithAggregationInput = {
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
-  usedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.WorkspaceInviteCountOrderByAggregateInput
   _avg?: Prisma.WorkspaceInviteAvgOrderByAggregateInput
@@ -332,7 +321,6 @@ export type WorkspaceInviteScalarWhereWithAggregatesInput = {
   role?: Prisma.EnumWorkspaceRoleWithAggregatesFilter<"WorkspaceInvite"> | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusWithAggregatesFilter<"WorkspaceInvite"> | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"WorkspaceInvite"> | Date | string
-  usedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WorkspaceInvite"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WorkspaceInvite"> | Date | string
 }
 
@@ -342,7 +330,6 @@ export type WorkspaceInviteCreateInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
   workspace: Prisma.WorkspaceCreateNestedOneWithoutInvitesInput
   invitedBy: Prisma.UserCreateNestedOneWithoutWorkspaceInvitesSentInput
@@ -357,7 +344,6 @@ export type WorkspaceInviteUncheckedCreateInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -367,7 +353,6 @@ export type WorkspaceInviteUpdateInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutInvitesNestedInput
   invitedBy?: Prisma.UserUpdateOneRequiredWithoutWorkspaceInvitesSentNestedInput
@@ -382,7 +367,6 @@ export type WorkspaceInviteUncheckedUpdateInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -395,7 +379,6 @@ export type WorkspaceInviteCreateManyInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -405,7 +388,6 @@ export type WorkspaceInviteUpdateManyMutationInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -418,7 +400,6 @@ export type WorkspaceInviteUncheckedUpdateManyInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -446,7 +427,6 @@ export type WorkspaceInviteCountOrderByAggregateInput = {
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
-  usedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -465,7 +445,6 @@ export type WorkspaceInviteMaxOrderByAggregateInput = {
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
-  usedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -478,7 +457,6 @@ export type WorkspaceInviteMinOrderByAggregateInput = {
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
-  usedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -582,7 +560,6 @@ export type WorkspaceInviteCreateWithoutInvitedByInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
   workspace: Prisma.WorkspaceCreateNestedOneWithoutInvitesInput
 }
@@ -595,7 +572,6 @@ export type WorkspaceInviteUncheckedCreateWithoutInvitedByInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -637,7 +613,6 @@ export type WorkspaceInviteScalarWhereInput = {
   role?: Prisma.EnumWorkspaceRoleFilter<"WorkspaceInvite"> | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFilter<"WorkspaceInvite"> | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFilter<"WorkspaceInvite"> | Date | string
-  usedAt?: Prisma.DateTimeNullableFilter<"WorkspaceInvite"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WorkspaceInvite"> | Date | string
 }
 
@@ -647,7 +622,6 @@ export type WorkspaceInviteCreateWithoutWorkspaceInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
   invitedBy: Prisma.UserCreateNestedOneWithoutWorkspaceInvitesSentInput
 }
@@ -660,7 +634,6 @@ export type WorkspaceInviteUncheckedCreateWithoutWorkspaceInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -698,7 +671,6 @@ export type WorkspaceInviteCreateManyInvitedByInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -708,7 +680,6 @@ export type WorkspaceInviteUpdateWithoutInvitedByInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutInvitesNestedInput
 }
@@ -721,7 +692,6 @@ export type WorkspaceInviteUncheckedUpdateWithoutInvitedByInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -733,7 +703,6 @@ export type WorkspaceInviteUncheckedUpdateManyWithoutInvitedByInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -745,7 +714,6 @@ export type WorkspaceInviteCreateManyWorkspaceInput = {
   role?: $Enums.WorkspaceRole
   status?: $Enums.WorkspaceInviteStatus
   expiresAt: Date | string
-  usedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -755,7 +723,6 @@ export type WorkspaceInviteUpdateWithoutWorkspaceInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invitedBy?: Prisma.UserUpdateOneRequiredWithoutWorkspaceInvitesSentNestedInput
 }
@@ -768,7 +735,6 @@ export type WorkspaceInviteUncheckedUpdateWithoutWorkspaceInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -780,7 +746,6 @@ export type WorkspaceInviteUncheckedUpdateManyWithoutWorkspaceInput = {
   role?: Prisma.EnumWorkspaceRoleFieldUpdateOperationsInput | $Enums.WorkspaceRole
   status?: Prisma.EnumWorkspaceInviteStatusFieldUpdateOperationsInput | $Enums.WorkspaceInviteStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -795,7 +760,6 @@ export type WorkspaceInviteSelect<ExtArgs extends runtime.Types.Extensions.Inter
   role?: boolean
   status?: boolean
   expiresAt?: boolean
-  usedAt?: boolean
   createdAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   invitedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -810,7 +774,6 @@ export type WorkspaceInviteSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   role?: boolean
   status?: boolean
   expiresAt?: boolean
-  usedAt?: boolean
   createdAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   invitedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -825,7 +788,6 @@ export type WorkspaceInviteSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   role?: boolean
   status?: boolean
   expiresAt?: boolean
-  usedAt?: boolean
   createdAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   invitedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -840,11 +802,10 @@ export type WorkspaceInviteSelectScalar = {
   role?: boolean
   status?: boolean
   expiresAt?: boolean
-  usedAt?: boolean
   createdAt?: boolean
 }
 
-export type WorkspaceInviteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "workspaceId" | "invitedByUserId" | "tokenHash" | "role" | "status" | "expiresAt" | "usedAt" | "createdAt", ExtArgs["result"]["workspaceInvite"]>
+export type WorkspaceInviteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "workspaceId" | "invitedByUserId" | "tokenHash" | "role" | "status" | "expiresAt" | "createdAt", ExtArgs["result"]["workspaceInvite"]>
 export type WorkspaceInviteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   invitedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -873,7 +834,6 @@ export type $WorkspaceInvitePayload<ExtArgs extends runtime.Types.Extensions.Int
     role: $Enums.WorkspaceRole
     status: $Enums.WorkspaceInviteStatus
     expiresAt: Date
-    usedAt: Date | null
     createdAt: Date
   }, ExtArgs["result"]["workspaceInvite"]>
   composites: {}
@@ -1308,7 +1268,6 @@ export interface WorkspaceInviteFieldRefs {
   readonly role: Prisma.FieldRef<"WorkspaceInvite", 'WorkspaceRole'>
   readonly status: Prisma.FieldRef<"WorkspaceInvite", 'WorkspaceInviteStatus'>
   readonly expiresAt: Prisma.FieldRef<"WorkspaceInvite", 'DateTime'>
-  readonly usedAt: Prisma.FieldRef<"WorkspaceInvite", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"WorkspaceInvite", 'DateTime'>
 }
     
@@ -1506,6 +1465,11 @@ export type WorkspaceInviteFindManyArgs<ExtArgs extends runtime.Types.Extensions
    * Skip the first `n` WorkspaceInvites.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of WorkspaceInvites.
+   */
   distinct?: Prisma.WorkspaceInviteScalarFieldEnum | Prisma.WorkspaceInviteScalarFieldEnum[]
 }
 
