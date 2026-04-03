@@ -20,18 +20,35 @@ import { diskStorage } from 'multer';
 import type { File as MulterFile } from 'multer';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('user')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('me')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'Returns current user profile' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@Req() req: Request & { user: { id: number } }) {
     return this.userService.getById(String(req.user.id));
   }
 
   @Patch('me')
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid profile data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateProfile(
     @Req() req: Request & { user: { id: number } },
     @Body() body: UpdateUserDto,
@@ -40,6 +57,21 @@ export class UserController {
   }
 
   @Patch('update-avatar')
+  @ApiOperation({ summary: 'Upload and update user avatar' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Avatar image file',
+        },
+      },
+    },
+  })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -70,6 +102,9 @@ export class UserController {
       },
     }),
   )
+  @ApiResponse({ status: 200, description: 'Avatar updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or missing file' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateAvatar(
     @Req() req: Request & { user: { id: number } },
     @UploadedFile() file?: MulterFile,
@@ -88,6 +123,9 @@ export class UserController {
   }
 
   @Delete('remove-avatar')
+  @ApiOperation({ summary: 'Remove current user avatar' })
+  @ApiResponse({ status: 200, description: 'Avatar removed successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async removeAvatar(@Req() req: Request & { user: { id: number } }) {
     return this.userService.removeAvatar(req.user.id);
   }

@@ -17,14 +17,29 @@ import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
 import { WorkspaceRoleGuard } from '../common/guards/workspace-role.guard';
 import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
 import { WorkspaceRole } from '../generated/prisma/enums';
+import { Request } from 'express';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
-
+@ApiTags('workspace-invite')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('workspace-invite')
 export class WorkspaceInviteController {
   constructor(private readonly workspaceInviteService: WorkspaceInviteService) {}
 
   @Get('my')
+  @ApiOperation({ summary: 'Get invites for current user' })
+  @ApiQuery({ name: 'limit', required: false, example: 10, description: 'Maximum number of records to return' })
+  @ApiQuery({ name: 'offset', required: false, example: 0, description: 'Number of records to skip' })
+  @ApiResponse({ status: 200, description: 'Returns invites for current user' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMyInvites(
     @Req() req: Request & { user: { id: number } },
     @Query() paginationDto: PaginationDto,
@@ -35,6 +50,14 @@ export class WorkspaceInviteController {
   @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
   @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Get(':workspaceId')
+  @ApiOperation({ summary: 'Get invites for a workspace' })
+  @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
+  @ApiQuery({ name: 'limit', required: false, example: 10, description: 'Maximum number of records to return' })
+  @ApiQuery({ name: 'offset', required: false, example: 0, description: 'Number of records to skip' })
+  @ApiResponse({ status: 200, description: 'Returns workspace invites' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
+  @ApiResponse({ status: 404, description: 'Workspace not found' })
   async getWorkspaceInvites(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Query() paginationDto: PaginationDto,
@@ -45,6 +68,13 @@ export class WorkspaceInviteController {
   @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
   @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Post('create/:workspaceId')
+  @ApiOperation({ summary: 'Create workspace invite' })
+  @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
+  @ApiResponse({ status: 201, description: 'Invite created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid invite data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
+  @ApiResponse({ status: 409, description: 'Invite already exists or user is already a member' })
   async sendInvite(
     @Param('workspaceId', ParseIntPipe) workspaceId: number, 
     @Req() req: Request & { user: { id: number } },@Body() dto: SendInviteDto,) {
@@ -52,6 +82,10 @@ export class WorkspaceInviteController {
     }
 
   @Post('accept-token')
+  @ApiOperation({ summary: 'Accept workspace invite by token' })
+  @ApiResponse({ status: 201, description: 'Invite accepted by token' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Invite not found' })
   async acceptInviteByToken(
     @Req() req: Request & { user: { id: number } },
     @Body() dto: AcceptInviteTokenDto,
@@ -63,6 +97,12 @@ export class WorkspaceInviteController {
   }
 
   @Post(':inviteId/accept')
+  @ApiOperation({ summary: 'Accept workspace invite by id' })
+  @ApiParam({ name: 'inviteId', example: 15, description: 'Invite id' })
+  @ApiResponse({ status: 201, description: 'Invite accepted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Invite not found' })
+  @ApiResponse({ status: 409, description: 'Invite has already been processed' })
   async acceptInvite(
     @Param('inviteId', ParseIntPipe) inviteId: number,
     @Req() req: Request & { user: { id: number } },
@@ -71,6 +111,12 @@ export class WorkspaceInviteController {
   }
 
   @Post(':inviteId/decline')
+  @ApiOperation({ summary: 'Decline workspace invite by id' })
+  @ApiParam({ name: 'inviteId', example: 15, description: 'Invite id' })
+  @ApiResponse({ status: 201, description: 'Invite declined successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Invite not found' })
+  @ApiResponse({ status: 409, description: 'Invite has already been processed' })
   async declineInvite(
     @Param('inviteId', ParseIntPipe) inviteId: number,
     @Req() req: Request & { user: { id: number } },
@@ -81,6 +127,13 @@ export class WorkspaceInviteController {
   @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)
   @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
   @Delete(':workspaceId/:inviteId')
+  @ApiOperation({ summary: 'Delete workspace invite' })
+  @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
+  @ApiParam({ name: 'inviteId', example: 15, description: 'Invite id' })
+  @ApiResponse({ status: 200, description: 'Invite deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
+  @ApiResponse({ status: 404, description: 'Invite not found' })
   async deleteInvite(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('inviteId', ParseIntPipe) inviteId: number,
