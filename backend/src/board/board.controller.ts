@@ -11,6 +11,7 @@ import { WorkspaceResourceGuard } from '../common/guards/workspace-resource.guar
 import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
 import { WorkspaceRole } from '../generated/prisma/enums';
 import {
+  ApiBody,
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
@@ -21,19 +22,20 @@ import {
 @ApiTags('board')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, WorkspaceAccessGuard, WorkspaceResourceGuard)
-@Controller('board')
+@Controller('workspace/:workspaceId')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
   @UseGuards(WorkspaceRoleGuard)
   @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
-  @Post('workspace/:workspaceId/boards')
+  @Post('boards')
   @ApiOperation({ summary: 'Create board' })
+  @ApiBody({ type: CreateBoardDto, description: 'Board creation payload' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
-  @ApiResponse({ status: 201, description: 'Board created successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid board data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
+  @ApiResponse({ status: 201, description: 'Board created successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid board creation payload.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   async createBoard(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Body() dto: CreateBoardDto,
@@ -41,26 +43,26 @@ export class BoardController {
     return this.boardService.createBoard(workspaceId, dto);
   }
 
-  @Get('workspace/:workspaceId/boards/:boardId')
+  @Get('boards/:boardId')
   @ApiOperation({ summary: 'Get board details' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'boardId', example: 7, description: 'Board id' })
-  @ApiResponse({ status: 200, description: 'Returns board details' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'User is not a member of this workspace' })
-  @ApiResponse({ status: 404, description: 'Board not found' })
+  @ApiResponse({ status: 200, description: 'Board details returned successfully.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
+  @ApiResponse({ status: 404, description: 'Board not found.' })
   async getBoard(
     @Param('boardId', ParseIntPipe) boardId: number,
   ) {
     return this.boardService.getBoard(boardId);
   }
 
-  @Get('workspace/:workspaceId/boards')
+  @Get('boards')
   @ApiOperation({ summary: 'Get workspace boards' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
-  @ApiResponse({ status: 200, description: 'Returns workspace boards' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'User is not a member of this workspace' })
+  @ApiResponse({ status: 200, description: 'Workspace boards returned successfully.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   async getBoards(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
   ) {
@@ -69,15 +71,16 @@ export class BoardController {
 
   @UseGuards(WorkspaceRoleGuard)
   @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
-  @Patch('workspace/:workspaceId/boards/:boardId')
+  @Patch('boards/:boardId')
   @ApiOperation({ summary: 'Update board' })
+  @ApiBody({ type: UpdateBoardDto, description: 'Board update payload' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'boardId', example: 7, description: 'Board id' })
-  @ApiResponse({ status: 200, description: 'Board updated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid update data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
-  @ApiResponse({ status: 404, description: 'Board not found' })
+  @ApiResponse({ status: 200, description: 'Board updated successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid board update payload.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
+  @ApiResponse({ status: 404, description: 'Board not found.' })
   async updateBoard(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Body() dto: UpdateBoardDto,
@@ -90,14 +93,14 @@ export class BoardController {
 
   @UseGuards(WorkspaceRoleGuard)
   @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
-  @Delete('workspace/:workspaceId/boards/:boardId')
+  @Delete('boards/:boardId')
   @ApiOperation({ summary: 'Delete board' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'boardId', example: 7, description: 'Board id' })
-  @ApiResponse({ status: 200, description: 'Board deleted successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
-  @ApiResponse({ status: 404, description: 'Board not found' })
+  @ApiResponse({ status: 200, description: 'Board deleted successfully.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
+  @ApiResponse({ status: 404, description: 'Board not found.' })
   async deleteBoard(
     @Param('boardId', ParseIntPipe) boardId: number,
   ) {

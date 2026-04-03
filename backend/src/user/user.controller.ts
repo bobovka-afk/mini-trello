@@ -20,6 +20,8 @@ import { diskStorage } from 'multer';
 import type { File as MulterFile } from 'multer';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
+import { RateLimit } from '../common/decorators/rate-limit.decorator';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -38,17 +40,18 @@ export class UserController {
 
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'Returns current user profile' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'Current user profile returned successfully.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
   async getProfile(@Req() req: Request & { user: { id: number } }) {
     return this.userService.getById(String(req.user.id));
   }
 
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
-  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid profile data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBody({ type: UpdateUserDto, description: 'User profile update payload' })
+  @ApiResponse({ status: 200, description: 'Current user profile updated successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid user profile update payload.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
   async updateProfile(
     @Req() req: Request & { user: { id: number } },
     @Body() body: UpdateUserDto,
@@ -57,6 +60,8 @@ export class UserController {
   }
 
   @Patch('update-avatar')
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ key: 'user:update-avatar', limit: 10, windowSec: 300 })
   @ApiOperation({ summary: 'Upload and update user avatar' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -102,9 +107,9 @@ export class UserController {
       },
     }),
   )
-  @ApiResponse({ status: 200, description: 'Avatar updated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid or missing file' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'User avatar updated successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid avatar upload request.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
   async updateAvatar(
     @Req() req: Request & { user: { id: number } },
     @UploadedFile() file?: MulterFile,
@@ -124,8 +129,8 @@ export class UserController {
 
   @Delete('remove-avatar')
   @ApiOperation({ summary: 'Remove current user avatar' })
-  @ApiResponse({ status: 200, description: 'Avatar removed successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'User avatar removed successfully.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
   async removeAvatar(@Req() req: Request & { user: { id: number } }) {
     return this.userService.removeAvatar(req.user.id);
   }

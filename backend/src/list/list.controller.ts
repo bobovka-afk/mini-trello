@@ -19,6 +19,7 @@ import { WorkspaceResourceGuard } from '../common/guards/workspace-resource.guar
 import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
 import { WorkspaceRole } from '../generated/prisma/enums';
 import {
+    ApiBody,
     ApiBearerAuth,
     ApiOperation,
     ApiParam,
@@ -29,17 +30,17 @@ import {
 @ApiTags('list')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, WorkspaceAccessGuard, WorkspaceResourceGuard)
-@Controller('list')
+@Controller('workspace/:workspaceId')
 export class ListController {
     constructor(private readonly listService: ListService) {}
 
-    @Get('workspace/:workspaceId/board/:boardId/lists')
+    @Get('board/:boardId/lists')
     @ApiOperation({ summary: 'Get board lists' })
     @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
     @ApiParam({ name: 'boardId', example: 7, description: 'Board id' })
-    @ApiResponse({ status: 200, description: 'Returns board lists' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'User is not a member of this workspace' })
+    @ApiResponse({ status: 200, description: 'Board lists returned successfully.' })
+    @ApiResponse({ status: 401, description: 'Authentication is required.' })
+    @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
     async getLists(
         @Param('boardId', ParseIntPipe) boardId: number,
     ) {
@@ -48,14 +49,15 @@ export class ListController {
 
     @UseGuards(WorkspaceRoleGuard)
     @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
-    @Post('workspace/:workspaceId/board/:boardId/lists')
+    @Post('board/:boardId/lists')
     @ApiOperation({ summary: 'Create list' })
+    @ApiBody({ type: CreateListDto, description: 'List creation payload' })
     @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
     @ApiParam({ name: 'boardId', example: 7, description: 'Board id' })
-    @ApiResponse({ status: 201, description: 'List created successfully' })
-    @ApiResponse({ status: 400, description: 'Invalid list data' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
+    @ApiResponse({ status: 201, description: 'List created successfully.' })
+    @ApiResponse({ status: 400, description: 'Invalid list creation payload.' })
+    @ApiResponse({ status: 401, description: 'Authentication is required.' })
+    @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
     async createList(
         @Param('boardId', ParseIntPipe) boardId: number,
         @Body() dto: CreateListDto,
@@ -68,15 +70,16 @@ export class ListController {
 
     @UseGuards(WorkspaceRoleGuard)
     @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
-    @Patch('workspace/:workspaceId/lists/:listId')
+    @Patch('lists/:listId')
     @ApiOperation({ summary: 'Update list' })
+    @ApiBody({ type: UpdateListDto, description: 'List update payload' })
     @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
     @ApiParam({ name: 'listId', example: 11, description: 'List id' })
-    @ApiResponse({ status: 200, description: 'List updated successfully' })
-    @ApiResponse({ status: 400, description: 'Invalid update data' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
-    @ApiResponse({ status: 404, description: 'List not found' })
+    @ApiResponse({ status: 200, description: 'List updated successfully.' })
+    @ApiResponse({ status: 400, description: 'Invalid list update payload.' })
+    @ApiResponse({ status: 401, description: 'Authentication is required.' })
+    @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
+    @ApiResponse({ status: 404, description: 'List not found.' })
     async updateList(
         @Param('listId', ParseIntPipe) listId: number,
         @Body() dto: UpdateListDto,
@@ -89,14 +92,14 @@ export class ListController {
 
     @UseGuards(WorkspaceRoleGuard)
     @WorkspaceRoles(WorkspaceRole.OWNER, WorkspaceRole.ADMIN)
-    @Delete('workspace/:workspaceId/lists/:listId')
+    @Delete('lists/:listId')
     @ApiOperation({ summary: 'Delete list' })
     @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
     @ApiParam({ name: 'listId', example: 11, description: 'List id' })
-    @ApiResponse({ status: 200, description: 'List deleted successfully' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Action is forbidden for current workspace role' })
-    @ApiResponse({ status: 404, description: 'List not found' })
+    @ApiResponse({ status: 200, description: 'List deleted successfully.' })
+    @ApiResponse({ status: 401, description: 'Authentication is required.' })
+    @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
+    @ApiResponse({ status: 404, description: 'List not found.' })
     async deleteList(
         @Param('listId', ParseIntPipe) listId: number,
     ) {

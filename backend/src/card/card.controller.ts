@@ -18,6 +18,7 @@ import { MoveCardDto } from './dto/move-card.dto';
 import { SetCardCompletionDto } from './dto/set-card-completion.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import {
+  ApiBody,
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
@@ -28,29 +29,30 @@ import {
 @ApiTags('card')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, WorkspaceAccessGuard, WorkspaceResourceGuard)
-@Controller('card')
+@Controller('workspace/:workspaceId')
 export class CardController {
   constructor(private readonly cardService: CardService) {}
 
-  @Get('workspace/:workspaceId/lists/:listId/cards')
+  @Get('lists/:listId/cards')
   @ApiOperation({ summary: 'Get cards for a list' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'listId', example: 11, description: 'List id' })
-  @ApiResponse({ status: 200, description: 'Returns list cards' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'User is not a member of this workspace' })
+  @ApiResponse({ status: 200, description: 'Cards returned successfully.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   async getCards(@Param('listId', ParseIntPipe) listId: number) {
     return this.cardService.getCards(listId);
   }
 
 
-  @Post('workspace/:workspaceId/lists/:listId/cards')
+  @Post('lists/:listId/cards')
   @ApiOperation({ summary: 'Create card' })
+  @ApiBody({ type: CreateCardDto, description: 'Card creation payload' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'listId', example: 11, description: 'List id' })
-  @ApiResponse({ status: 201, description: 'Card created successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid card data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 201, description: 'Card created successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid card creation payload.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
   async createCard(
     @Param('listId', ParseIntPipe) listId: number,
     @Body() dto: CreateCardDto,
@@ -59,14 +61,15 @@ export class CardController {
   }
 
 
-  @Patch('workspace/:workspaceId/cards/:cardId/move')
+  @Patch('cards/:cardId/move')
   @ApiOperation({ summary: 'Move card to another list or position' })
+  @ApiBody({ type: MoveCardDto, description: 'Card move payload' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'cardId', example: 35, description: 'Card id' })
-  @ApiResponse({ status: 200, description: 'Card moved successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid move data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Card or target list not found' })
+  @ApiResponse({ status: 200, description: 'Card moved successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid card move payload.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 404, description: 'Card or target list not found.' })
   async moveCard(
     @Param('cardId', ParseIntPipe) cardId: number,
     @Body() dto: MoveCardDto,
@@ -74,14 +77,15 @@ export class CardController {
     return this.cardService.moveCard(cardId, dto);
   }
 
-  @Patch('workspace/:workspaceId/cards/:cardId/completion')
+  @Patch('cards/:cardId/completion')
   @ApiOperation({ summary: 'Set card completion state' })
+  @ApiBody({ type: SetCardCompletionDto, description: 'Card completion payload' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'cardId', example: 35, description: 'Card id' })
-  @ApiResponse({ status: 200, description: 'Card completion updated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid completion state' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Card not found' })
+  @ApiResponse({ status: 200, description: 'Card completion state updated successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid card completion payload.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 404, description: 'Card not found.' })
   async setCardCompletion(
     @Param('cardId', ParseIntPipe) cardId: number,
     @Body() dto: SetCardCompletionDto,
@@ -89,14 +93,15 @@ export class CardController {
     return this.cardService.setCardCompletion(cardId, dto);
   }
 
-  @Patch('workspace/:workspaceId/cards/:cardId')
+  @Patch('cards/:cardId')
   @ApiOperation({ summary: 'Update card' })
+  @ApiBody({ type: UpdateCardDto, description: 'Card update payload' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'cardId', example: 35, description: 'Card id' })
-  @ApiResponse({ status: 200, description: 'Card updated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid update data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Card not found' })
+  @ApiResponse({ status: 200, description: 'Card updated successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid card update payload.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 404, description: 'Card not found.' })
   async updateCard(
     @Param('cardId', ParseIntPipe) cardId: number,
     @Body() dto: UpdateCardDto,
@@ -105,13 +110,13 @@ export class CardController {
   }
 
 
-  @Delete('workspace/:workspaceId/cards/:cardId')
+  @Delete('cards/:cardId')
   @ApiOperation({ summary: 'Delete card' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
   @ApiParam({ name: 'cardId', example: 35, description: 'Card id' })
-  @ApiResponse({ status: 200, description: 'Card deleted successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Card not found' })
+  @ApiResponse({ status: 200, description: 'Card deleted successfully.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required.' })
+  @ApiResponse({ status: 404, description: 'Card not found.' })
   async deleteCard(@Param('cardId', ParseIntPipe) cardId: number) {
     return this.cardService.deleteCard(cardId);
   }

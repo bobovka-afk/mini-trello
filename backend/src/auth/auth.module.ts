@@ -9,12 +9,15 @@ import { JwtModule } from '@nestjs/jwt'
 import { getJwtConfig } from '../config/jwt.config'
 import { PrismaModule } from '../prisma/prisma.module'
 import { MailModule } from '../mail/mail.module'
+import { RedisModule } from '../redis/redis.module'
+import { RateLimitGuard } from '../common/guards/rate-limit.guard'
 
 @Module({
 	imports: [
 		UserModule,
 		PrismaModule,
 		MailModule,
+		RedisModule,
 		ConfigModule,
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
@@ -23,7 +26,7 @@ import { MailModule } from '../mail/mail.module'
 		})
 	],
 	controllers: [AuthController],
-	providers: [AuthService, JwtStrategy, GoogleStrategy],
+	providers: [AuthService, JwtStrategy, GoogleStrategy, RateLimitGuard],
 	exports: [AuthService]
 })
 export class AuthModule {}

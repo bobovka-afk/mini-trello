@@ -9,15 +9,15 @@ export class HealthController {
 
   @Get('health')
   @ApiOperation({ summary: 'Check if application process is alive' })
-  @ApiResponse({ status: 200, description: 'Process is alive' })
+  @ApiResponse({ status: 200, description: 'Application process is alive.' })
   health() {
     return this.healthService.getHealth();
   }
 
   @Get('ready')
   @ApiOperation({ summary: 'Check if application dependencies are ready' })
-  @ApiResponse({ status: 200, description: 'Service is ready to receive traffic' })
-  @ApiResponse({ status: 503, description: 'Service dependencies are not ready' })
+  @ApiResponse({ status: 200, description: 'Application dependencies are ready.' })
+  @ApiResponse({ status: 503, description: 'Application dependencies are not ready.' })
   async ready() {
     const readiness = await this.healthService.getReadiness();
 

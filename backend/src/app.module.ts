@@ -11,6 +11,7 @@ import { CardModule } from './card/card.module';
 import { CommentsModule } from './comments/comments.module';
 import { WorkspaceMembersModule } from './workspace-members/workspace-members.module';
 import { HealthModule } from './health/health.module';
+import { RedisModule } from './redis/redis.module';
 
 
 @Module({
@@ -29,6 +30,7 @@ import { HealthModule } from './health/health.module';
     CommentsModule,
     WorkspaceMembersModule,
     HealthModule,
+    RedisModule,
   ],
   controllers: [],
   providers: [ ],

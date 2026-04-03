@@ -18,7 +18,10 @@ import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
+import { RateLimit } from '../common/decorators/rate-limit.decorator';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 import {
+  ApiBody,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -34,18 +37,24 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(200)
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ key: 'auth:register', limit: 5, windowSec: 300 })
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 200, description: 'User registered successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid registration data' })
+  @ApiBody({ type: RegisterDto, description: 'Registration payload' })
+  @ApiResponse({ status: 200, description: 'User registered successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid registration payload.' })
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
   @Post('login')
   @HttpCode(200)
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ key: 'auth:login', limit: 5, windowSec: 60 })
   @ApiOperation({ summary: 'Authenticate user with email and password' })
-  @ApiResponse({ status: 200, description: 'User logged in successfully' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiBody({ type: LoginDto, description: 'Login credentials payload' })
+  @ApiResponse({ status: 200, description: 'User authenticated successfully.' })
+  @ApiResponse({ status: 401, description: 'Invalid email or password.' })
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -58,8 +67,8 @@ export class AuthController {
  	@HttpCode(200)
 	@Post('login/access-token')
 	@ApiOperation({ summary: 'Issue new tokens using refresh cookie' })
-	@ApiResponse({ status: 200, description: 'New access token issued' })
-	@ApiResponse({ status: 401, description: 'Refresh token is missing or invalid' })
+	@ApiResponse({ status: 200, description: 'New access and refresh tokens issued successfully.' })
+	@ApiResponse({ status: 401, description: 'Refresh token is missing, invalid, or expired.' })
 	async getNewTokens(
 		@Req() req: Request,
 		@Res({ passthrough: true }) res: Response
@@ -86,7 +95,7 @@ export class AuthController {
 	@HttpCode(200)
 	@Post('logout')
 	@ApiOperation({ summary: 'Clear refresh token cookie' })
-	@ApiResponse({ status: 200, description: 'User logged out successfully' })
+	@ApiResponse({ status: 200, description: 'User logged out successfully.' })
 	logout(@Res({ passthrough: true }) res: Response) {
 		this.authService.removeRefreshTokenFromResponse(res)
 		return true
@@ -94,8 +103,11 @@ export class AuthController {
 
 	@Post('email/verification/request')
 	@HttpCode(200)
+	@UseGuards(RateLimitGuard)
+	@RateLimit({ key: 'auth:email-verification', limit: 3, windowSec: 300 })
 	@ApiOperation({ summary: 'Send email verification message' })
-	@ApiResponse({ status: 200, description: 'Email verification request accepted' })
+	@ApiBody({ type: ForgotPasswordDto, description: 'Email verification request payload' })
+	@ApiResponse({ status: 200, description: 'Email verification request processed successfully.' })
 	requestEmailVerification(@Body() dto: ForgotPasswordDto) {
 		return this.authService.requestEmailVerification(dto.email);
 	}
@@ -108,8 +120,8 @@ export class AuthController {
 		example: '4b3bc6b2f0b84d8e91fd0d2cb1ad4e5b',
 		description: 'Email verification token',
 	})
-	@ApiResponse({ status: 200, description: 'Email verification processed' })
-	@ApiResponse({ status: 302, description: 'Redirects to client after verification' })
+	@ApiResponse({ status: 200, description: 'Email verification result returned successfully.' })
+	@ApiResponse({ status: 302, description: 'Redirect to the client application with verification result.' })
 	async confirmEmailVerification(
 		@Query('token') token: string,
 		@Res() res: Response,
@@ -132,17 +144,23 @@ export class AuthController {
 
 	@Post('password/reset/request')
 	@HttpCode(200)
+	@UseGuards(RateLimitGuard)
+	@RateLimit({ key: 'auth:password-reset-request', limit: 3, windowSec: 300 })
 	@ApiOperation({ summary: 'Send password reset email' })
-	@ApiResponse({ status: 200, description: 'Password reset request accepted' })
+	@ApiBody({ type: ForgotPasswordDto, description: 'Password reset request payload' })
+	@ApiResponse({ status: 200, description: 'Password reset request processed successfully.' })
 	requestPasswordReset(@Body() dto: ForgotPasswordDto) {
 		return this.authService.requestPasswordReset(dto.email);
 	}
 
 	@Post('password/reset/confirm')
 	@HttpCode(200)
+	@UseGuards(RateLimitGuard)
+	@RateLimit({ key: 'auth:password-reset-confirm', limit: 5, windowSec: 300 })
 	@ApiOperation({ summary: 'Confirm password reset token' })
-	@ApiResponse({ status: 200, description: 'Password reset completed' })
-	@ApiResponse({ status: 400, description: 'Token is invalid or expired' })
+	@ApiBody({ type: ConfirmPasswordResetDto, description: 'Password reset confirmation payload' })
+	@ApiResponse({ status: 200, description: 'Password reset completed successfully.' })
+	@ApiResponse({ status: 400, description: 'Invalid password reset token or payload.' })
 	confirmPasswordReset(@Body() dto: ConfirmPasswordResetDto) {
 		return this.authService.confirmPasswordReset(dto.token, dto.newPassword);
 	}
@@ -151,13 +169,13 @@ export class AuthController {
   @Get('google')
 	@UseGuards(AuthGuard('google'))
 	@ApiOperation({ summary: 'Start Google OAuth flow' })
-	@ApiResponse({ status: 302, description: 'Redirects user to Google OAuth' })
+	@ApiResponse({ status: 302, description: 'Redirect to Google OAuth consent screen.' })
 	async googleAuth() {}
 
 	@Get('google/callback')
 	@UseGuards(AuthGuard('google'))
 	@ApiOperation({ summary: 'Handle Google OAuth callback' })
-	@ApiResponse({ status: 302, description: 'Redirects user back to the client application' })
+	@ApiResponse({ status: 302, description: 'Redirect to the client application after Google authentication.' })
 	async googleAuthCallback(
 		@Req() req: { user: { email: string; name: string; picture: string } },
 		@Res({ passthrough: true }) res: Response
