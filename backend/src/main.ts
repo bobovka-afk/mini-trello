@@ -6,9 +6,17 @@ import * as cookieParser from 'cookie-parser';
 import * as path from 'path';
 import * as express from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger, PinoLogger } from 'nestjs-pino';
+import { requestIdMiddleware } from './common/middleware/request-id.middleware';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const pinoLogger = await app.resolve(PinoLogger);
+  app.useLogger(app.get(Logger));
+  app.useGlobalFilters(new HttpExceptionFilter(pinoLogger));
+  app.useGlobalInterceptors(new HttpLoggingInterceptor(pinoLogger));
 
   const redisHost = process.env.REDIS_HOST ?? 'localhost';
   const redisPort = Number(process.env.REDIS_PORT ?? 6379);
@@ -17,6 +25,7 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
+  app.use(requestIdMiddleware);
   app.use(cookieParser());
 
 

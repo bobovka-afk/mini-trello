@@ -10,7 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { CommentsService } from './comments.service';
+import { CommentService } from './comment.service';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
 import { WorkspaceResourceGuard } from '../common/guards/workspace-resource.guard';
@@ -32,8 +32,8 @@ import {
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, WorkspaceAccessGuard, WorkspaceResourceGuard)
 @Controller('workspace/:workspaceId')
-export class CommentsController {
-  constructor(private readonly commentsService: CommentsService) {}
+export class CommentController {
+  constructor(private readonly commentService: CommentService) {}
 
   @Get('cards/:cardId/comments')
   @ApiOperation({ summary: 'Get comments for a card' })
@@ -43,7 +43,7 @@ export class CommentsController {
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
   @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   async getComments(@Param('cardId', ParseIntPipe) cardId: number) {
-    return this.commentsService.getComments(cardId);
+    return this.commentService.getComments(cardId);
   }
 
   @Post('cards/:cardId/comments')
@@ -61,7 +61,7 @@ export class CommentsController {
     @Body() dto: CreateCommentDto,
     @Req() req: Request & { user: { id: number } },
   ) {
-    return this.commentsService.createComment(cardId, req.user.id, dto);
+    return this.commentService.createComment(cardId, req.user.id, dto);
   }
 
   @Patch('comments/:commentId')
@@ -79,7 +79,7 @@ export class CommentsController {
     @Body() dto: UpdateCommentDto,
     @Req() req: Request & { user: { id: number } },
   ) {
-    return this.commentsService.updateComment(commentId, req.user.id, dto);
+    return this.commentService.updateComment(commentId, req.user.id, dto);
   }
 
   @Delete('comments/:commentId')
@@ -94,7 +94,7 @@ export class CommentsController {
     @Param('commentId', ParseIntPipe) commentId: number,
     @Req() req: Request & { user: { id: number }; workspaceId: number },
   ) {
-    return this.commentsService.deleteComment(
+    return this.commentService.deleteComment(
       commentId,
       req.user.id,
       req.workspaceId,

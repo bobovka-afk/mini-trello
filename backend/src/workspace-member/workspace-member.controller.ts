@@ -13,7 +13,7 @@ import { WorkspaceRoleGuard } from '../common/guards/workspace-role.guard';
 import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
 import { WorkspaceRole } from '../generated/prisma/enums';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
-import { WorkspaceMembersService } from './workspace-members.service';
+import { WorkspaceMemberService } from './workspace-member.service';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { Request } from 'express';
 import {
@@ -29,8 +29,8 @@ import {
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('workspace/:workspaceId/members')
-export class WorkspaceMembersController {
-  constructor(private readonly workspaceMembersService: WorkspaceMembersService) {}
+export class WorkspaceMemberController {
+  constructor(private readonly workspaceMemberService: WorkspaceMemberService) {}
 
   @UseGuards(WorkspaceAccessGuard)
   @Get()
@@ -46,7 +46,7 @@ export class WorkspaceMembersController {
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Query() paginationDto: PaginationDto,
   ) {
-    return this.workspaceMembersService.getWorkspaceMembers(
+    return this.workspaceMemberService.getWorkspaceMembers(
       workspaceId,
       paginationDto,
     );
@@ -66,7 +66,7 @@ export class WorkspaceMembersController {
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('memberId', ParseIntPipe) memberId: number,
   ) {
-    return this.workspaceMembersService.deleteWorkspaceMember(
+    return this.workspaceMemberService.deleteWorkspaceMember(
       workspaceId,
       memberId,
     );
@@ -84,6 +84,6 @@ export class WorkspaceMembersController {
     @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
   ) {
-    return this.workspaceMembersService.leaveWorkspace(req.user.id, workspaceId);
+    return this.workspaceMemberService.leaveWorkspace(req.user.id, workspaceId);
   }
 }

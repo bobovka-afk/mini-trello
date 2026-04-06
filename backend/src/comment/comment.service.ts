@@ -9,7 +9,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment-dto';
 
 @Injectable()
-export class CommentsService {
+export class CommentService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getComments(cardId: number) {

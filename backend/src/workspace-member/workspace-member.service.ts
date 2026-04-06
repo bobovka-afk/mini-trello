@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
 
 @Injectable()
-export class WorkspaceMembersService {
+export class WorkspaceMemberService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getWorkspaceMembers(
