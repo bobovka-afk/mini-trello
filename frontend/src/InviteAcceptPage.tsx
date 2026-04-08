@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, type ApiError } from './lib/api';
+import { api, formatApiError, isRateLimitMessage } from './lib/api';
 import {
   clearPendingInviteToken,
   getPendingInviteToken,
@@ -12,9 +12,7 @@ function navigate(to: string) {
 }
 
 function formatError(e: unknown) {
-  const err = e as Partial<ApiError>;
-  if (typeof err?.message === 'string') return err.message;
-  return 'Ошибка запроса';
+  return formatApiError(e);
 }
 
 type Props = { accessToken: string | null };
@@ -113,7 +111,15 @@ export function InviteAcceptPage({ accessToken }: Props) {
                 Принимаем приглашение…
               </p>
             ) : msg ? (
-              <div className="trello-banner trello-banner-error">{msg}</div>
+              <div
+                className={
+                  isRateLimitMessage(msg)
+                    ? 'trello-banner trello-banner-rate-limit'
+                    : 'trello-banner trello-banner-error'
+                }
+              >
+                {msg}
+              </div>
             ) : null}
           </div>
         </section>

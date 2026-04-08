@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
-import { api, API_URL, type ApiError } from './lib/api';
+import { api, API_URL, formatApiError, isRateLimitMessage } from './lib/api';
 import {
   getPendingInviteToken,
   tryAcceptPendingInvite,
@@ -50,9 +50,7 @@ function setAccessTokenToStorage(token: string | null) {
 }
 
 function formatError(e: unknown) {
-  const err = e as Partial<ApiError>;
-  if (typeof err?.message === 'string') return err.message;
-  return 'Ошибка запроса';
+  return formatApiError(e);
 }
 
 function getQueryParam(name: string) {
@@ -84,6 +82,7 @@ function EmailVerificationRequestPage() {
   const isErrorMsg =
     typeof msg === 'string' &&
     (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
+  const isRateLimitMsg = isRateLimitMessage(msg);
 
   return (
     <div className="trello-app-shell">
@@ -131,7 +130,11 @@ function EmailVerificationRequestPage() {
             {msg && (
               <div
                 className={
-                  isErrorMsg ? 'trello-banner trello-banner-error' : 'trello-banner trello-banner-warn'
+                  isRateLimitMsg
+                    ? 'trello-banner trello-banner-rate-limit'
+                    : isErrorMsg
+                      ? 'trello-banner trello-banner-error'
+                      : 'trello-banner trello-banner-warn'
                 }
                 style={{ marginTop: 12 }}
               >
@@ -210,6 +213,7 @@ function PasswordResetRequestPage() {
   const isErrorMsg =
     typeof msg === 'string' &&
     (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
+  const isRateLimitMsg = isRateLimitMessage(msg);
 
   return (
     <div className="trello-app-shell">
@@ -257,7 +261,11 @@ function PasswordResetRequestPage() {
             {msg && (
               <div
                 className={
-                  isErrorMsg ? 'trello-banner trello-banner-error' : 'trello-banner trello-banner-warn'
+                  isRateLimitMsg
+                    ? 'trello-banner trello-banner-rate-limit'
+                    : isErrorMsg
+                      ? 'trello-banner trello-banner-error'
+                      : 'trello-banner trello-banner-warn'
                 }
                 style={{ marginTop: 12 }}
               >
@@ -296,6 +304,7 @@ function PasswordResetConfirmPage() {
   const isErrorMsg =
     typeof msg === 'string' &&
     (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
+  const isRateLimitMsg = isRateLimitMessage(msg);
 
   return (
     <div className="trello-app-shell">
@@ -352,7 +361,11 @@ function PasswordResetConfirmPage() {
             {msg && (
               <div
                 className={
-                  isErrorMsg ? 'trello-banner trello-banner-error' : 'trello-banner trello-banner-warn'
+                  isRateLimitMsg
+                    ? 'trello-banner trello-banner-rate-limit'
+                    : isErrorMsg
+                      ? 'trello-banner trello-banner-error'
+                      : 'trello-banner trello-banner-warn'
                 }
                 style={{ marginTop: 12 }}
               >
@@ -465,7 +478,14 @@ function Home(props: { onAuthed: (token: string) => void; hasSession: boolean })
           </p>
 
           {msg && (
-            <div className="trello-banner trello-banner-error" style={{ marginBottom: 16 }}>
+            <div
+              className={
+                isRateLimitMessage(msg)
+                  ? 'trello-banner trello-banner-rate-limit'
+                  : 'trello-banner trello-banner-error'
+              }
+              style={{ marginBottom: 16 }}
+            >
               {msg}
             </div>
           )}
@@ -742,6 +762,7 @@ function ProfileMePage(props: {
   const isErrorMsg =
     typeof msg === 'string' &&
     (msg.toLowerCase().includes('ошиб') || msg.toLowerCase().includes('error'));
+  const isRateLimitMsg = isRateLimitMessage(msg);
 
   return (
     <div className="trello-app-shell">
@@ -762,7 +783,15 @@ function ProfileMePage(props: {
         </header>
 
         {msg && (
-          <div className={isErrorMsg ? 'trello-banner trello-banner-error' : 'trello-banner trello-banner-warn'}>
+          <div
+            className={
+              isRateLimitMsg
+                ? 'trello-banner trello-banner-rate-limit'
+                : isErrorMsg
+                  ? 'trello-banner trello-banner-error'
+                  : 'trello-banner trello-banner-warn'
+            }
+          >
             {msg}
           </div>
         )}
@@ -1136,6 +1165,9 @@ function App() {
                   src={toolbarAvatarSrc}
                   alt=""
                   className="trello-toolbar-avatar-img"
+                  loading="eager"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                   onError={() => setToolbarAvatarBroken(true)}
                 />
               ) : (

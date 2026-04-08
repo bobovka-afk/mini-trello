@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, type ApiError } from './lib/api';
+import { api, formatApiError, isRateLimitMessage } from './lib/api';
 import { formatWorkspaceRole } from './lib/roles';
 
 type InviteRow = {
@@ -14,9 +14,7 @@ type InviteRow = {
 type Props = { accessToken: string | null };
 
 function formatError(e: unknown) {
-  const err = e as Partial<ApiError>;
-  if (typeof err?.message === 'string') return err.message;
-  return 'Ошибка запроса';
+  return formatApiError(e);
 }
 
 function formatWorkspaceNameForUI(name: string) {
@@ -133,7 +131,14 @@ export function ProfileInvitesSection({ accessToken }: Props) {
       )}
 
       {msg && (
-        <div className="trello-banner trello-banner-error" style={{ margin: 16 }}>
+        <div
+          className={
+            isRateLimitMessage(msg)
+              ? 'trello-banner trello-banner-rate-limit'
+              : 'trello-banner trello-banner-error'
+          }
+          style={{ margin: 16 }}
+        >
           {msg}
         </div>
       )}

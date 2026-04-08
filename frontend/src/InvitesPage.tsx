@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, type ApiError } from './lib/api';
+import { api, formatApiError, isRateLimitMessage } from './lib/api';
 import { formatWorkspaceRole } from './lib/roles';
 
 type InviteRow = {
@@ -25,9 +25,7 @@ function navigate(to: string) {
 }
 
 function formatError(e: unknown) {
-  const err = e as Partial<ApiError>;
-  if (typeof err?.message === 'string') return err.message;
-  return 'Ошибка запроса';
+  return formatApiError(e);
 }
 
 function formatDate(iso: string) {
@@ -211,7 +209,17 @@ export function InvitesPage({ accessToken }: Props) {
           </div>
         )}
 
-        {msg && <div className="jira-banner jira-banner-error">{msg}</div>}
+        {msg && (
+          <div
+            className={
+              isRateLimitMessage(msg)
+                ? 'jira-banner jira-banner-rate-limit'
+                : 'jira-banner jira-banner-error'
+            }
+          >
+            {msg}
+          </div>
+        )}
 
         <section className="jira-panel">
           <div className="jira-panel-head">

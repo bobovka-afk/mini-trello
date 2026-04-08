@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { api, API_URL, type ApiError } from './lib/api';
+import {
+  api,
+  API_URL,
+  formatApiError,
+  isRateLimitMessage,
+} from './lib/api';
 import { formatWorkspaceRole } from './lib/roles';
 
 type Props = {
@@ -54,9 +59,7 @@ function avatarSrcFromPath(p: string | null | undefined): string {
 }
 
 function formatError(e: unknown) {
-  const err = e as Partial<ApiError>;
-  if (typeof err?.message === 'string') return err.message;
-  return 'Ошибка запроса';
+  return formatApiError(e);
 }
 
 function formatInviteSendError(e: unknown): string {
@@ -225,7 +228,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     setDeleteBusy(true);
     setMsg(null);
     try {
-      await api<{ ok: boolean }>(`/workspace/${workspaceId}/members/${deleteMember.userId}`, {
+      await api<{ ok: boolean }>(`/workspace/${workspaceId}/members/${deleteMember.id}`, {
         method: 'DELETE',
         accessToken,
       });
@@ -407,7 +410,17 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
           </div>
         )}
 
-        {(msg && <div className="trello-banner trello-banner-error">{msg}</div>) || null}
+        {(msg && (
+          <div
+            className={
+              isRateLimitMessage(msg)
+                ? 'trello-banner trello-banner-rate-limit'
+                : 'trello-banner trello-banner-error'
+            }
+          >
+            {msg}
+          </div>
+        )) || null}
 
         <div className="trello-members-table-block">
           {loading ? (

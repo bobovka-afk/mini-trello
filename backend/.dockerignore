@@ -1,0 +1,41 @@
+# Dependencies & build output
+node_modules
+dist
+*.tsbuildinfo
+
+# Secrets & local env (runtime uses compose env_file)
+.env
+.env.*
+!.env.example
+
+# User uploads (mounted at runtime, large / not for image)
+uploads
+
+# Compose & infra (not part of app image)
+docker-compose.yml
+monitoring
+
+# Git & editor
+.git
+.gitignore
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs & OS junk
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Tests & lint (not copied by Dockerfile, shrinks context)
+coverage
+.nyc_output
+**/*.spec.ts
+**/*.test.ts
+eslint.config.mjs
+
+# Docker meta
+Dockerfile
+.dockerignore

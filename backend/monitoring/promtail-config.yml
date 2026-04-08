@@ -1,0 +1,43 @@
+# Collects container logs via Docker API and pushes to Loki.
+# Expects compose project name `mini-trello` (see root `name:` in docker-compose.yml).
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 10s
+        filters:
+          - name: label
+            values: ["com.docker.compose.project=mini-trello"]
+    relabel_configs:
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+        target_label: service
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_project"]
+        target_label: compose_project
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/(.*)"
+        target_label: container
+    pipeline_stages:
+      # json-file driver: unwrap {"log":"...","stream":"stdout",...}
+      - docker: {}
+      # Pino prints JSON only for Node services; skip JSON for postgres/redis etc.
+      - match:
+          selector: '{service=~"app|frontend"}'
+          stages:
+            - json:
+                expressions:
+                  level: level
+                  msg: msg
+                  time: time
+            - labels:
+                level:

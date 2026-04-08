@@ -95,7 +95,7 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     setMsg(null);
     try {
       const data = await api<BoardRow[]>(
-        `/board/workspace/${workspaceId}/boards`,
+        `/workspace/${workspaceId}/boards`,
         { method: 'GET', accessToken },
       );
       setBoards(Array.isArray(data) ? data : []);
@@ -123,7 +123,7 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     setCreateBusy(true);
     setMsg(null);
     try {
-      await api(`/board/workspace/${workspaceId}/boards`, {
+      await api(`/workspace/${workspaceId}/boards`, {
         method: 'POST',
         accessToken,
         json: { name, position },
@@ -146,7 +146,7 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     setEditBusy(true);
     setMsg(null);
     try {
-      await api(`/board/workspace/${workspaceId}/boards/${editBoard.id}`, {
+      await api(`/workspace/${workspaceId}/boards/${editBoard.id}`, {
         method: 'PATCH',
         accessToken,
         json: { name },
@@ -165,7 +165,7 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     setDeleteBoardBusy(true);
     setMsg(null);
     try {
-      await api(`/board/workspace/${workspaceId}/boards/${boardToDelete.id}`, {
+      await api(`/workspace/${workspaceId}/boards/${boardToDelete.id}`, {
         method: 'DELETE',
         accessToken,
       });

@@ -13,7 +13,12 @@ import {
   type DropResult,
 } from '@hello-pangea/dnd';
 import { AlertModal } from './AlertModal';
-import { api, API_URL, type ApiError } from './lib/api';
+import {
+  api,
+  API_URL,
+  formatApiError,
+  isRateLimitMessage,
+} from './lib/api';
 import type { BoardRow } from './WorkspaceBoardsPage';
 import { canManageWorkspace } from './lib/roles';
 import { LIST_COLOR_PRESET_KEYS, listHeaderColor } from './lib/trelloColors';
@@ -69,9 +74,7 @@ function navigate(to: string) {
 }
 
 function formatError(e: unknown) {
-  const err = e as Partial<ApiError>;
-  if (typeof err?.message === 'string') return err.message;
-  return 'Ошибка запроса';
+  return formatApiError(e);
 }
 
 function nextListPosition(rows: ListRow[]): number {
@@ -277,12 +280,12 @@ export function BoardPage({
     setMsg(null);
     try {
       const [b, ls, summary] = await Promise.all([
-        api<BoardRow>(`/board/workspace/${workspaceId}/boards/${boardId}`, {
+        api<BoardRow>(`/workspace/${workspaceId}/boards/${boardId}`, {
           method: 'GET',
           accessToken,
         }),
         api<ListRow[]>(
-          `/list/workspace/${workspaceId}/board/${boardId}/lists`,
+          `/workspace/${workspaceId}/board/${boardId}/lists`,
           { method: 'GET', accessToken },
         ),
         api<{ myRole: string | null }>(
@@ -312,7 +315,7 @@ export function BoardPage({
       const entries = await Promise.all(
         lists.map(async (list) => {
           const raw = await api<CardRow[]>(
-            `/card/workspace/${workspaceId}/lists/${list.id}/cards`,
+            `/workspace/${workspaceId}/lists/${list.id}/cards`,
             { method: 'GET', accessToken },
           );
           return [list.id, Array.isArray(raw) ? raw : []] as const;
@@ -333,7 +336,7 @@ export function BoardPage({
       setCommentsLoading(true);
       try {
         const raw = await api<CommentRow[]>(
-          `/comment/workspace/${workspaceId}/cards/${cardId}/comments`,
+          `/workspace/${workspaceId}/cards/${cardId}/comments`,
           { method: 'GET', accessToken },
         );
         setComments(Array.isArray(raw) ? raw : []);
@@ -438,7 +441,7 @@ export function BoardPage({
     });
 
     try {
-      await api(`/card/workspace/${workspaceId}/cards/${cardId}/move`, {
+      await api(`/workspace/${workspaceId}/cards/${cardId}/move`, {
         method: 'PATCH',
         accessToken,
         json: { toListId: destListId, position: toIndex },
@@ -461,7 +464,7 @@ export function BoardPage({
     setAddBusy(true);
     setMsg(null);
     try {
-      await api(`/list/workspace/${workspaceId}/board/${boardId}/lists`, {
+      await api(`/workspace/${workspaceId}/board/${boardId}/lists`, {
         method: 'POST',
         accessToken,
         json: { name, position },
@@ -490,7 +493,7 @@ export function BoardPage({
     setDeleteListId(list.id);
     setMsg(null);
     try {
-      await api(`/list/workspace/${workspaceId}/lists/${list.id}`, {
+      await api(`/workspace/${workspaceId}/lists/${list.id}`, {
         method: 'DELETE',
         accessToken,
       });
@@ -514,7 +517,7 @@ export function BoardPage({
     setEditBusy(true);
     setMsg(null);
     try {
-      await api(`/list/workspace/${workspaceId}/lists/${editList.id}`, {
+      await api(`/workspace/${workspaceId}/lists/${editList.id}`, {
         method: 'PATCH',
         accessToken,
         json: {
@@ -551,7 +554,7 @@ export function BoardPage({
       };
       const d = createCardDesc.trim();
       if (d.length > 0) body.description = d;
-      await api(`/card/workspace/${workspaceId}/lists/${createCardListId}/cards`, {
+      await api(`/workspace/${workspaceId}/lists/${createCardListId}/cards`, {
         method: 'POST',
         accessToken,
         json: body,
@@ -589,7 +592,7 @@ export function BoardPage({
     }
     setEditCardBusy(true);
     try {
-      await api(`/card/workspace/${workspaceId}/cards/${editCard.id}`, {
+      await api(`/workspace/${workspaceId}/cards/${editCard.id}`, {
         method: 'PATCH',
         accessToken,
         json: { title },
@@ -617,7 +620,7 @@ export function BoardPage({
       e.preventDefault();
       e.stopPropagation();
       if (!accessToken || completionBusyId === card.id) return;
-      const next = !Boolean(card.isCompleted);
+      const next = !card.isCompleted;
       setCompletionBusyId(card.id);
       setCardsByListId((prev) => {
         const listCards = prev[card.listId] ?? [];
@@ -629,7 +632,7 @@ export function BoardPage({
         };
       });
       try {
-        await api(`/card/workspace/${workspaceId}/cards/${card.id}/completion`, {
+        await api(`/workspace/${workspaceId}/cards/${card.id}/completion`, {
           method: 'PATCH',
           accessToken,
           json: { isCompleted: next },
@@ -660,7 +663,7 @@ export function BoardPage({
     setEditCardBusy(true);
     try {
       const dueIso = inputValueToIsoOrNull(editCardDue);
-      await api(`/card/workspace/${workspaceId}/cards/${editCard.id}`, {
+      await api(`/workspace/${workspaceId}/cards/${editCard.id}`, {
         method: 'PATCH',
         accessToken,
         json: {
@@ -684,7 +687,7 @@ export function BoardPage({
     if (!accessToken || !deleteCardRow) return;
     setDeleteCardBusy(true);
     try {
-      await api(`/card/workspace/${workspaceId}/cards/${deleteCardRow.id}`, {
+      await api(`/workspace/${workspaceId}/cards/${deleteCardRow.id}`, {
         method: 'DELETE',
         accessToken,
       });
@@ -705,7 +708,7 @@ export function BoardPage({
     setCommentSubmitBusy(true);
     try {
       const created = await api<CommentRow>(
-        `/comment/workspace/${workspaceId}/cards/${editCard.id}/comments`,
+        `/workspace/${workspaceId}/cards/${editCard.id}/comments`,
         { method: 'POST', accessToken, json: { body } },
       );
       setCommentDraft('');
@@ -725,7 +728,7 @@ export function BoardPage({
     setCommentEditBusy(true);
     try {
       const updated = await api<CommentRow>(
-        `/comment/workspace/${workspaceId}/comments/${commentId}`,
+        `/workspace/${workspaceId}/comments/${commentId}`,
         { method: 'PATCH', accessToken, json: { body } },
       );
       setComments((prev) => prev.map((c) => (c.id === commentId ? updated : c)));
@@ -744,7 +747,7 @@ export function BoardPage({
     const id = deleteCommentTarget.id;
     setDeleteCommentBusy(true);
     try {
-      await api(`/comment/workspace/${workspaceId}/comments/${id}`, {
+      await api(`/workspace/${workspaceId}/comments/${id}`, {
         method: 'DELETE',
         accessToken,
       });
@@ -1307,7 +1310,14 @@ export function BoardPage({
                           isAuthor || canManageWorkspace(myRole);
                         const showEdit = isAuthor;
                         return (
-                          <li key={c.id} className="trello-card-comment-item">
+                          <li
+                            key={c.id}
+                            className={
+                              editingCommentId === c.id
+                                ? 'trello-card-comment-item trello-card-comment-item--editing'
+                                : 'trello-card-comment-item'
+                            }
+                          >
                             <div className="trello-card-comment-row">
                               <CommentAvatarBubble
                                 name={c.user.name}
@@ -1538,6 +1548,7 @@ export function BoardPage({
       <AlertModal
         open={alertOpen}
         message={alertText}
+        title={isRateLimitMessage(alertText) ? 'Лимит запросов' : undefined}
         onClose={() => setAlertOpen(false)}
       />
 
