@@ -23,7 +23,6 @@ import { randomUUID } from 'node:crypto';
     }),
     LoggerModule.forRoot({
       pinoHttp: {
-        // We use a custom interceptor for access logs to avoid duplicate "request completed" entries.
         autoLogging: false,
         quietReqLogger: true,
         quietResLogger: true,

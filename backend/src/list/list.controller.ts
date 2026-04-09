@@ -12,6 +12,7 @@ import {
 import { ListService } from './list.service';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { CreateListDto } from './dto/create-list.dto';
+import { MoveListDto } from './dto/move-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
 import { WorkspaceRoleGuard } from '../common/guards/workspace-role.guard';
@@ -66,6 +67,23 @@ export class ListController {
             boardId,
             dto,
         );
+    }
+
+    @Patch('lists/:listId/move')
+    @ApiOperation({ summary: 'Reorder list within its board' })
+    @ApiBody({ type: MoveListDto, description: 'Target index within the board' })
+    @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
+    @ApiParam({ name: 'listId', example: 11, description: 'List id' })
+    @ApiResponse({ status: 200, description: 'List order updated successfully.' })
+    @ApiResponse({ status: 400, description: 'Invalid move payload.' })
+    @ApiResponse({ status: 401, description: 'Authentication is required.' })
+    @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
+    @ApiResponse({ status: 404, description: 'List not found.' })
+    async moveList(
+        @Param('listId', ParseIntPipe) listId: number,
+        @Body() dto: MoveListDto,
+    ) {
+        return this.listService.moveList(listId, dto);
     }
 
     @UseGuards(WorkspaceRoleGuard)

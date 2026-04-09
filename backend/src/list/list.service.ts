@@ -1,9 +1,11 @@
 import {
     BadRequestException,
     Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateListDto } from './dto/create-list.dto';
+import { MoveListDto } from './dto/move-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 
 @Injectable()
@@ -51,5 +53,48 @@ export class ListService {
             where: { id: listId },
         });
         return { ok: true };
+    }
+
+    async moveList(listId: number, dto: MoveListDto) {
+        return this.prisma.$transaction(async (tx) => {
+            const list = await tx.list.findUnique({
+                where: { id: listId },
+                select: { id: true, boardId: true },
+            });
+
+            if (!list) {
+                throw new NotFoundException({
+                    code: 'LIST_NOT_FOUND',
+                    message: 'List not found',
+                });
+            }
+
+            const boardLists = await tx.list.findMany({
+                where: { boardId: list.boardId },
+                orderBy: { position: 'asc' },
+                select: { id: true },
+            });
+
+            const ids = boardLists.map((l) => l.id);
+            const withoutMoved = ids.filter((id) => id !== listId);
+            const insertAt = Math.min(
+                Math.max(0, dto.position),
+                withoutMoved.length,
+            );
+            const newOrder = [
+                ...withoutMoved.slice(0, insertAt),
+                listId,
+                ...withoutMoved.slice(insertAt),
+            ];
+
+            for (let i = 0; i < newOrder.length; i++) {
+                await tx.list.update({
+                    where: { id: newOrder[i] },
+                    data: { position: i },
+                });
+            }
+
+            return tx.list.findUnique({ where: { id: listId } });
+        });
     }
 }
