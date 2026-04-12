@@ -8,19 +8,20 @@ import { CreateCardDto } from './dto/create-card.dto';
 import { MoveCardDto } from './dto/move-card.dto';
 import { SetCardCompletionDto } from './dto/set-card-completion.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import type { Card } from '../generated/prisma/client';
 
 @Injectable()
 export class CardService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCards(listId: number) {
+  async getCards(listId: number): Promise<Card[]> {
     return this.prisma.card.findMany({
       where: { listId },
       orderBy: { position: 'asc' },
     });
   }
 
-  async createCard(listId: number, dto: CreateCardDto) {
+  async createCard(listId: number, dto: CreateCardDto): Promise<Card> {
     return this.prisma.card.create({
       data: {
         listId,
@@ -33,7 +34,7 @@ export class CardService {
     });
   }
 
-  async updateCard(cardId: number, dto: UpdateCardDto) {
+  async updateCard(cardId: number, dto: UpdateCardDto): Promise<Card> {
     if (
       dto.title === undefined &&
       dto.description === undefined &&
@@ -77,7 +78,7 @@ export class CardService {
     return { ok: true };
   }
 
-  async moveCard(cardId: number, dto: MoveCardDto) {
+  async moveCard(cardId: number, dto: MoveCardDto): Promise<Card | null> {
     return this.prisma.$transaction(async (tx) => {
       const card = await tx.card.findUnique({
         where: { id: cardId },

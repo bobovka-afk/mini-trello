@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateListDto } from './dto/create-list.dto';
 import { MoveListDto } from './dto/move-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
+import type { List } from '../generated/prisma/client';
 
 @Injectable()
 export class ListService {
@@ -14,14 +15,14 @@ export class ListService {
 
 
 
-    async getLists(boardId: number) {
+    async getLists(boardId: number): Promise<List[]> {
         return this.prisma.list.findMany({
             where: { boardId },
             orderBy: { position: 'asc' },
         });
     }
 
-    async createList(boardId: number, dto: CreateListDto) {
+    async createList(boardId: number, dto: CreateListDto): Promise<List> {
         return this.prisma.list.create({
             data: {
                 name: dto.name,
@@ -31,7 +32,7 @@ export class ListService {
         });
     }
 
-    async updateList(listId: number, dto: UpdateListDto) {
+    async updateList(listId: number, dto: UpdateListDto): Promise<List> {
         if (dto.name === undefined && dto.colorPreset === undefined) {
             throw new BadRequestException({
                 code: 'LIST_UPDATE_FIELDS_REQUIRED',
@@ -55,7 +56,7 @@ export class ListService {
         return { ok: true };
     }
 
-    async moveList(listId: number, dto: MoveListDto) {
+    async moveList(listId: number, dto: MoveListDto): Promise<List | null> {
         return this.prisma.$transaction(async (tx) => {
             const list = await tx.list.findUnique({
                 where: { id: listId },

@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { HttpCode } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Request, type Response } from 'express';
 import { Res } from '@nestjs/common';
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -27,6 +27,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type {
+  LoginResult,
+  RefreshTokensResult,
+  RegisterResult,
+} from './type';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -43,7 +48,7 @@ export class AuthController {
   @ApiBody({ type: RegisterDto, description: 'Registration payload' })
   @ApiResponse({ status: 200, description: 'User registered successfully.' })
   @ApiResponse({ status: 400, description: 'Invalid registration payload.' })
-  register(@Body() registerDto: RegisterDto) {
+  register(@Body() registerDto: RegisterDto): Promise<RegisterResult> {
     return this.authService.register(registerDto);
   }
 
@@ -58,7 +63,7 @@ export class AuthController {
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<Omit<LoginResult, 'refreshToken'>> {
     const { refreshToken, ...response } = await this.authService.login(loginDto);
     this.authService.addRefreshTokenToResponse(res, refreshToken);
     return response;
@@ -71,8 +76,8 @@ export class AuthController {
 	@ApiResponse({ status: 401, description: 'Refresh token is missing, invalid, or expired.' })
 	async getNewTokens(
 		@Req() req: Request,
-		@Res({ passthrough: true }) res: Response
-	) {
+		@Res({ passthrough: true }) res: Response,
+	): Promise<Omit<RefreshTokensResult, 'refreshToken'>> {
 		const refreshTokenFromCookies = req.cookies[
 			this.authService.REFRESH_TOKEN_NAME
 		] as string | undefined
@@ -96,7 +101,7 @@ export class AuthController {
 	@Post('logout')
 	@ApiOperation({ summary: 'Clear refresh token cookie' })
 	@ApiResponse({ status: 200, description: 'User logged out successfully.' })
-	logout(@Res({ passthrough: true }) res: Response) {
+	logout(@Res({ passthrough: true }) res: Response): boolean {
 		this.authService.removeRefreshTokenFromResponse(res)
 		return true
 	}
@@ -108,7 +113,9 @@ export class AuthController {
 	@ApiOperation({ summary: 'Send email verification message' })
 	@ApiBody({ type: ForgotPasswordDto, description: 'Email verification request payload' })
 	@ApiResponse({ status: 200, description: 'Email verification request processed successfully.' })
-	requestEmailVerification(@Body() dto: ForgotPasswordDto) {
+	requestEmailVerification(
+		@Body() dto: ForgotPasswordDto,
+	): Promise<{ ok: boolean }> {
 		return this.authService.requestEmailVerification(dto.email);
 	}
 
@@ -125,7 +132,7 @@ export class AuthController {
 	async confirmEmailVerification(
 		@Query('token') token: string,
 		@Res() res: Response,
-	) {
+	): Promise<void> {
 		let status = 'invalid';
 		try {
 			await this.authService.confirmEmailVerification(token);
@@ -136,10 +143,11 @@ export class AuthController {
 
 		const clientUrl = this.configService.get<string>('CLIENT_URL') || '';
 		if (clientUrl) {
-			return res.redirect(`${clientUrl}/email-verified?status=${status}`);
+			res.redirect(`${clientUrl}/email-verified?status=${status}`);
+			return;
 		}
 
-		return res.json({ status });
+		res.json({ status });
 	}
 
 	@Post('password/reset/request')
@@ -149,7 +157,7 @@ export class AuthController {
 	@ApiOperation({ summary: 'Send password reset email' })
 	@ApiBody({ type: ForgotPasswordDto, description: 'Password reset request payload' })
 	@ApiResponse({ status: 200, description: 'Password reset request processed successfully.' })
-	requestPasswordReset(@Body() dto: ForgotPasswordDto) {
+	requestPasswordReset(@Body() dto): Promise<{ ok: boolean }> {
 		return this.authService.requestPasswordReset(dto.email);
 	}
 
@@ -161,7 +169,7 @@ export class AuthController {
 	@ApiBody({ type: ConfirmPasswordResetDto, description: 'Password reset confirmation payload' })
 	@ApiResponse({ status: 200, description: 'Password reset completed successfully.' })
 	@ApiResponse({ status: 400, description: 'Invalid password reset token or payload.' })
-	confirmPasswordReset(@Body() dto: ConfirmPasswordResetDto) {
+	confirmPasswordReset(@Body() dto: ConfirmPasswordResetDto): Promise<{ ok: boolean }> {
 		return this.authService.confirmPasswordReset(dto.token, dto.newPassword);
 	}
 
@@ -170,7 +178,7 @@ export class AuthController {
 	@UseGuards(AuthGuard('google'))
 	@ApiOperation({ summary: 'Start Google OAuth flow' })
 	@ApiResponse({ status: 302, description: 'Redirect to Google OAuth consent screen.' })
-	async googleAuth() {}
+	async googleAuth(): Promise<void> {}
 
 	@Get('google/callback')
 	@UseGuards(AuthGuard('google'))
@@ -178,8 +186,8 @@ export class AuthController {
 	@ApiResponse({ status: 302, description: 'Redirect to the client application after Google authentication.' })
 	async googleAuthCallback(
 		@Req() req: { user: { email: string; name: string; picture: string } },
-		@Res({ passthrough: true }) res: Response
-	) {
+		@Res({ passthrough: true }) res: Response,
+	): Promise<void> {
 		const { refreshToken, ...response } =
 			await this.authService.validateOAuthLogin(req)
 		this.authService.addRefreshTokenToResponse(res, refreshToken)

@@ -2,13 +2,17 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import type { Board } from '../generated/prisma/client';
 
 @Injectable()
 export class BoardService {
     constructor(private readonly prisma: PrismaService) {}
 
 
-    async createBoard(workspaceId: number, dto: CreateBoardDto) {
+    async createBoard(
+        workspaceId: number,
+        dto: CreateBoardDto,
+    ): Promise<Board> {
         return this.prisma.board.create({
             data: {
                 name: dto.name,
@@ -19,7 +23,7 @@ export class BoardService {
         });
     }
 
-    async getBoard(boardId: number) {
+    async getBoard(boardId: number): Promise<Board> {
         const board = await this.prisma.board.findUnique({
             where: { id: boardId },
         });
@@ -34,7 +38,7 @@ export class BoardService {
         return board;
     }
 
-    async getBoards(workspaceId: number) {
+    async getBoards(workspaceId: number): Promise<Board[]> {
         return this.prisma.board.findMany({
             where: {
                 workspaceId: workspaceId,
@@ -46,7 +50,7 @@ export class BoardService {
     async updateBoard(
         boardId: number,
         dto: UpdateBoardDto,
-    ) {
+    ): Promise<Board> {
         if (dto.name === undefined && dto.description === undefined) {
             throw new BadRequestException({
                 code: 'BOARD_UPDATE_FIELDS_REQUIRED',

@@ -15,7 +15,6 @@ import { WorkspaceRole } from '../generated/prisma/enums';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
 import { WorkspaceMemberService } from './workspace-member.service';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
-import { Request } from 'express';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -24,6 +23,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type { WorkspaceMemberWithUser } from './interface';
+import { Request } from 'express';
 
 @ApiTags('workspace-members')
 @ApiBearerAuth()
@@ -45,7 +46,7 @@ export class WorkspaceMemberController {
   async getMembersWorkspace(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Query() paginationDto: PaginationDto,
-  ) {
+  ): Promise<WorkspaceMemberWithUser[]> {
     return this.workspaceMemberService.getWorkspaceMembers(
       workspaceId,
       paginationDto,
@@ -65,7 +66,7 @@ export class WorkspaceMemberController {
   async deleteWorkspaceMember(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('memberId', ParseIntPipe) memberId: number,
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.workspaceMemberService.deleteWorkspaceMember(
       workspaceId,
       memberId,
@@ -83,7 +84,7 @@ export class WorkspaceMemberController {
   async leaveWorkspace(
     @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.workspaceMemberService.leaveWorkspace(req.user.id, workspaceId);
   }
 }

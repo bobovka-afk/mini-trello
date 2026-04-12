@@ -15,6 +15,13 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { AuthTokenType } from '../generated/prisma/enums';
+import type { AuthTokens, AuthUserSnippet } from './interface';
+import type {
+  LoginResult,
+  OAuthLoginResult,
+  RefreshTokensResult,
+  RegisterResult,
+} from './type';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +36,7 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto): Promise<RegisterResult> {
     const normalizedEmail = this.normalizeEmail(registerDto.email);
     const oldUser = await this.userService.findByEmail(normalizedEmail);
     if (oldUser) {
@@ -52,11 +59,11 @@ export class AuthService {
     return user;
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<LoginResult> {
     return this.signIn(loginDto);
   }
 
-  async getNewTokens(refreshToken: string) {
+  async getNewTokens(refreshToken: string): Promise<RefreshTokensResult> {
     try {
         const result = await this.jwtService.verifyAsync<{ id: string }>(
             refreshToken
@@ -82,7 +89,7 @@ export class AuthService {
 }
 
 
-issueTokens(userId: number) {
+  issueTokens(userId: number): AuthTokens {
     const data = { id: String(userId) }
 
     const accessToken = this.jwtService.sign(data, {
@@ -96,9 +103,9 @@ issueTokens(userId: number) {
     return { accessToken, refreshToken }
 }
 
-async validateOAuthLogin(req: {
-    user: { email: string; name: string; picture: string }
-}) {
+  async validateOAuthLogin(req: {
+    user: { email: string; name: string; picture: string };
+  }): Promise<OAuthLoginResult> {
     const normalizedEmail = this.normalizeEmail(req.user.email);
     let user: User | null = await this.userService.findByEmail(
         normalizedEmail
@@ -116,12 +123,12 @@ async validateOAuthLogin(req: {
         data: { emailVerifiedAt: new Date() },
       });
     }
-    const tokens = this.issueTokens(user.id)
+    const tokens = this.issueTokens(user!.id);
 
-    return { user, ...tokens }
-}
+    return { user: user!, ...tokens };
+  }
 
-addRefreshTokenToResponse(res: Response, refreshToken: string) {
+  addRefreshTokenToResponse(res: Response, refreshToken: string): void {
     const expiresIn = new Date()
     expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN)
 
@@ -134,7 +141,7 @@ addRefreshTokenToResponse(res: Response, refreshToken: string) {
     })
 }
 
-removeRefreshTokenFromResponse(res: Response) {
+  removeRefreshTokenFromResponse(res: Response): void {
     res.cookie(this.REFRESH_TOKEN_NAME, '', {
         httpOnly: true,
         domain: this.configService.get('SERVER_DOMAIN'),
@@ -165,7 +172,7 @@ removeRefreshTokenFromResponse(res: Response) {
     return minutes * 60 * 1000;
   }
 
-  async requestEmailVerification(email: string) {
+  async requestEmailVerification(email: string): Promise<{ ok: boolean }> {
     const normalizedEmail = this.normalizeEmail(email);
     const user = await this.userService.findByEmail(normalizedEmail);
 
@@ -192,7 +199,7 @@ removeRefreshTokenFromResponse(res: Response) {
     return { ok: true };
   }
 
-  async confirmEmailVerification(token: string) {
+  async confirmEmailVerification(token: string): Promise<{ ok: boolean }> {
     if (!token) {
       throw new BadRequestException({
         code: 'TOKEN_REQUIRED',
@@ -234,7 +241,7 @@ removeRefreshTokenFromResponse(res: Response) {
     return { ok: true };
   }
 
-  async requestPasswordReset(email: string) {
+  async requestPasswordReset(email: string): Promise<{ ok: boolean }> {
     const normalizedEmail = this.normalizeEmail(email);
     const user = await this.userService.findByEmail(normalizedEmail);
 
@@ -260,7 +267,10 @@ removeRefreshTokenFromResponse(res: Response) {
     return { ok: true };
   }
 
-  async confirmPasswordReset(token: string, newPassword: string) {
+  async confirmPasswordReset(
+    token: string,
+    newPassword: string,
+  ): Promise<{ ok: boolean }> {
     if (!token) {
       throw new BadRequestException({
         code: 'TOKEN_REQUIRED',
@@ -311,13 +321,13 @@ removeRefreshTokenFromResponse(res: Response) {
     return { ok: true };
   }
 
-  private async signIn(loginDto: LoginDto) {
+  private async signIn(loginDto: LoginDto): Promise<LoginResult> {
     const user = await this.validateUser(loginDto);
     const tokens = this.issueTokens(user.id);
     return { user, ...tokens };
   }
 
-  private async validateUser(loginDto: LoginDto) {
+  private async validateUser(loginDto: LoginDto): Promise<AuthUserSnippet> {
     const normalizedEmail = this.normalizeEmail(loginDto.email);
     const user = await this.userService.findByEmail(normalizedEmail);
     if (!user) {
@@ -338,7 +348,7 @@ removeRefreshTokenFromResponse(res: Response) {
     };
   }
 
-  private normalizeEmail(email: string) {
+  private normalizeEmail(email: string): string {
     return email.trim().toLowerCase();
   }
 

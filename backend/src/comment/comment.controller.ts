@@ -18,7 +18,6 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment-dto';
 import { RateLimit } from '../common/decorators/rate-limit.decorator';
 import { RateLimitGuard } from '../common/guards/rate-limit.guard';
-import { Request } from 'express';
 import {
   ApiBody,
   ApiBearerAuth,
@@ -27,6 +26,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type { CommentWithUser } from './interface';
+import { Request } from 'express';
 
 @ApiTags('comment')
 @ApiBearerAuth()
@@ -42,7 +43,9 @@ export class CommentController {
   @ApiResponse({ status: 200, description: 'Comments returned successfully.' })
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
   @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
-  async getComments(@Param('cardId', ParseIntPipe) cardId: number) {
+  async getComments(
+    @Param('cardId', ParseIntPipe) cardId: number,
+  ): Promise<CommentWithUser[]> {
     return this.commentService.getComments(cardId);
   }
 
@@ -60,7 +63,7 @@ export class CommentController {
     @Param('cardId', ParseIntPipe) cardId: number,
     @Body() dto: CreateCommentDto,
     @Req() req: Request & { user: { id: number } },
-  ) {
+  ): Promise<CommentWithUser> {
     return this.commentService.createComment(cardId, req.user.id, dto);
   }
 
@@ -78,7 +81,7 @@ export class CommentController {
     @Param('commentId', ParseIntPipe) commentId: number,
     @Body() dto: UpdateCommentDto,
     @Req() req: Request & { user: { id: number } },
-  ) {
+  ): Promise<CommentWithUser> {
     return this.commentService.updateComment(commentId, req.user.id, dto);
   }
 
@@ -93,7 +96,7 @@ export class CommentController {
   async deleteComment(
     @Param('commentId', ParseIntPipe) commentId: number,
     @Req() req: Request & { user: { id: number }; workspaceId: number },
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.commentService.deleteComment(
       commentId,
       req.user.id,

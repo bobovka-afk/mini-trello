@@ -17,7 +17,6 @@ import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
 import { WorkspaceRoleGuard } from '../common/guards/workspace-role.guard';
 import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
 import { WorkspaceRole } from '../generated/prisma/enums';
-import { Request } from 'express';
 import { RateLimit } from '../common/decorators/rate-limit.decorator';
 import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 import {
@@ -29,6 +28,12 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type {
+  MyWorkspaceInviteRow,
+  WorkspaceInviteCreated,
+  WorkspaceInviteListItem,
+} from './interface';
+import { Request } from 'express';
 
 @ApiTags('workspace-invite')
 @ApiBearerAuth()
@@ -46,7 +51,7 @@ export class WorkspaceInviteController {
   async getMyInvites(
     @Req() req: Request & { user: { id: number } },
     @Query() paginationDto: PaginationDto,
-  ){
+  ): Promise<MyWorkspaceInviteRow[]> {
       return this.workspaceInviteService.getMyInvites(req.user.id, paginationDto)
     }
 
@@ -64,7 +69,7 @@ export class WorkspaceInviteController {
   async getWorkspaceInvites(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Query() paginationDto: PaginationDto,
-  ) {
+  ): Promise<WorkspaceInviteListItem[]> {
     return this.workspaceInviteService.getWorkspaceInvites(workspaceId, paginationDto);
   }
 
@@ -82,8 +87,10 @@ export class WorkspaceInviteController {
   @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   @ApiResponse({ status: 409, description: 'Invite conflicts with the current workspace state.' })
   async sendInvite(
-    @Param('workspaceId', ParseIntPipe) workspaceId: number, 
-    @Req() req: Request & { user: { id: number } },@Body() dto: SendInviteDto,) {
+    @Param('workspaceId', ParseIntPipe) workspaceId: number,
+    @Req() req: Request & { user: { id: number } },
+    @Body() dto: SendInviteDto,
+  ): Promise<WorkspaceInviteCreated> {
       return this.workspaceInviteService.sendInvite(dto, req.user.id, workspaceId);
     }
 
@@ -98,7 +105,7 @@ export class WorkspaceInviteController {
   async acceptInviteByToken(
     @Req() req: Request & { user: { id: number } },
     @Body() dto: AcceptInviteTokenDto,
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.workspaceInviteService.acceptInviteByToken(
       dto.token,
       req.user.id,
@@ -115,7 +122,7 @@ export class WorkspaceInviteController {
   async acceptInvite(
     @Param('inviteId', ParseIntPipe) inviteId: number,
     @Req() req: Request & { user: { id: number } },
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.workspaceInviteService.acceptInvite(inviteId, req.user.id);
   }
 
@@ -129,7 +136,7 @@ export class WorkspaceInviteController {
   async declineInvite(
     @Param('inviteId', ParseIntPipe) inviteId: number,
     @Req() req: Request & { user: { id: number } },
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.workspaceInviteService.declineInvite(inviteId, req.user.id);
   }
 
@@ -146,7 +153,7 @@ export class WorkspaceInviteController {
   async deleteInvite(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('inviteId', ParseIntPipe) inviteId: number,
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.workspaceInviteService.deleteInvite(inviteId, workspaceId);
   }
 }

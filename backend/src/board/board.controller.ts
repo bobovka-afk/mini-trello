@@ -18,6 +18,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type { Board } from '../generated/prisma/client';
 
 @ApiTags('board')
 @ApiBearerAuth()
@@ -39,7 +40,7 @@ export class BoardController {
   async createBoard(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Body() dto: CreateBoardDto,
-  ) {
+  ): Promise<Board> {
     return this.boardService.createBoard(workspaceId, dto);
   }
 
@@ -52,8 +53,8 @@ export class BoardController {
   @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   @ApiResponse({ status: 404, description: 'Board not found.' })
   async getBoard(
-    @Param('boardId', ParseIntPipe) boardId: number,
-  ) {
+    @Param('boardId', ParseIntPipe) boardId,
+  ): Promise<Board> {
     return this.boardService.getBoard(boardId);
   }
 
@@ -65,7 +66,7 @@ export class BoardController {
   @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   async getBoards(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
-  ) {
+  ): Promise<Board[]> {
     return this.boardService.getBoards(workspaceId);
   }
 
@@ -84,7 +85,7 @@ export class BoardController {
   async updateBoard(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Body() dto: UpdateBoardDto,
-  ) {
+  ): Promise<Board> {
     return this.boardService.updateBoard(
       boardId,
       dto,
@@ -103,7 +104,7 @@ export class BoardController {
   @ApiResponse({ status: 404, description: 'Board not found.' })
   async deleteBoard(
     @Param('boardId', ParseIntPipe) boardId: number,
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.boardService.deleteBoard(boardId);
   }
 

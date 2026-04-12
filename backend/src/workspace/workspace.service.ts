@@ -8,13 +8,23 @@ import {
 } from '@nestjs/common';
 import { PaginationDto } from './dto/pagination.dto';
 import { WorkspaceRole } from '../generated/prisma/enums';
+import type {
+    WorkspaceCreated,
+    WorkspaceIdRef,
+    WorkspaceSummary,
+    WorkspaceUpdated,
+    UserWorkspaceRow,
+} from './interface';
 
 @Injectable()
 export class WorkspaceService {
     constructor(private readonly prisma: PrismaService) {}
 
 
-    async createWorkspace(dto: CreateWorkspaceDto, userId: number) {
+    async createWorkspace(
+        dto: CreateWorkspaceDto,
+        userId: number,
+    ): Promise<WorkspaceCreated> {
         const workspace = await this.prisma.workspace.create({
             data: {
                 name: dto.name,
@@ -35,7 +45,10 @@ export class WorkspaceService {
         };
     }
 
-    async getWorkspaceSummary(workspaceId: number, userId: number) {
+    async getWorkspaceSummary(
+        workspaceId: number,
+        userId: number,
+    ): Promise<WorkspaceSummary> {
         const workspace = await this.prisma.workspace.findUnique({
             where: { id: workspaceId },
             select: {
@@ -65,7 +78,10 @@ export class WorkspaceService {
         };
     }
 
-    async getUserWorkspaces(userId: number, paginationDto: PaginationDto) {
+    async getUserWorkspaces(
+        userId: number,
+        paginationDto: PaginationDto,
+    ): Promise<UserWorkspaceRow[]> {
         return this.prisma.workspaceMember.findMany({
             where: { userId: userId },
             select: {
@@ -95,7 +111,7 @@ export class WorkspaceService {
     async updateWorkspace(
         workspaceId: number,
         dto: UpdateWorkspaceDto,
-    ) {
+    ): Promise<WorkspaceUpdated> {
         if (dto.name === undefined && dto.description === undefined) {
             throw new BadRequestException({
                 code: 'WORKSPACE_UPDATE_FIELDS_REQUIRED',
@@ -124,7 +140,7 @@ export class WorkspaceService {
         return { ok: true }
     }
 
-    async getWorkspaceOrThrow(workspaceId: number) {
+    async getWorkspaceOrThrow(workspaceId: number): Promise<WorkspaceIdRef> {
         const workspace = await this.prisma.workspace.findUnique({
             where: { id: workspaceId },
             select: { id: true },

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { PrismaService } from '../prisma/prisma.service';
+import type { HealthLiveness, HealthReadiness } from './interface';
+import type { ReadinessProbe } from './type';
 
 @Injectable()
 export class HealthService {
@@ -10,7 +12,7 @@ export class HealthService {
     private readonly configService: ConfigService,
   ) {}
 
-  getHealth() {
+  getHealth(): HealthLiveness {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -18,7 +20,7 @@ export class HealthService {
     };
   }
 
-  async getReadiness() {
+  async getReadiness(): Promise<HealthReadiness> {
     const postgres = await this.checkPostgres();
     const redis = await this.checkRedis();
     const ready = postgres.ok && redis.ok;
@@ -33,7 +35,7 @@ export class HealthService {
     };
   }
 
-  private async checkPostgres() {
+  private async checkPostgres(): Promise<ReadinessProbe> {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
       return { ok: true };
@@ -45,7 +47,7 @@ export class HealthService {
     }
   }
 
-  private async checkRedis() {
+  private async checkRedis(): Promise<ReadinessProbe> {
     const host = this.configService.get<string>('REDIS_HOST') ?? 'localhost';
     const port = Number(this.configService.get<string>('REDIS_PORT') ?? 6379);
 

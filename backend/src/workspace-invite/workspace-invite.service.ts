@@ -14,6 +14,12 @@ import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { WorkspaceService } from '../workspace/workspace.service';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
+import type {
+  InviteForEmailAccess,
+  MyWorkspaceInviteRow,
+  WorkspaceInviteCreated,
+  WorkspaceInviteListItem,
+} from './interface';
 
 type InviteDbClient = {
   workspaceInvite: PrismaService['workspaceInvite'];
@@ -28,7 +34,11 @@ export class WorkspaceInviteService {
     private readonly workspaceService: WorkspaceService,
   ) {}
 
-  async sendInvite(dto: SendInviteDto, userId: number, workspaceId: number) {
+  async sendInvite(
+    dto: SendInviteDto,
+    userId: number,
+    workspaceId: number,
+  ): Promise<WorkspaceInviteCreated> {
     const invitedUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -93,7 +103,10 @@ export class WorkspaceInviteService {
     }
   }
 
-  async getWorkspaceInvites(workspaceId: number, paginationDto: PaginationDto) {
+  async getWorkspaceInvites(
+    workspaceId: number,
+    paginationDto: PaginationDto,
+  ): Promise<WorkspaceInviteListItem[]> {
     const now = new Date();
     return this.prisma.workspaceInvite.findMany({
       where: {
@@ -117,7 +130,10 @@ export class WorkspaceInviteService {
     });
   }
 
-  async deleteInvite(inviteId: number, workspaceId: number): Promise<{ ok: boolean }> {
+  async deleteInvite(
+    inviteId: number,
+    workspaceId: number,
+  ): Promise<{ ok: boolean }> {
     return this.prisma.$transaction(async (tx) => {
       const deleted = await tx.workspaceInvite.deleteMany({
         where: { id: inviteId, workspaceId },
@@ -129,7 +145,10 @@ export class WorkspaceInviteService {
     });
   }
 
-  async getMyInvites(userId: number, paginationDto: PaginationDto) {
+  async getMyInvites(
+    userId: number,
+    paginationDto: PaginationDto,
+  ): Promise<MyWorkspaceInviteRow[]> {
     const currentUserEmail = await this.getUserEmailOrThrow(userId);
 
     return this.prisma.workspaceInvite.findMany({
@@ -155,7 +174,10 @@ export class WorkspaceInviteService {
     });
   }
 
-  async acceptInviteByToken(token: string, userId: number) {
+  async acceptInviteByToken(
+    token: string,
+    userId: number,
+  ): Promise<{ ok: boolean }> {
     const tokenHash = this.hashToken(token);
     const invite = await this.prisma.workspaceInvite.findUnique({
       where: { tokenHash },
@@ -167,7 +189,7 @@ export class WorkspaceInviteService {
     return this.acceptInvite(invite.id, userId);
   }
 
-  async acceptInvite(inviteId: number, userId: number) {
+  async acceptInvite(inviteId: number, userId: number): Promise<{ ok: boolean }> {
     const currentUserEmail = await this.getUserEmailOrThrow(userId);
     const invite = await this.getInviteForEmailOrThrow(inviteId, currentUserEmail);
 
@@ -200,7 +222,7 @@ export class WorkspaceInviteService {
     }
   }
 
-  async declineInvite(inviteId: number, userId: number) {
+  async declineInvite(inviteId: number, userId: number): Promise<{ ok: boolean }> {
     const currentUserEmail = await this.getUserEmailOrThrow(userId);
     const invite = await this.getInviteForEmailOrThrow(inviteId, currentUserEmail);
 
@@ -223,11 +245,14 @@ export class WorkspaceInviteService {
     return { ok: true };
   }
 
-  private async deleteInviteRecord(db: InviteDbClient, inviteId: number) {
+  private async deleteInviteRecord(
+    db: InviteDbClient,
+    inviteId: number,
+  ): Promise<void> {
     await db.workspaceInvite.delete({ where: { id: inviteId } });
   }
 
-  private async getUserEmailOrThrow(userId: number) {
+  private async getUserEmailOrThrow(userId: number): Promise<string> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { email: true },
@@ -241,7 +266,10 @@ export class WorkspaceInviteService {
     return user.email;
   }
 
-  private async getInviteForEmailOrThrow(inviteId: number, email: string) {
+  private async getInviteForEmailOrThrow(
+    inviteId: number,
+    email: string,
+  ): Promise<InviteForEmailAccess> {
     const invite = await this.prisma.workspaceInvite.findUnique({
       where: { id: inviteId },
       select: {
@@ -265,7 +293,10 @@ export class WorkspaceInviteService {
     return invite;
   }
 
-  private ensureInviteIsActive(status: WorkspaceInviteStatus, expiresAt: Date) {
+  private ensureInviteIsActive(
+    status: WorkspaceInviteStatus,
+    expiresAt: Date,
+  ): void {
     if (status !== WorkspaceInviteStatus.PENDING) {
       throw new ConflictException({
         code: 'INVITE_ALREADY_PROCESSED',
@@ -280,7 +311,7 @@ export class WorkspaceInviteService {
     }
   }
 
-  private hashToken(token: string) {
+  private hashToken(token: string): string {
     return crypto.createHash('sha256').update(token).digest('hex');
   }
 

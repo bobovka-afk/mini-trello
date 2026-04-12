@@ -25,6 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type { Card } from '../generated/prisma/client';
 
 @ApiTags('card')
 @ApiBearerAuth()
@@ -40,7 +41,9 @@ export class CardController {
   @ApiResponse({ status: 200, description: 'Cards returned successfully.' })
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
   @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
-  async getCards(@Param('listId', ParseIntPipe) listId: number) {
+  async getCards(
+    @Param('listId', ParseIntPipe) listId: number,
+  ): Promise<Card[]> {
     return this.cardService.getCards(listId);
   }
 
@@ -56,7 +59,7 @@ export class CardController {
   async createCard(
     @Param('listId', ParseIntPipe) listId: number,
     @Body() dto: CreateCardDto,
-  ) {
+  ): Promise<Card> {
     return this.cardService.createCard(listId, dto);
   }
 
@@ -73,7 +76,7 @@ export class CardController {
   async moveCard(
     @Param('cardId', ParseIntPipe) cardId: number,
     @Body() dto: MoveCardDto,
-  ) {
+  ): Promise<Card | null> {
     return this.cardService.moveCard(cardId, dto);
   }
 
@@ -89,7 +92,7 @@ export class CardController {
   async setCardCompletion(
     @Param('cardId', ParseIntPipe) cardId: number,
     @Body() dto: SetCardCompletionDto,
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.cardService.setCardCompletion(cardId, dto);
   }
 
@@ -103,9 +106,9 @@ export class CardController {
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
   @ApiResponse({ status: 404, description: 'Card not found.' })
   async updateCard(
-    @Param('cardId', ParseIntPipe) cardId: number,
-    @Body() dto: UpdateCardDto,
-  ) {
+    @Param('cardId', ParseIntPipe) cardId,
+    @Body() dto,
+  ): Promise<Card> {
     return this.cardService.updateCard(cardId, dto);
   }
 
@@ -117,7 +120,9 @@ export class CardController {
   @ApiResponse({ status: 200, description: 'Card deleted successfully.' })
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
   @ApiResponse({ status: 404, description: 'Card not found.' })
-  async deleteCard(@Param('cardId', ParseIntPipe) cardId: number) {
+  async deleteCard(
+    @Param('cardId', ParseIntPipe) cardId: number,
+  ): Promise<{ ok: boolean }> {
     return this.cardService.deleteCard(cardId);
   }
 }

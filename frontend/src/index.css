@@ -2566,9 +2566,14 @@ button {
   background: rgba(235, 90, 70, 0.18);
 }
 
-/* Full board view — фон как у темы приложения */
+/* Full board view — фон как у темы приложения; без вертикального скролла страницы */
 .trello-board-viewport {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #0079bf 0%, #5067c5 55%, #89609e 100%);
@@ -2813,12 +2818,133 @@ html:not(.theme-dark) .trello-board-viewport .trello-board-loading {
 
 .trello-board-lists-scroll {
   flex: 1;
+  min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 12px;
   padding: 12px 16px 24px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(9, 30, 66, 0.35) transparent;
+  cursor: grab;
+  overscroll-behavior-x: auto;
+  overscroll-behavior-y: none;
+}
+
+.trello-board-lists-scroll:active {
+  cursor: grabbing;
+}
+
+.trello-board-lists-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.trello-board-lists-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.trello-board-lists-scroll::-webkit-scrollbar-thumb {
+  background: rgba(9, 30, 66, 0.32);
+  border-radius: 5px;
+}
+
+.theme-dark .trello-board-lists-scroll {
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.theme-dark .trello-board-lists-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Full board width = columns row; strip below for Trello-like horizontal pan */
+.trello-board-scroll-surface {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  align-self: stretch;
+  width: max-content;
+  max-width: none;
+  flex: 0 1 auto;
+  min-height: 0;
+  /* Чтобы «Добавить колонку» не обрезалась у правого края после прокрутки */
+  padding-inline-end: 20px;
+}
+
+.trello-board-hpan-strip {
+  flex-shrink: 0;
+  height: 32px;
+  margin-top: 4px;
+  border-radius: 6px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.trello-board-hpan-strip:active {
+  cursor: grabbing;
+}
+
+.theme-dark .trello-board-hpan-strip {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html:not(.theme-dark) .trello-board-hpan-strip {
+  background: rgba(9, 30, 66, 0.06);
+}
+
+/* Horizontal @hello-pangea/dnd container for list columns */
+.trello-board-lists-droppable {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.trello-board-dnd-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.trello-board-empty-auth {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.trello-add-list-wrap--inline {
+  width: 272px;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+/* «Добавить колонку» — без серой «колонки» под кнопкой, только кнопка на фоне доски */
+.trello-list-wrap.trello-add-list-wrap--inline {
+  background: transparent !important;
+  box-shadow: none;
+  border-radius: 0;
+  max-height: none;
+}
+
+.trello-list-header-row--drag-handle {
+  cursor: grab;
+}
+
+.trello-list-header-row--drag-handle:active {
+  cursor: grabbing;
+}
+
+.trello-list-wrap--dragging {
+  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.35);
 }
 
 .trello-board-loading {
@@ -2835,10 +2961,12 @@ html:not(.theme-dark) .trello-board-viewport .trello-board-loading {
   flex-shrink: 0;
   border-radius: 8px;
   background: #ebecf0;
-  max-height: calc(100vh - 100px);
+  min-height: 0;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   box-shadow: 0 1px 1px rgba(9, 30, 66, 0.2);
+  cursor: default;
 }
 
 .trello-list-header {
@@ -2847,6 +2975,9 @@ html:not(.theme-dark) .trello-board-viewport .trello-board-loading {
   color: #fff;
   font-weight: 600;
   font-size: 14px;
+  flex-shrink: 0;
+  /* Темнее тела колонки, без линий-разделителей */
+  background: rgba(0, 0, 0, 0.24);
 }
 
 .trello-list-header-row {
@@ -2989,17 +3120,113 @@ html:not(.theme-dark) .trello-board-viewport .trello-board-loading {
 
 .trello-list-body {
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   padding: 8px;
-  min-height: 48px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow: hidden;
 }
 
-.trello-list-body::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+/* Область карточек (скролл) + статичный футер с кнопкой — ползунок только над карточками */
+.trello-list-cards-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
+.trello-list-cards-scroll-outer {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.trello-list-cards-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 20px;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.95;
+}
+
+.trello-list-cards-pane--overflow .trello-list-cards-fade {
+  right: 6px;
+}
+
+.trello-list-cards-fade--top {
+  top: 0;
+  background: linear-gradient(
+    180deg,
+    var(--trello-list-chrome, #ebecf0) 0%,
+    rgba(235, 236, 240, 0) 100%
+  );
+}
+
+.trello-list-cards-fade--bottom {
+  bottom: 0;
+  background: linear-gradient(
+    0deg,
+    var(--trello-list-chrome, #ebecf0) 0%,
+    rgba(235, 236, 240, 0) 100%
+  );
+}
+
+.trello-list-cards-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+/* Резерв под полосу прокрутки только когда контент реально не помещается */
+.trello-list-cards-scroll--overflow {
+  scrollbar-gutter: stable;
+  padding-right: 2px;
+}
+
+/* Нижняя полоса как шапка: сплошной тёмный тон цвета колонки, без границ */
+.trello-list-add-card-footer {
+  flex-shrink: 0;
+  margin-left: -8px;
+  margin-right: -8px;
+  margin-bottom: -8px;
+  padding: 6px 8px 8px;
+  border-radius: 0 0 8px 8px;
+  background-color: var(--trello-list-chrome, #ebecf0);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.24));
+}
+
+.trello-list-add-card-footer .trello-add-card-btn {
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.trello-list-cards-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.trello-list-cards-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.trello-list-cards-scroll::-webkit-scrollbar-thumb {
+  background: rgba(9, 30, 66, 0.28);
+  border-radius: 4px;
+}
+
+.theme-dark .trello-list-cards-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .trello-list-placeholder {
@@ -3014,11 +3241,12 @@ html:not(.theme-dark) .trello-board-viewport .trello-board-loading {
 }
 
 .trello-board-viewport .trello-list-wrap .trello-add-card-btn {
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .trello-board-viewport .trello-list-wrap .trello-add-card-btn:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .trello-cards-droppable {
@@ -3236,7 +3464,8 @@ html:not(.theme-dark) .trello-board-viewport .trello-board-loading {
   align-items: center;
   gap: 6px;
   width: 100%;
-  margin-top: 4px;
+  flex-shrink: 0;
+  margin-top: 0;
   border: none;
   border-radius: 6px;
   background: transparent;
@@ -3331,20 +3560,22 @@ html:not(.theme-dark) .trello-board-viewport .trello-board-loading {
 }
 
 .theme-dark .trello-board-viewport .trello-list-wrap .trello-add-card-btn {
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .theme-dark .trello-board-viewport .trello-list-wrap .trello-add-card-btn:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.trello-add-list-wrap {
+/* Оформление обёртки только вне доски (на доске — .trello-add-list-wrap--inline без подложки) */
+.trello-add-list-wrap:not(.trello-add-list-wrap--inline) {
   background: #091e4214;
   min-height: auto;
   border-radius: 8px;
 }
 
-.theme-dark .trello-add-list-wrap {
+.theme-dark .trello-add-list-wrap:not(.trello-add-list-wrap--inline) {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);

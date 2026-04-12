@@ -1,6 +1,7 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { HealthService } from './health.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { HealthLiveness, HealthReadiness } from './interface';
 
 @ApiTags('health')
 @Controller()
@@ -10,7 +11,7 @@ export class HealthController {
   @Get('health')
   @ApiOperation({ summary: 'Check if application process is alive' })
   @ApiResponse({ status: 200, description: 'Application process is alive.' })
-  health() {
+  health(): HealthLiveness {
     return this.healthService.getHealth();
   }
 
@@ -18,7 +19,7 @@ export class HealthController {
   @ApiOperation({ summary: 'Check if application dependencies are ready' })
   @ApiResponse({ status: 200, description: 'Application dependencies are ready.' })
   @ApiResponse({ status: 503, description: 'Application dependencies are not ready.' })
-  async ready() {
+  async ready(): Promise<HealthReadiness> {
     const readiness = await this.healthService.getReadiness();
 
     if (readiness.status !== 'ready') {

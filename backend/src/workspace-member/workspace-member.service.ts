@@ -1,7 +1,9 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
+import type { WorkspaceMember } from '../generated/prisma/client';
 import { WorkspaceRole } from '../generated/prisma/enums';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
+import type { WorkspaceMemberWithUser } from './interface';
 
 @Injectable()
 export class WorkspaceMemberService {
@@ -10,7 +12,7 @@ export class WorkspaceMemberService {
   async getWorkspaceMembers(
     workspaceId: number,
     paginationDto: PaginationDto,
-  ) {
+  ): Promise<WorkspaceMemberWithUser[]> {
     return this.prisma.workspaceMember.findMany({
       where: { workspaceId },
       include: {
@@ -57,7 +59,10 @@ export class WorkspaceMemberService {
     return { ok: true };
   }
 
-  async leaveWorkspace(userId: number, workspaceId: number): Promise<{ ok: boolean }> {
+  async leaveWorkspace(
+    userId: number,
+    workspaceId: number,
+  ): Promise<{ ok: boolean }> {
     await this.prisma.workspaceMember.delete({
       where: {
         workspaceId_userId: {
@@ -73,7 +78,7 @@ export class WorkspaceMemberService {
   private async getWorkspaceMemberOrThrow(
     workspaceId: number,
     userId: number,
-  ) {
+  ): Promise<WorkspaceMember> {
     const member = await this.prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {

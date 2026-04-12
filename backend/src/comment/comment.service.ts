@@ -7,12 +7,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { WorkspaceRole } from '../generated/prisma/enums';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment-dto';
+import type { CommentWithUser } from './interface';
 
 @Injectable()
 export class CommentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getComments(cardId: number) {
+  async getComments(cardId: number): Promise<CommentWithUser[]> {
     return this.prisma.comment.findMany({
       where: { cardId },
       orderBy: { createdAt: 'asc' },
@@ -47,7 +48,7 @@ export class CommentService {
     commentId: number,
     userId: number,
     dto: UpdateCommentDto,
-  ) {
+  ): Promise<CommentWithUser> {
     const comment = await this.getCommentAuthorOrThrow(commentId);
     if (comment.userId !== userId) {
       throw new ForbiddenException({

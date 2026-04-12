@@ -10,14 +10,15 @@ import {
   UseInterceptors,
   BadRequestException,
 } from '@nestjs/common';
+import type { UserPublic } from './interface';
 import { Request } from 'express';
+import type { File as MulterFile } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as fs from 'fs';
 import { diskStorage } from 'multer';
-import type { File as MulterFile } from 'multer';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { RateLimit } from '../common/decorators/rate-limit.decorator';
@@ -42,7 +43,7 @@ export class UserController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Current user profile returned successfully.' })
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
-  async getProfile(@Req() req: Request & { user: { id: number } }) {
+  async getProfile(@Req() req): Promise<UserPublic | null> {
     return this.userService.getById(String(req.user.id));
   }
 
@@ -55,7 +56,7 @@ export class UserController {
   async updateProfile(
     @Req() req: Request & { user: { id: number } },
     @Body() body: UpdateUserDto,
-  ) {
+  ): Promise<UserPublic> {
     return this.userService.updateName(req.user.id, body.name);
   }
 
@@ -85,8 +86,8 @@ export class UserController {
           fs.mkdirSync(dir, { recursive: true });
           cb(null, dir);
         },
-        filename: (req: Request & { user?: { id?: number } }, file, cb) => {
-          const userId = req.user?.id ?? 'anon';
+        filename: (req, file, cb) => {
+          const userId = (req as any).user?.id ?? 'anon';
           const ext = path.extname(file.originalname).toLowerCase() || '.png';
           const name = `${userId}-${Date.now()}-${randomUUID()}${ext}`;
           cb(null, name);
@@ -113,7 +114,7 @@ export class UserController {
   async updateAvatar(
     @Req() req: Request & { user: { id: number } },
     @UploadedFile() file?: MulterFile,
-  ) {
+  ): Promise<UserPublic> {
     if (!file) {
       throw new BadRequestException({
         code: 'FILE_NOT_PROVIDED',
@@ -131,7 +132,9 @@ export class UserController {
   @ApiOperation({ summary: 'Remove current user avatar' })
   @ApiResponse({ status: 200, description: 'User avatar removed successfully.' })
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
-  async removeAvatar(@Req() req: Request & { user: { id: number } }) {
+  async removeAvatar(
+    @Req() req: Request & { user: { id: number } },
+  ): Promise<UserPublic> {
     return this.userService.removeAvatar(req.user.id);
   }
 }

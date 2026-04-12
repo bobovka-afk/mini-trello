@@ -27,6 +27,7 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
+import type { List } from '../generated/prisma/client';
 
 @ApiTags('list')
 @ApiBearerAuth()
@@ -44,7 +45,7 @@ export class ListController {
     @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
     async getLists(
         @Param('boardId', ParseIntPipe) boardId: number,
-    ) {
+    ): Promise<List[]> {
         return this.listService.getLists(boardId);
     }
 
@@ -62,7 +63,7 @@ export class ListController {
     async createList(
         @Param('boardId', ParseIntPipe) boardId: number,
         @Body() dto: CreateListDto,
-    ) {
+    ): Promise<List> {
         return this.listService.createList(
             boardId,
             dto,
@@ -80,9 +81,9 @@ export class ListController {
     @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
     @ApiResponse({ status: 404, description: 'List not found.' })
     async moveList(
-        @Param('listId', ParseIntPipe) listId: number,
-        @Body() dto: MoveListDto,
-    ) {
+        @Param('listId', ParseIntPipe) listId,
+        @Body() dto,
+    ): Promise<List | null> {
         return this.listService.moveList(listId, dto);
     }
 
@@ -101,7 +102,7 @@ export class ListController {
     async updateList(
         @Param('listId', ParseIntPipe) listId: number,
         @Body() dto: UpdateListDto,
-    ) {
+    ): Promise<List> {
         return this.listService.updateList(
             listId,
             dto,
@@ -120,7 +121,7 @@ export class ListController {
     @ApiResponse({ status: 404, description: 'List not found.' })
     async deleteList(
         @Param('listId', ParseIntPipe) listId: number,
-    ) {
+    ): Promise<{ ok: boolean }> {
         return this.listService.deleteList(listId);
     }
 }

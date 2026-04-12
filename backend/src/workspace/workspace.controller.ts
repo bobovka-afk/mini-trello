@@ -20,7 +20,6 @@ import { WorkspaceAccessGuard } from '../common/guards/workspace-access.guard';
 import { WorkspaceRoleGuard } from '../common/guards/workspace-role.guard';
 import { WorkspaceRoles } from '../common/decorators/workspace-roles.decorator';
 import { WorkspaceRole } from '../generated/prisma/enums';
-import { Request } from 'express';
 import {
   ApiBody,
   ApiBearerAuth,
@@ -30,6 +29,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type {
+  UserWorkspaceRow,
+  WorkspaceCreated,
+  WorkspaceSummary,
+  WorkspaceUpdated,
+} from './interface';
+import { Request } from 'express';
 
 @ApiTags('workspace')
 @ApiBearerAuth()
@@ -45,7 +51,9 @@ export class WorkspaceController {
   @ApiResponse({ status: 400, description: 'Invalid workspace creation payload.' })
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
   async createWorkspace(
-    @Req() req: Request & { user: { id: number } },@Body() dto: CreateWorkspaceDto,) {
+    @Req() req: Request & { user: { id: number } },
+    @Body() dto: CreateWorkspaceDto,
+  ): Promise<WorkspaceCreated> {
       return this.workspaceService.createWorkspace(dto, req.user.id);
     }
 
@@ -58,7 +66,7 @@ export class WorkspaceController {
   async getUserWorkspaces(
     @Req() req: Request & { user: { id: number } },
     @Query() paginationDto: PaginationDto,
-  ) {
+  ): Promise<UserWorkspaceRow[]> {
     return this.workspaceService.getUserWorkspaces(req.user.id, paginationDto);
   }
 
@@ -73,7 +81,7 @@ export class WorkspaceController {
   async getWorkspaceSummary(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Req() req: Request & { user: { id: number } },
-  ) {
+  ): Promise<WorkspaceSummary> {
     return this.workspaceService.getWorkspaceSummary(
       workspaceId,
       req.user.id,
@@ -94,7 +102,7 @@ export class WorkspaceController {
   async updateWorkspace(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Body() dto: UpdateWorkspaceDto,
-  ) {
+  ): Promise<WorkspaceUpdated> {
     return this.workspaceService.updateWorkspace(workspaceId, dto);
   }
 
@@ -109,7 +117,7 @@ export class WorkspaceController {
   @ApiResponse({ status: 404, description: 'Workspace not found.' })
   async deleteWorkspace(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
-  ) {
+  ): Promise<{ ok: boolean }> {
     return this.workspaceService.deleteWorkspace(workspaceId);
   }
 

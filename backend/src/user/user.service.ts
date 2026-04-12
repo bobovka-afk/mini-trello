@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { User } from '../generated/prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from '../auth/dto/register.dto';
+import type { UserPublic } from './interface';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getById(id: string) {
+  async getById(id: string): Promise<UserPublic | null> {
     const userId = Number(id);
     if (!Number.isInteger(userId)) return null;
 
@@ -23,14 +25,14 @@ export class UserService {
     });
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: string): Promise<User | null> {
     const normalizedEmail = this.normalizeEmail(email);
     return this.prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
   }
 
-  async create(dto: RegisterDto) {
+  async create(dto: RegisterDto): Promise<UserPublic> {
     const normalizedEmail = this.normalizeEmail(dto.email);
     const user = await this.prisma.user.create({
       data: {
@@ -52,7 +54,7 @@ export class UserService {
     email: string,
     name: string,
     picture: string,
-  ) {
+  ): Promise<User> {
     const normalizedEmail = this.normalizeEmail(email);
     const user = await this.prisma.user.create({
       data: {
@@ -66,7 +68,7 @@ export class UserService {
     return user;
   }
 
-  async updateAvatar(id: number, avatarPath: string) {
+  async updateAvatar(id: number, avatarPath: string): Promise<UserPublic> {
     return this.prisma.user.update({
       where: { id },
       data: { avatarPath },
@@ -80,7 +82,7 @@ export class UserService {
     });
   }
 
-  async removeAvatar(id: number) {
+  async removeAvatar(id: number): Promise<UserPublic> {
     return this.prisma.user.update({
       where: { id },
       data: { avatarPath: null },
@@ -94,7 +96,7 @@ export class UserService {
     });
   }
 
-  async updateName(id: number, name: string) {
+  async updateName(id: number, name: string): Promise<UserPublic> {
     return this.prisma.user.update({
       where: { id },
       data: { name },
@@ -108,7 +110,7 @@ export class UserService {
     });
   }
 
-  private normalizeEmail(email: string) {
+  private normalizeEmail(email: string): string {
     return email.trim().toLowerCase();
   }
 }
