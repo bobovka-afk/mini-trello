@@ -7,7 +7,7 @@ import {
 import { Request, Response } from 'express';
 import { PinoLogger } from 'nestjs-pino';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 
 type RequestWithContext = Request & {
   id?: string;
@@ -33,10 +33,7 @@ export class HttpLoggingInterceptor implements NestInterceptor {
     const startedAt = Date.now();
 
     return next.handle().pipe(
-      tap({
-        next: () => this.logRequest(req, res, startedAt),
-        error: () => this.logRequest(req, res, startedAt),
-      }),
+      finalize(() => this.logRequest(req, res, startedAt)),
     );
   }
 

@@ -1,21 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
+import * as sgMail from '@sendgrid/mail';
 
 @Injectable()
 export class MailService {
-	constructor(private readonly mailerService: MailerService) {}
+	constructor(private readonly configService: ConfigService) {
+		const key = this.configService.get<string>('SENDGRID_API_KEY')?.trim();
+		const from = this.configService.get<string>('MAIL_FROM')?.trim();
+		if (!key) {
+			throw new Error(
+				'SENDGRID_API_KEY is required for outgoing mail (SendGrid Web API).',
+			);
+		}
+		if (!from) {
+			throw new Error(
+				'MAIL_FROM is required (verified sender in SendGrid).',
+			);
+		}
+		sgMail.setApiKey(key);
+	}
 
 	async sendEmailVerification(to: string, verificationUrl: string) {
 		const subject = 'Подтвердите email';
 		const text = `Перейдите по ссылке для подтверждения email: ${verificationUrl}`;
 		const html = this.getEmailVerificationHtmlTemplate(verificationUrl);
 
-		return this.mailerService.sendMail({
-			to,
-			subject,
-			text,
-			html,
-		});
+		return this.sendOutgoing(to, subject, text, html);
 	}
 
 	async sendPasswordReset(to: string, resetUrl: string) {
@@ -23,12 +33,7 @@ export class MailService {
 		const text = `Перейдите по ссылке для сброса пароля: ${resetUrl}`;
 		const html = this.getResetPasswordHtmlTemplate(resetUrl);
 
-		return this.mailerService.sendMail({
-			to,
-			subject,
-			text,
-			html,
-		});
+		return this.sendOutgoing(to, subject, text, html);
 	}
 
 	async sendWorkspaceInvite(
@@ -42,8 +47,26 @@ export class MailService {
 		const text = `Вас пригласили присоединиться к рабочему пространству «${namePlain}».\n\nЧтобы принять приглашение, откройте ссылку в браузере:\n${inviteUrl}`;
 		const html = this.getWorkspaceInviteHtmlTemplate(inviteUrl, nameHtml);
 
-		return this.mailerService.sendMail({
+		return this.sendOutgoing(to, subject, text, html);
+	}
+
+	private getMailFrom(): string {
+		const from = this.configService.get<string>('MAIL_FROM')?.trim();
+		if (!from) {
+			throw new Error('MAIL_FROM must be set for outgoing mail.');
+		}
+		return from;
+	}
+
+	private async sendOutgoing(
+		to: string,
+		subject: string,
+		text: string,
+		html: string,
+	) {
+		await sgMail.send({
 			to,
+			from: this.getMailFrom(),
 			subject,
 			text,
 			html,
@@ -89,4 +112,3 @@ export class MailService {
     `;
 	}
 }
-

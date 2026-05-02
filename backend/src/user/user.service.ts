@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from '../auth/dto/register.dto';
 import type { UserPublic } from './interface';
+import type { UserPublicRow } from './type';
 
 @Injectable()
 export class UserService {
@@ -13,16 +14,19 @@ export class UserService {
     const userId = Number(id);
     if (!Number.isInteger(userId)) return null;
 
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
         email: true,
         name: true,
         avatarPath: true,
+        passwordHash: true,
         createdAt: true,
       },
     });
+    if (!user) return null;
+    return this.toUserPublic(user);
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -41,13 +45,7 @@ export class UserService {
         passwordHash: await bcrypt.hash(dto.password, 10),
       },
     });
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      avatarPath: user.avatarPath,
-      createdAt: user.createdAt,
-    };
+    return this.toUserPublic(user);
   }
 
   async createOAuthUser(
@@ -69,7 +67,7 @@ export class UserService {
   }
 
   async updateAvatar(id: number, avatarPath: string): Promise<UserPublic> {
-    return this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: { avatarPath },
       select: {
@@ -77,13 +75,15 @@ export class UserService {
         email: true,
         name: true,
         avatarPath: true,
+        passwordHash: true,
         createdAt: true,
       },
     });
+    return this.toUserPublic(user);
   }
 
   async removeAvatar(id: number): Promise<UserPublic> {
-    return this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: { avatarPath: null },
       select: {
@@ -91,13 +91,15 @@ export class UserService {
         email: true,
         name: true,
         avatarPath: true,
+        passwordHash: true,
         createdAt: true,
       },
     });
+    return this.toUserPublic(user);
   }
 
   async updateName(id: number, name: string): Promise<UserPublic> {
-    return this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: { name },
       select: {
@@ -105,12 +107,25 @@ export class UserService {
         email: true,
         name: true,
         avatarPath: true,
+        passwordHash: true,
         createdAt: true,
       },
     });
+    return this.toUserPublic(user);
   }
 
   private normalizeEmail(email: string): string {
     return email.trim().toLowerCase();
+  }
+
+  private toUserPublic(user: UserPublicRow): UserPublic {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatarPath: user.avatarPath,
+      hasPassword: Boolean(user.passwordHash),
+      createdAt: user.createdAt,
+    };
   }
 }

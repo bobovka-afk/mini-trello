@@ -58,18 +58,24 @@ export class WorkspaceMemberController {
   @Delete(':memberId')
   @ApiOperation({ summary: 'Remove workspace member' })
   @ApiParam({ name: 'workspaceId', example: 1, description: 'Workspace id' })
-  @ApiParam({ name: 'memberId', example: 22, description: 'Workspace member id' })
+  @ApiParam({
+    name: 'memberId',
+    example: 22,
+    description: 'User id of the member to remove (User.id, not WorkspaceMember.id)',
+  })
   @ApiResponse({ status: 200, description: 'Workspace member removed successfully.' })
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
   @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   @ApiResponse({ status: 404, description: 'Workspace member not found.' })
   async deleteWorkspaceMember(
+    @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('memberId', ParseIntPipe) memberId: number,
   ): Promise<{ ok: boolean }> {
     return this.workspaceMemberService.deleteWorkspaceMember(
       workspaceId,
       memberId,
+      req.user.id,
     );
   }
 

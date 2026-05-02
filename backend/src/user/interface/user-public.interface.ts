@@ -3,5 +3,6 @@ export interface UserPublic {
   email: string;
   name: string;
   avatarPath: string | null;
+  hasPassword: boolean;
   createdAt: Date;
 }

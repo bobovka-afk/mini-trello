@@ -18,9 +18,12 @@ import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { RateLimit } from '../common/decorators/rate-limit.decorator';
 import { RateLimitGuard } from '../common/guards/rate-limit.guard';
+import { JwtAuthGuard } from './guards/auth.guard';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiQuery,
@@ -172,6 +175,27 @@ export class AuthController {
 	confirmPasswordReset(@Body() dto: ConfirmPasswordResetDto): Promise<{ ok: boolean }> {
 		return this.authService.confirmPasswordReset(dto.token, dto.newPassword);
 	}
+
+  @Post('password/change')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, RateLimitGuard)
+  @RateLimit({ key: 'auth:password-change', limit: 5, windowSec: 300 })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change password for authenticated user' })
+  @ApiBody({ type: ChangePasswordDto, description: 'Password change payload' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid password change payload.' })
+  @ApiResponse({ status: 401, description: 'Authentication is required or current password is invalid.' })
+  changePassword(
+    @Req() req: Request & { user: { id: number } },
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ ok: boolean }> {
+    return this.authService.changePassword(
+      req.user.id,
+      dto.currentPassword,
+      dto.newPassword,
+    );
+  }
 
 
   @Get('google')

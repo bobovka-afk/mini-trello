@@ -151,27 +151,6 @@ export class AuthService {
     })
 }
 
-  private generateToken() {
-    return crypto.randomBytes(32).toString('hex');
-  }
-
-  private hashToken(token: string) {
-    return crypto.createHash('sha256').update(token).digest('hex');
-  }
-
-  private getEmailVerificationTtlMs() {
-    const minutes =
-      Number(this.configService.get('EMAIL_VERIFICATION_TTL_MINUTES')) ||
-      60 * 24;
-    return minutes * 60 * 1000;
-  }
-
-  private getPasswordResetTtlMs() {
-    const minutes =
-      Number(this.configService.get('PASSWORD_RESET_TTL_MINUTES')) || 30;
-    return minutes * 60 * 1000;
-  }
-
   async requestEmailVerification(email: string): Promise<{ ok: boolean }> {
     const normalizedEmail = this.normalizeEmail(email);
     const user = await this.userService.findByEmail(normalizedEmail);
@@ -321,6 +300,65 @@ export class AuthService {
     return { ok: true };
   }
 
+  async changePassword(
+    userId: number,
+    currentPassword: string | undefined,
+    newPassword: string,
+  ): Promise<{ ok: boolean }> {
+    if (!newPassword) {
+      throw new BadRequestException({
+        code: 'NEW_PASSWORD_REQUIRED',
+        message: 'New password is required',
+      });
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, passwordHash: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException({
+        code: 'USER_NOT_FOUND',
+        message: 'User not found',
+      });
+    }
+
+    if (user.passwordHash) {
+      if (!currentPassword) {
+        throw new BadRequestException({
+          code: 'CURRENT_PASSWORD_REQUIRED',
+          message: 'Current password is required',
+        });
+      }
+      if (currentPassword === newPassword) {
+        throw new BadRequestException({
+          code: 'PASSWORD_SHOULD_DIFFER',
+          message: 'New password must be different from current password',
+        });
+      }
+
+      const isCurrentPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.passwordHash,
+      );
+      if (!isCurrentPasswordValid) {
+        throw new UnauthorizedException({
+          code: 'INVALID_CURRENT_PASSWORD',
+          message: 'Current password is invalid',
+        });
+      }
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+
+    return { ok: true };
+  }
+
   private async signIn(loginDto: LoginDto): Promise<LoginResult> {
     const user = await this.validateUser(loginDto);
     const tokens = this.issueTokens(user.id);
@@ -357,6 +395,27 @@ export class AuthService {
       code: 'INVALID_CREDENTIALS',
       message: 'Invalid email or password',
     });
+  }
+
+  private generateToken() {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  private hashToken(token: string) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  private getEmailVerificationTtlMs() {
+    const minutes =
+      Number(this.configService.get('EMAIL_VERIFICATION_TTL_MINUTES')) ||
+      60 * 24;
+    return minutes * 60 * 1000;
+  }
+
+  private getPasswordResetTtlMs() {
+    const minutes =
+      Number(this.configService.get('PASSWORD_RESET_TTL_MINUTES')) || 30;
+    return minutes * 60 * 1000;
   }
 
 

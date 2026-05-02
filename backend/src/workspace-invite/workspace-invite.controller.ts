@@ -151,9 +151,14 @@ export class WorkspaceInviteController {
   @ApiResponse({ status: 403, description: 'Access to this workspace is denied.' })
   @ApiResponse({ status: 404, description: 'Invite not found.' })
   async deleteInvite(
+    @Req() req: Request & { user: { id: number } },
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Param('inviteId', ParseIntPipe) inviteId: number,
   ): Promise<{ ok: boolean }> {
-    return this.workspaceInviteService.deleteInvite(inviteId, workspaceId);
+    return this.workspaceInviteService.deleteInvite(
+      inviteId,
+      workspaceId,
+      req.user.id,
+    );
   }
 }

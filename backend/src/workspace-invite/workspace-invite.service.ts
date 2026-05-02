@@ -4,6 +4,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SendInviteDto } from './dto/send-invite.dto';
@@ -13,6 +14,8 @@ import { WorkspaceInviteStatus } from '../generated/prisma/enums';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { WorkspaceService } from '../workspace/workspace.service';
+import { WorkspaceActivityService } from '../workspace-activity/workspace-activity.service';
+import { WorkspaceActivityType } from '../generated/prisma/enums';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
 import type {
   InviteForEmailAccess,
@@ -32,6 +35,7 @@ export class WorkspaceInviteService {
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
     private readonly workspaceService: WorkspaceService,
+    private readonly workspaceActivityService: WorkspaceActivityService,
   ) {}
 
   async sendInvite(
@@ -61,34 +65,19 @@ export class WorkspaceInviteService {
       }
     }
 
+    const token = crypto.randomBytes(32).toString('hex');
+    let invite;
     try {
-      const token = crypto.randomBytes(32).toString('hex');
-      const invite = await this.prisma.workspaceInvite.create({
+      invite = await this.prisma.workspaceInvite.create({
         data: {
           email: dto.email,
           workspaceId: workspaceId,
           invitedByUserId: userId,
           role: dto.role,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           tokenHash: this.hashToken(token),
         },
       });
-
-      const workspace = await this.prisma.workspace.findUnique({
-        where: { id: workspaceId },
-        select: { name: true },
-      });
-      const workspaceName = workspace?.name ?? '';
-
-      const clientUrl = this.configService.get<string>('CLIENT_URL') || '';
-      const inviteUrl = `${clientUrl}/invite?token=${token}`;
-      await this.mailService.sendWorkspaceInvite(
-        dto.email,
-        inviteUrl,
-        workspaceName,
-      );
-
-      return { id: invite.id };
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -101,6 +90,42 @@ export class WorkspaceInviteService {
       }
       throw error;
     }
+
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { name: true },
+    });
+    const workspaceName = workspace?.name ?? '';
+    const clientUrl = this.configService.get<string>('CLIENT_URL') || '';
+    const inviteUrl = `${clientUrl}/invite?token=${token}`;
+
+    try {
+      await this.mailService.sendWorkspaceInvite(
+        dto.email,
+        inviteUrl,
+        workspaceName,
+      );
+    } catch {
+      await this.prisma.workspaceInvite
+        .delete({ where: { id: invite.id } })
+        .catch(() => undefined);
+      throw new ServiceUnavailableException({
+        code: 'INVITE_MAIL_FAILED',
+        message: 'Could not send invitation email',
+      });
+    }
+
+    await this.workspaceActivityService.record(this.prisma, {
+      workspaceId,
+      actorUserId: userId,
+      type: WorkspaceActivityType.MEMBER_INVITED,
+      payload: {
+        invitedEmail: dto.email,
+        role: dto.role,
+      },
+    });
+
+    return { id: invite.id };
   }
 
   async getWorkspaceInvites(
@@ -133,16 +158,30 @@ export class WorkspaceInviteService {
   async deleteInvite(
     inviteId: number,
     workspaceId: number,
+    cancelledByUserId: number,
   ): Promise<{ ok: boolean }> {
-    return this.prisma.$transaction(async (tx) => {
-      const deleted = await tx.workspaceInvite.deleteMany({
+    await this.prisma.$transaction(async (tx) => {
+      const invite = await tx.workspaceInvite.findFirst({
         where: { id: inviteId, workspaceId },
+        select: { id: true, email: true, role: true },
       });
-      if (deleted.count === 0) {
+      if (!invite) {
         this.throwInviteNotFound();
       }
-      return { ok: true };
+      await tx.workspaceInvite.delete({
+        where: { id: invite.id },
+      });
+      await this.workspaceActivityService.record(tx, {
+        workspaceId,
+        actorUserId: cancelledByUserId,
+        type: WorkspaceActivityType.INVITE_CANCELLED,
+        payload: {
+          invitedEmail: invite.email,
+          role: invite.role,
+        },
+      });
     });
+    return { ok: true };
   }
 
   async getMyInvites(
@@ -205,6 +244,16 @@ export class WorkspaceInviteService {
             role: invite.role,
           },
         });
+        await this.workspaceActivityService.record(tx, {
+          workspaceId: invite.workspaceId,
+          actorUserId: userId,
+          type: WorkspaceActivityType.INVITE_ACCEPTED,
+          payload: {
+            invitedEmail: invite.email,
+            role: invite.role,
+            joinedUserId: userId,
+          },
+        });
         await this.deleteInviteRecord(tx, invite.id);
       });
       return { ok: true };
@@ -240,6 +289,15 @@ export class WorkspaceInviteService {
       if (deleted.count === 0) {
         this.throwInviteNotFound();
       }
+      await this.workspaceActivityService.record(tx, {
+        workspaceId: invite.workspaceId,
+        actorUserId: userId,
+        type: WorkspaceActivityType.INVITE_DECLINED,
+        payload: {
+          invitedEmail: invite.email,
+          role: invite.role,
+        },
+      });
     });
 
     return { ok: true };

@@ -102,8 +102,13 @@ export class WorkspaceController {
   async updateWorkspace(
     @Param('workspaceId', ParseIntPipe) workspaceId: number,
     @Body() dto: UpdateWorkspaceDto,
+    @Req() req: Request & { user: { id: number } },
   ): Promise<WorkspaceUpdated> {
-    return this.workspaceService.updateWorkspace(workspaceId, dto);
+    return this.workspaceService.updateWorkspace(
+      workspaceId,
+      dto,
+      req.user.id,
+    );
   }
 
   @UseGuards(WorkspaceAccessGuard, WorkspaceRoleGuard)

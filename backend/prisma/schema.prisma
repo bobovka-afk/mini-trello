@@ -40,6 +40,17 @@ enum ListColorPreset {
   GRAY
 }
 
+enum WorkspaceActivityType {
+  WORKSPACE_CREATED
+  WORKSPACE_UPDATED
+  MEMBER_INVITED
+  INVITE_CANCELLED
+  INVITE_ACCEPTED
+  INVITE_DECLINED
+  MEMBER_REMOVED
+  MEMBER_LEFT
+}
+
 model User {
   id              Int       @id @default(autoincrement())
   email           String    @unique
@@ -53,6 +64,7 @@ model User {
   authTokens           AuthToken[]
   workspaceMembers     WorkspaceMember[]
   workspaceInvitesSent WorkspaceInvite[]
+  workspaceActivities  WorkspaceActivity[]
   assignedCards        Card[]
   comments             Comment[]
 }
@@ -76,9 +88,10 @@ model Workspace {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  members WorkspaceMember[]
-  invites WorkspaceInvite[]
-  boards  Board[]
+  members   WorkspaceMember[]
+  invites   WorkspaceInvite[]
+  boards    Board[]
+  activities WorkspaceActivity[]
 }
 
 model WorkspaceMember {
@@ -109,6 +122,20 @@ model WorkspaceInvite {
   invitedBy User      @relation(fields: [invitedByUserId], references: [id], onDelete: Restrict)
 
   @@unique([workspaceId, email])
+}
+
+model WorkspaceActivity {
+  id          Int                   @id @default(autoincrement())
+  workspaceId Int                   @map("workspace_id")
+  actorUserId Int                   @map("actor_user_id")
+  type        WorkspaceActivityType
+  payload     Json
+  createdAt   DateTime              @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actor     User      @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([workspaceId, createdAt(sort: Desc)])
 }
 
 model Board {

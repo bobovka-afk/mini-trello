@@ -1,13 +1,17 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import type { WorkspaceMember } from '../generated/prisma/client';
-import { WorkspaceRole } from '../generated/prisma/enums';
+import { WorkspaceActivityType, WorkspaceRole } from '../generated/prisma/enums';
 import { PrismaService } from '../prisma/prisma.service';
+import { WorkspaceActivityService } from '../workspace-activity/workspace-activity.service';
 import { PaginationDto } from '../workspace/dto/pagination.dto';
 import type { WorkspaceMemberWithUser } from './interface';
 
 @Injectable()
 export class WorkspaceMemberService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly workspaceActivityService: WorkspaceActivityService,
+  ) {}
 
   async getWorkspaceMembers(
     workspaceId: number,
@@ -35,25 +39,55 @@ export class WorkspaceMemberService {
   async deleteWorkspaceMember(
     workspaceId: number,
     memberId: number,
+    actorUserId: number,
   ): Promise<{ ok: boolean }> {
-    const targetMember = await this.getWorkspaceMemberOrThrow(
-      workspaceId,
-      memberId,
-    );
-    if (targetMember.role === WorkspaceRole.OWNER) {
-      throw new ForbiddenException({
-        code: 'WORKSPACE_OWNER_CANNOT_BE_REMOVED',
-        message: 'You cannot remove workspace OWNER. Transfer ownership first.',
-      });
-    }
-
-    await this.prisma.workspaceMember.delete({
-      where: {
-        workspaceId_userId: {
-          workspaceId,
-          userId: memberId,
+    await this.prisma.$transaction(async (tx) => {
+      const targetMember = await tx.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId,
+            userId: memberId,
+          },
         },
-      },
+        include: {
+          user: { select: { email: true, name: true } },
+        },
+      });
+
+      if (!targetMember) {
+        throw new ForbiddenException({
+          code: 'WORKSPACE_MEMBER_REQUIRED',
+          message: 'You are not a member of this workspace',
+        });
+      }
+
+      if (targetMember.role === WorkspaceRole.OWNER) {
+        throw new ForbiddenException({
+          code: 'WORKSPACE_OWNER_CANNOT_BE_REMOVED',
+          message:
+            'You cannot remove workspace OWNER. Transfer ownership first.',
+        });
+      }
+
+      await tx.workspaceMember.delete({
+        where: {
+          workspaceId_userId: {
+            workspaceId,
+            userId: memberId,
+          },
+        },
+      });
+
+      await this.workspaceActivityService.record(tx, {
+        workspaceId,
+        actorUserId,
+        type: WorkspaceActivityType.MEMBER_REMOVED,
+        payload: {
+          removedUserId: memberId,
+          removedUserEmail: targetMember.user.email,
+          removedUserName: targetMember.user.name,
+        },
+      });
     });
 
     return { ok: true };
@@ -63,13 +97,22 @@ export class WorkspaceMemberService {
     userId: number,
     workspaceId: number,
   ): Promise<{ ok: boolean }> {
-    await this.prisma.workspaceMember.delete({
-      where: {
-        workspaceId_userId: {
-          userId,
-          workspaceId,
+    await this.prisma.$transaction(async (tx) => {
+      await this.workspaceActivityService.record(tx, {
+        workspaceId,
+        actorUserId: userId,
+        type: WorkspaceActivityType.MEMBER_LEFT,
+        payload: {},
+      });
+
+      await tx.workspaceMember.delete({
+        where: {
+          workspaceId_userId: {
+            userId,
+            workspaceId,
+          },
         },
-      },
+      });
     });
 
     return { ok: true };
