@@ -1,1 +1,4 @@
-export type ReadinessProbe = { ok: boolean; error?: string };
+export type ReadinessProbe = {
+     ok: boolean;
+     error?: string 
+    };

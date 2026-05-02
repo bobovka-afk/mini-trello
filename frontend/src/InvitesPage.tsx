@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, formatApiError, isRateLimitMessage } from './lib/api';
+import { SpaLink } from './lib/navigation';
 import { formatWorkspaceRole } from './lib/roles';
 
 type InviteRow = {
@@ -18,11 +19,6 @@ function formatWorkspaceNameForUI(name: string) {
 
 type Props = { accessToken: string | null };
 type InviteRole = 'ADMIN' | 'MEMBER';
-
-function navigate(to: string) {
-  window.history.pushState({}, '', to);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
 
 function formatError(e: unknown) {
   return formatApiError(e);
@@ -175,10 +171,10 @@ export function InvitesPage({ accessToken }: Props) {
     <div className="jira-shell">
       <div className="jira-main">
         <header className="jira-topbar">
-          <button type="button" className="trello-top-left-brand" onClick={() => navigate('/workspaces')}>
+          <SpaLink className="trello-top-left-brand" to="/workspaces">
             <span className="trello-logo" aria-hidden />
             <span className="trello-top-left-brand-text">mini trello</span>
-          </button>
+          </SpaLink>
           <div>
             <h1 className="jira-page-title">Мои приглашения</h1>
             <p className="jira-page-desc">
@@ -203,9 +199,9 @@ export function InvitesPage({ accessToken }: Props) {
         {!accessToken && (
           <div className="jira-banner jira-banner-warn">
             Войдите на главной странице, чтобы просматривать приглашения.
-            <button type="button" className="jira-link-btn" onClick={() => navigate('/')}>
+            <SpaLink className="jira-link-btn" to="/">
               На главную
-            </button>
+            </SpaLink>
           </div>
         )}
 

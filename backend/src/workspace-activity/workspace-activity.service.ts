@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { PrismaClient } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { WorkspaceActivityType } from '../generated/prisma/enums';
 import { Prisma } from '../generated/prisma/client';
@@ -10,7 +11,7 @@ export class WorkspaceActivityService {
   constructor(private readonly prisma: PrismaService) {}
 
   async record(
-    db: Pick<PrismaService, 'workspaceActivity'>,
+    db: Pick<PrismaClient, 'workspaceActivity'>,
     input: {
       workspaceId: number;
       actorUserId: number;

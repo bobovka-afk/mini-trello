@@ -5,6 +5,7 @@ import {
   formatApiError,
   isRateLimitMessage,
 } from './lib/api';
+import { SpaLink, navigate } from './lib/navigation';
 import { formatWorkspaceRole } from './lib/roles';
 
 type Props = {
@@ -38,11 +39,6 @@ type WorkspaceInviteRow = {
   invitedBy: { id: number; email: string };
 };
 
-function navigate(to: string) {
-  window.history.pushState({}, '', to);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
-
 function avatarSrcFromPath(p: string | null | undefined): string {
   if (!p) return '';
   const normalized = p.replace(/\\/g, '/');
@@ -65,6 +61,9 @@ function formatError(e: unknown) {
 function formatInviteSendError(e: unknown): string {
   const raw = formatError(e);
   const lower = raw.toLowerCase();
+  if (raw.includes('INVITE_MAIL_FAILED') || lower.includes('invitation email')) {
+    return 'Не удалось отправить письмо с приглашением. Проверьте почту (SendGrid / MAIL_FROM) и попробуйте снова.';
+  }
   if (raw.includes('INVITE_ALREADY_SENT') || lower.includes('already been sent')) {
     return 'Этому адресу уже отправлено активное приглашение. Дождитесь ответа или отмените приглашение в настройках рабочего пространства.';
   }
@@ -105,7 +104,14 @@ function formatDate(iso: string) {
 export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   const [rows, setRows] = useState<WorkspaceMemberRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [alertModal, setAlertModal] = useState<{
+    message: string;
+    rateLimit: boolean;
+  } | null>(null);
+
+  const showAlert = useCallback((message: string) => {
+    setAlertModal({ message, rateLimit: isRateLimitMessage(message) });
+  }, []);
 
   const [currentUser, setCurrentUser] = useState<UserMe | null>(null);
   const [currentUserLoadBusy, setCurrentUserLoadBusy] = useState(false);
@@ -150,17 +156,17 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   const loadCurrentUser = useCallback(async () => {
     if (!accessToken) return;
     setCurrentUserLoadBusy(true);
-    setMsg(null);
+    setAlertModal(null);
     try {
       const me = await api<UserMe>('/user/me', { method: 'GET', accessToken });
       setCurrentUser(me);
     } catch (e) {
       setCurrentUser(null);
-      setMsg(formatError(e));
+      showAlert(formatError(e));
     } finally {
       setCurrentUserLoadBusy(false);
     }
-  }, [accessToken]);
+  }, [accessToken, showAlert]);
 
   const loadMembers = useCallback(async () => {
     if (!accessToken) {
@@ -171,7 +177,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     }
 
     setLoading(true);
-    setMsg(null);
+    setAlertModal(null);
     setBrokenAvatarUserIds({});
     try {
       const data = await api<WorkspaceMemberRow[]>(
@@ -187,16 +193,16 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     } catch (e) {
       setRows([]);
       setHasMore(false);
-      setMsg(formatError(e));
+      showAlert(formatError(e));
     } finally {
       setLoading(false);
     }
-  }, [accessToken, workspaceId]);
+  }, [accessToken, workspaceId, showAlert]);
 
   const loadMoreMembers = useCallback(async () => {
     if (!accessToken || loadMoreBusy || !hasMore) return;
     setLoadMoreBusy(true);
-    setMsg(null);
+    setAlertModal(null);
     try {
       const data = await api<WorkspaceMemberRow[]>(
         `/workspace/${workspaceId}/members?limit=${MEMBERS_PAGE_SIZE}&offset=${rows.length}`,
@@ -209,11 +215,11 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       setRows((prev) => [...prev, ...chunk]);
       setHasMore(chunk.length === MEMBERS_PAGE_SIZE);
     } catch (e) {
-      setMsg(formatError(e));
+      showAlert(formatError(e));
     } finally {
       setLoadMoreBusy(false);
     }
-  }, [accessToken, workspaceId, rows.length, hasMore, loadMoreBusy]);
+  }, [accessToken, workspaceId, rows.length, hasMore, loadMoreBusy, showAlert]);
 
   useEffect(() => {
     void loadCurrentUser();
@@ -226,16 +232,16 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   async function deleteWorkspaceMember() {
     if (!accessToken || !deleteMember) return;
     setDeleteBusy(true);
-    setMsg(null);
+    setAlertModal(null);
     try {
-      await api<{ ok: boolean }>(`/workspace/${workspaceId}/members/${deleteMember.id}`, {
+      await api<{ ok: boolean }>(`/workspace/${workspaceId}/members/${deleteMember.userId}`, {
         method: 'DELETE',
         accessToken,
       });
       setDeleteMember(null);
       await loadMembers();
     } catch (e) {
-      setMsg(formatError(e));
+      showAlert(formatError(e));
     } finally {
       setDeleteBusy(false);
     }
@@ -244,7 +250,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   async function leaveWorkspace() {
     if (!accessToken) return;
     setLeaveBusy(true);
-    setMsg(null);
+    setAlertModal(null);
     try {
       await api<{ ok: boolean }>(`/workspace/${workspaceId}/members/me`, {
         method: 'DELETE',
@@ -252,7 +258,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       });
       navigate('/workspaces');
     } catch (e) {
-      setMsg(formatError(e));
+      showAlert(formatError(e));
     } finally {
       setLeaveBusy(false);
     }
@@ -261,12 +267,12 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   async function submitCreateInvite() {
     if (!accessToken) return;
     if (!createEmail.trim()) {
-      setMsg('Укажите email.');
+      showAlert('Укажите email.');
       return;
     }
 
     setCreateBusy(true);
-    setMsg(null);
+    setAlertModal(null);
     try {
       await api(`/workspace-invite/create/${workspaceId}`, {
         method: 'POST',
@@ -282,7 +288,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       // список членов не меняется, но пусть UI обновится
       await loadMembers();
     } catch (e) {
-      setMsg(formatInviteSendError(e));
+      showAlert(formatInviteSendError(e));
     } finally {
       setCreateBusy(false);
     }
@@ -296,7 +302,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       } else {
         setInvitesLoading(true);
       }
-      setMsg(null);
+      setAlertModal(null);
       try {
         const data = await api<WorkspaceInviteRow[]>(
           `/workspace-invite/${workspaceId}?limit=${INVITES_PAGE_SIZE}&offset=${offset}`,
@@ -312,20 +318,20 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       } catch (e) {
         if (!append) setInviteRows([]);
         setInvitesHasMore(false);
-        setMsg(formatError(e));
+        showAlert(formatError(e));
       } finally {
         setInvitesLoading(false);
         setInvitesLoadMoreBusy(false);
       }
     },
-    [accessToken, workspaceId],
+    [accessToken, workspaceId, showAlert],
   );
 
   async function openInvitesModal() {
     setInvitesOpen(true);
     setInviteRows([]);
     setInvitesHasMore(false);
-    setMsg(null);
+    setAlertModal(null);
     await loadWorkspaceInvites(0, false);
   }
 
@@ -337,7 +343,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
   async function revokeInvite() {
     if (!accessToken || !deleteInviteTarget) return;
     setDeleteInviteBusy(true);
-    setMsg(null);
+    setAlertModal(null);
     try {
       await api<{ ok: boolean }>(
         `/workspace-invite/${workspaceId}/${deleteInviteTarget.id}`,
@@ -346,7 +352,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       setDeleteInviteTarget(null);
       await loadWorkspaceInvites(0, false);
     } catch (e) {
-      setMsg(formatError(e));
+      showAlert(formatError(e));
     } finally {
       setDeleteInviteBusy(false);
     }
@@ -357,24 +363,25 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       <div className="trello-boards-main">
         <header className="trello-boards-topbar trello-topbar-stripe-3col">
           <div className="trello-topbar-stripe-left">
-            <button
-              type="button"
-              className="trello-top-left-brand trello-top-left-brand--stripe"
-              onClick={() => navigate('/workspaces')}
-            >
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/workspaces">
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
-            </button>
-            <button
-              type="button"
-              className="trello-btn trello-btn-sm trello-btn-topbar-nav"
-              onClick={() => navigate('/workspaces')}
-            >
+            </SpaLink>
+            <SpaLink className="trello-btn trello-btn-sm trello-btn-topbar-nav" to="/workspaces">
               ← Рабочие пространства
-            </button>
+            </SpaLink>
           </div>
           <h1 className="trello-topbar-stripe-center">Участники рабочего пространства</h1>
           <div className="trello-topbar-actions">
+            {canManageWorkspace && (
+              <SpaLink
+                className="trello-btn trello-btn-ghost"
+                to={`/workspaces/${workspaceId}/activity`}
+                disabled={!accessToken}
+              >
+                Журнал активности
+              </SpaLink>
+            )}
             {canManageWorkspace && (
               <button
                 type="button"
@@ -392,7 +399,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                 disabled={!accessToken || createBusy}
                 onClick={() => {
                   setCreateOpen(true);
-                  setMsg(null);
+                  setAlertModal(null);
                 }}
               >
                 Отправить приглашение
@@ -404,23 +411,11 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
         {!accessToken && (
           <div className="trello-banner trello-banner-warn">
             Войдите на главной, чтобы управлять рабочим пространством.
-            <button type="button" className="trello-inline-link" onClick={() => navigate('/')}>
+            <SpaLink className="trello-inline-link" to="/">
               На главную
-            </button>
+            </SpaLink>
           </div>
         )}
-
-        {(msg && (
-          <div
-            className={
-              isRateLimitMessage(msg)
-                ? 'trello-banner trello-banner-rate-limit'
-                : 'trello-banner trello-banner-error'
-            }
-          >
-            {msg}
-          </div>
-        )) || null}
 
         <div className="trello-members-table-block">
           {loading ? (
@@ -507,7 +502,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                               disabled={deleteBusy}
                               onClick={() => {
                                 setDeleteMember(member);
-                                setMsg(null);
+                                setAlertModal(null);
                               }}
                             >
                               Удалить
@@ -686,7 +681,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                                 disabled={deleteInviteBusy}
                                 onClick={() => {
                                   setDeleteInviteTarget(inv);
-                                  setMsg(null);
+                                  setAlertModal(null);
                                 }}
                               >
                                 Удалить
@@ -821,6 +816,48 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                   onClick={() => void deleteWorkspaceMember()}
                 >
                   {deleteBusy ? 'Удаление…' : 'Удалить'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {alertModal && (
+          <div
+            className="trello-modal-backdrop trello-alert-modal-backdrop"
+            role="presentation"
+            onClick={() => setAlertModal(null)}
+          >
+            <div
+              className={`trello-modal trello-modal-narrow trello-alert-modal ${alertModal.rateLimit ? 'trello-alert-modal--rate-limit' : 'trello-alert-modal--error'}`}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="workspace-members-alert-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="trello-modal-head">
+                <h2 id="workspace-members-alert-title" className="trello-modal-title">
+                  {alertModal.rateLimit ? 'Слишком часто' : 'Ошибка'}
+                </h2>
+                <button
+                  type="button"
+                  className="trello-modal-close"
+                  onClick={() => setAlertModal(null)}
+                  aria-label="Закрыть"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="trello-modal-body">
+                <p className="trello-alert-modal-text">{alertModal.message}</p>
+              </div>
+              <div className="trello-modal-foot trello-alert-modal-foot">
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-primary"
+                  onClick={() => setAlertModal(null)}
+                >
+                  OK
                 </button>
               </div>
             </div>

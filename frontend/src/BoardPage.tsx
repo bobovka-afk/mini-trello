@@ -17,6 +17,7 @@ import {
 } from '@hello-pangea/dnd'
 import { AlertModal } from './AlertModal'
 import { api, API_URL, formatApiError, isRateLimitMessage } from './lib/api'
+import { SpaLink } from './lib/navigation'
 import type { BoardRow } from './WorkspaceBoardsPage'
 import { canManageWorkspace } from './lib/roles'
 import { LIST_COLOR_PRESET_KEYS, listHeaderColor } from './lib/trelloColors'
@@ -64,11 +65,6 @@ export type CommentRow = {
 type WorkspaceMemberApiRow = {
 	userId: number
 	user: { id: number; name: string; avatarPath?: string | null }
-}
-
-function navigate(to: string) {
-	window.history.pushState({}, '', to)
-	window.dispatchEvent(new PopStateEvent('popstate'))
 }
 
 function formatError(e: unknown) {
@@ -1361,25 +1357,18 @@ export function BoardPage({
 		<div className='trello-board-viewport'>
 			<header className='trello-board-topbar trello-topbar-stripe-3col'>
 				<div className='trello-topbar-stripe-left trello-topbar-stripe-left--boards-nav'>
-					<button
-						type='button'
-						className='trello-top-left-brand trello-top-left-brand--stripe'
-						onClick={() => navigate('/workspaces')}
-					>
+					<SpaLink className='trello-top-left-brand trello-top-left-brand--stripe' to='/workspaces'>
 						<span className='trello-logo' aria-hidden />
 						<span className='trello-top-left-brand-text'>
 							mini trello
 						</span>
-					</button>
-					<button
-						type='button'
+					</SpaLink>
+					<SpaLink
 						className='trello-btn trello-btn-topbar-nav trello-topbar-back-btn'
-						onClick={() =>
-							navigate(`/workspaces/${workspaceId}/boards`)
-						}
+						to={`/workspaces/${workspaceId}/boards`}
 					>
 						← Доски
-					</button>
+					</SpaLink>
 				</div>
 				<h1 className='trello-topbar-stripe-center'>
 					{loading ? '…' : (board?.name ?? 'Доска')}
@@ -1390,13 +1379,9 @@ export function BoardPage({
 			{!accessToken && (
 				<div className='trello-board-banner'>
 					Нужен вход.{' '}
-					<button
-						type='button'
-						className='trello-board-banner-link'
-						onClick={() => navigate('/')}
-					>
+					<SpaLink className='trello-board-banner-link' to='/'>
 						На главную
-					</button>
+					</SpaLink>
 				</div>
 			)}
 

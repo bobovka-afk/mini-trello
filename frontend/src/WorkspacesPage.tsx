@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, type ApiError } from './lib/api';
+import {
+  SpaLink,
+  navigate,
+  handleSpaTileAuxClick,
+  handleSpaTileClick,
+} from './lib/navigation';
 import { canManageWorkspace, formatWorkspaceRole } from './lib/roles';
 
 type WorkspaceMemberRow = {
@@ -20,11 +26,6 @@ type WorkspaceUpdateRes = {
   name: string;
   description: string | null;
 };
-
-function navigate(to: string) {
-  window.history.pushState({}, '', to);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
 
 function formatError(e: unknown) {
   const err = e as Partial<ApiError>;
@@ -232,16 +233,12 @@ export function WorkspacesPage({ accessToken }: Props) {
       <div className="trello-boards-main">
         <header className="trello-boards-topbar trello-topbar-stripe-3col">
           <div className="trello-topbar-stripe-left">
-            <button
-              type="button"
-              className="trello-top-left-brand trello-top-left-brand--stripe"
-              onClick={() => navigate('/workspaces')}
-            >
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/workspaces">
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
-            </button>
+            </SpaLink>
           </div>
-          <h1 className="trello-topbar-stripe-center">Рабочие пространства</h1>
+          <h1 className="trello-topbar-stripe-center" aria-hidden />
           <div className="trello-topbar-actions">
             {accessToken && rows.length > 0 && (
               <button
@@ -261,9 +258,9 @@ export function WorkspacesPage({ accessToken }: Props) {
         {!accessToken && (
           <div className="trello-banner trello-banner-warn">
             Войдите на главной, чтобы управлять рабочими пространствами.
-            <button type="button" className="trello-inline-link" onClick={() => navigate('/')}>
+            <SpaLink className="trello-inline-link" to="/">
               На главную
-            </button>
+            </SpaLink>
           </div>
         )}
 
@@ -312,7 +309,12 @@ export function WorkspacesPage({ accessToken }: Props) {
                         key={row.id}
                         role="button"
                         tabIndex={0}
-                        onClick={() => navigate(`/workspaces/${row.workspace.id}/boards`)}
+                        onClick={(e) =>
+                          handleSpaTileClick(e, `/workspaces/${row.workspace.id}/boards`)
+                        }
+                        onAuxClick={(e) =>
+                          handleSpaTileAuxClick(e, `/workspaces/${row.workspace.id}/boards`)
+                        }
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
@@ -334,16 +336,13 @@ export function WorkspacesPage({ accessToken }: Props) {
                           <span className="trello-pill">{formatWorkspaceRole(row.role)}</span>
                         </td>
                         <td className="trello-row-actions">
-                          <button
-                            type="button"
+                          <SpaLink
+                            to={`/workspaces/${row.workspace.id}/members`}
                             className="trello-btn trello-btn-ghost trello-btn-sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/workspaces/${row.workspace.id}/members`);
-                            }}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             Участники
-                          </button>
+                          </SpaLink>
                           {canManageWorkspace(row.role) ? (
                             <>
                               <button

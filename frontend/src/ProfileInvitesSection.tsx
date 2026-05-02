@@ -11,7 +11,10 @@ type InviteRow = {
   invitedBy: { name: string; email: string };
 };
 
-type Props = { accessToken: string | null };
+type Props = {
+  accessToken: string | null;
+  onRowsCountChange?: (count: number) => void;
+};
 
 function formatError(e: unknown) {
   return formatApiError(e);
@@ -54,7 +57,7 @@ function isExpired(iso: string) {
   return new Date(iso).getTime() < Date.now();
 }
 
-export function ProfileInvitesSection({ accessToken }: Props) {
+export function ProfileInvitesSection({ accessToken, onRowsCountChange }: Props) {
   const [rows, setRows] = useState<InviteRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
@@ -67,6 +70,7 @@ export function ProfileInvitesSection({ accessToken }: Props) {
     if (!accessToken) {
       setRows([]);
       setLoading(false);
+      onRowsCountChange?.(0);
       return;
     }
 
@@ -77,14 +81,17 @@ export function ProfileInvitesSection({ accessToken }: Props) {
         method: 'GET',
         accessToken,
       });
-      setRows(Array.isArray(data) ? data : []);
+      const nextRows = Array.isArray(data) ? data : [];
+      setRows(nextRows);
+      onRowsCountChange?.(nextRows.length);
     } catch (e) {
       setRows([]);
+      onRowsCountChange?.(0);
       setMsg(formatError(e));
     } finally {
       setLoading(false);
     }
-  }, [accessToken, limit, offset]);
+  }, [accessToken, limit, offset, onRowsCountChange]);
 
   useEffect(() => {
     void load();

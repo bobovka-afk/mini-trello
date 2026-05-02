@@ -11,6 +11,70 @@ export type ApiError = {
   isRateLimit?: boolean;
 };
 
+const API_ERROR_CODE_RU: Record<string, string> = {
+  EMAIL_ALREADY_EXISTS: 'Пользователь с таким email уже существует.',
+  INVALID_REFRESH_TOKEN: 'Сессия истекла. Войдите снова.',
+  REFRESH_TOKEN_REQUIRED: 'Сессия недействительна. Войдите снова.',
+  TOKEN_REQUIRED: 'Отсутствует токен подтверждения.',
+  TOKEN_INVALID_OR_EXPIRED: 'Ссылка недействительна или истекла.',
+  PASSWORD_REQUIRED: 'Введите пароль.',
+  NEW_PASSWORD_REQUIRED: 'Введите новый пароль.',
+  CURRENT_PASSWORD_REQUIRED: 'Введите текущий пароль.',
+  PASSWORD_SHOULD_DIFFER: 'Новый пароль должен отличаться от текущего.',
+  INVALID_CURRENT_PASSWORD: 'Текущий пароль указан неверно.',
+  INVALID_CREDENTIALS: 'Неверный email или пароль.',
+  USER_NOT_FOUND: 'Пользователь не найден.',
+  UNAUTHORIZED: 'Требуется авторизация.',
+  WORKSPACE_ACTION_FORBIDDEN: 'Недостаточно прав для этого действия.',
+  USER_ALREADY_MEMBER: 'Пользователь уже состоит в рабочем пространстве.',
+  INVITE_ALREADY_SENT: 'Приглашение уже отправлено.',
+  INVITE_NOT_FOUND: 'Приглашение не найдено.',
+  INVITE_ACCESS_DENIED: 'Нет доступа к этому приглашению.',
+  INVITE_ALREADY_PROCESSED: 'Приглашение уже обработано.',
+  INVITE_EXPIRED: 'Срок действия приглашения истёк.',
+  INVITE_MAIL_FAILED:
+    'Не удалось отправить письмо с приглашением. Проверьте настройки почты и попробуйте снова.',
+  RATE_LIMIT_EXCEEDED: `${RATE_LIMIT_MESSAGE_PREFIX} Подождите немного и повторите действие.`,
+};
+
+function translateCommonEnglishError(message: string): string | null {
+  const normalized = message.trim().toLowerCase();
+  if (!normalized) return null;
+
+  if (normalized.includes('current password is invalid')) {
+    return 'Текущий пароль указан неверно.';
+  }
+  if (normalized.includes('current password is required')) {
+    return 'Введите текущий пароль.';
+  }
+  if (normalized.includes('new password must be different')) {
+    return 'Новый пароль должен отличаться от текущего.';
+  }
+  if (normalized.includes('new password is required')) {
+    return 'Введите новый пароль.';
+  }
+  if (
+    normalized.includes('invalid email or password') ||
+    normalized.includes('invalid credentials')
+  ) {
+    return 'Неверный email или пароль.';
+  }
+  if (normalized.includes('token is invalid or expired')) {
+    return 'Ссылка недействительна или истекла.';
+  }
+  if (normalized.includes('token is required')) {
+    return 'Отсутствует токен подтверждения.';
+  }
+  if (normalized.includes('user with this email already exists')) {
+    return 'Пользователь с таким email уже существует.';
+  }
+  if (normalized.includes('user not found')) {
+    return 'Пользователь не найден.';
+  }
+
+  return null;
+}
+
 function formatRateLimitMessage() {
   return `${RATE_LIMIT_MESSAGE_PREFIX} Подождите немного и повторите действие.`;
 }
@@ -60,7 +124,15 @@ export function isRateLimitError(e: unknown): boolean {
 export function formatApiError(e: unknown): string {
   if (isRateLimitError(e)) return formatRateLimitMessage();
   const err = e as Partial<ApiError>;
-  if (typeof err?.message === 'string') return err.message;
+  if (typeof err?.code === 'string') {
+    const byCode = API_ERROR_CODE_RU[err.code];
+    if (byCode) return byCode;
+  }
+  if (typeof err?.message === 'string') {
+    const translated = translateCommonEnglishError(err.message);
+    if (translated) return translated;
+    return err.message;
+  }
   return 'Ошибка запроса';
 }
 

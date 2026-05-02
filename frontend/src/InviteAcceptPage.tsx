@@ -5,11 +5,7 @@ import {
   getPendingInviteToken,
   storeInviteTokenFromUrl,
 } from './lib/invitePending';
-
-function navigate(to: string) {
-  window.history.pushState({}, '', to);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
+import { navigate, SpaLink } from './lib/navigation';
 
 function formatError(e: unknown) {
   return formatApiError(e);
@@ -63,24 +59,16 @@ export function InviteAcceptPage({ accessToken }: Props) {
       <div className="trello-boards-main">
         <header className="trello-boards-topbar trello-topbar-stripe-3col">
           <div className="trello-topbar-stripe-left">
-            <button
-              type="button"
-              className="trello-top-left-brand trello-top-left-brand--stripe"
-              onClick={() => navigate('/')}
-            >
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/">
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
-            </button>
+            </SpaLink>
           </div>
           <h1 className="trello-topbar-stripe-center">Приглашение</h1>
           <div className="trello-topbar-actions">
-            <button
-              type="button"
-              className="trello-btn trello-btn-ghost"
-              onClick={() => navigate(accessToken ? '/workspaces' : '/')}
-            >
+            <SpaLink className="trello-btn trello-btn-ghost" to={accessToken ? '/workspaces' : '/'}>
               {accessToken ? 'К пространствам' : 'На главную'}
-            </button>
+            </SpaLink>
           </div>
         </header>
 
@@ -97,14 +85,9 @@ export function InviteAcceptPage({ accessToken }: Props) {
                   Чтобы принять приглашение, войдите в аккаунт с тем же email,
                   на который оно было отправлено.
                 </p>
-                <button
-                  type="button"
-                  className="trello-btn trello-btn-primary"
-                  style={{ marginTop: 12 }}
-                  onClick={() => navigate('/')}
-                >
+                <SpaLink className="trello-btn trello-btn-primary" style={{ marginTop: 12 }} to="/">
                   Войти
-                </button>
+                </SpaLink>
               </>
             ) : busy ? (
               <p className="trello-boards-sub" style={{ marginTop: 0 }}>

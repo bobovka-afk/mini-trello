@@ -9,8 +9,11 @@ import { WorkspacesPage } from './WorkspacesPage';
 import { WorkspaceBoardsPage } from './WorkspaceBoardsPage';
 import { BoardPage } from './BoardPage';
 import { WorkspaceMembersPage } from './WorkspaceMembersPage';
+import { WorkspaceActivityPage } from './WorkspaceActivityPage';
 import { ProfileInvitesSection } from './ProfileInvitesSection';
 import { InviteAcceptPage } from './InviteAcceptPage';
+import { AlertModal } from './AlertModal';
+import { navigate, openSpaInNewTab, SpaLink } from './lib/navigation';
 import './index.css';
 
 type UserSafe = {
@@ -18,6 +21,7 @@ type UserSafe = {
   email: string;
   name: string;
   avatarPath?: string | null;
+  hasPassword: boolean;
   createdAt: string;
 };
 
@@ -33,11 +37,6 @@ function useRoute() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
   return path;
-}
-
-function navigate(to: string) {
-  window.history.pushState({}, '', to);
-  window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
 function getAccessTokenFromStorage() {
@@ -89,16 +88,16 @@ function EmailVerificationRequestPage() {
       <div className="trello-boards-main">
         <header className="trello-boards-topbar trello-topbar-stripe-3col">
           <div className="trello-topbar-stripe-left">
-            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/')}>
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/">
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
-            </button>
+            </SpaLink>
           </div>
           <h1 className="trello-topbar-stripe-center">Подтверждение email</h1>
           <div className="trello-topbar-actions">
-            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+            <SpaLink className="trello-btn trello-btn-ghost" to="/">
               На главную
-            </button>
+            </SpaLink>
           </div>
         </header>
 
@@ -161,16 +160,16 @@ function EmailVerifiedStatusPage() {
       <div className="trello-boards-main">
         <header className="trello-boards-topbar trello-topbar-stripe-3col">
           <div className="trello-topbar-stripe-left">
-            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/')}>
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/">
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
-            </button>
+            </SpaLink>
           </div>
           <h1 className="trello-topbar-stripe-center">Подтверждение email</h1>
           <div className="trello-topbar-actions">
-            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+            <SpaLink className="trello-btn trello-btn-ghost" to="/">
               На главную
-            </button>
+            </SpaLink>
           </div>
         </header>
 
@@ -220,16 +219,16 @@ function PasswordResetRequestPage() {
       <div className="trello-boards-main">
         <header className="trello-boards-topbar trello-topbar-stripe-3col">
           <div className="trello-topbar-stripe-left">
-            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/')}>
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/">
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
-            </button>
+            </SpaLink>
           </div>
           <h1 className="trello-topbar-stripe-center">Сброс пароля</h1>
           <div className="trello-topbar-actions">
-            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+            <SpaLink className="trello-btn trello-btn-ghost" to="/">
               На главную
-            </button>
+            </SpaLink>
           </div>
         </header>
 
@@ -311,16 +310,16 @@ function PasswordResetConfirmPage() {
       <div className="trello-boards-main">
         <header className="trello-boards-topbar trello-topbar-stripe-3col">
           <div className="trello-topbar-stripe-left">
-            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/')}>
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/">
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
-            </button>
+            </SpaLink>
           </div>
           <h1 className="trello-topbar-stripe-center">Сброс пароля</h1>
           <div className="trello-topbar-actions">
-            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/')} type="button">
+            <SpaLink className="trello-btn trello-btn-ghost" to="/">
               На главную
-            </button>
+            </SpaLink>
           </div>
         </header>
 
@@ -439,14 +438,10 @@ function Home(props: { onAuthed: (token: string) => void; hasSession: boolean })
   return (
     <div className="trello-home-shell">
       <header className="trello-home-header">
-        <button
-          type="button"
-          className="trello-home-brand"
-          onClick={() => (props.hasSession ? navigate('/workspaces') : navigate('/'))}
-        >
+        <SpaLink className="trello-home-brand" to={props.hasSession ? '/workspaces' : '/'}>
           <span className="trello-logo" aria-hidden />
           Mini Trello
-        </button>
+        </SpaLink>
       </header>
 
       <main className="trello-home-main">
@@ -579,6 +574,13 @@ function ProfileMePage(props: {
   const [nameDraft, setNameDraft] = useState('');
   const [nameBusy, setNameBusy] = useState(false);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordBusy, setPasswordBusy] = useState(false);
+  const [passwordFormOpen, setPasswordFormOpen] = useState(false);
+  const [passwordSetupSuccessOpen, setPasswordSetupSuccessOpen] = useState(false);
+  const [passwordErrorModalMessage, setPasswordErrorModalMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -736,6 +738,59 @@ function ProfileMePage(props: {
     }
   }
 
+  async function changePassword() {
+    if (!props.accessToken) return;
+    const settingInitialPassword = !user?.hasPassword;
+    if (!newPassword) {
+      setPasswordErrorModalMessage('Введите новый пароль.');
+      return;
+    }
+    if (newPassword.length < 6 || newPassword.length > 72) {
+      setPasswordErrorModalMessage('Новый пароль: от 6 до 72 символов.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordErrorModalMessage('Подтверждение нового пароля не совпадает.');
+      return;
+    }
+    if (user?.hasPassword && !currentPassword) {
+      setPasswordErrorModalMessage('Введите текущий пароль.');
+      return;
+    }
+    if (user?.hasPassword && currentPassword === newPassword) {
+      setPasswordErrorModalMessage('Новый пароль должен отличаться от текущего.');
+      return;
+    }
+
+    setPasswordBusy(true);
+    setMsg(null);
+    setPasswordErrorModalMessage(null);
+    try {
+      await api<{ ok: boolean }>('/auth/password/change', {
+        method: 'POST',
+        accessToken: props.accessToken,
+        json: user?.hasPassword
+          ? { currentPassword, newPassword }
+          : { newPassword },
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setPasswordFormOpen(false);
+      if (settingInitialPassword) {
+        setMsg(null);
+        setPasswordSetupSuccessOpen(true);
+        setUser((prev) => (prev ? { ...prev, hasPassword: true } : prev));
+      } else {
+        setMsg('Пароль успешно изменён.');
+      }
+    } catch (e) {
+      setPasswordErrorModalMessage(formatError(e));
+    } finally {
+      setPasswordBusy(false);
+    }
+  }
+
   function formatRegisteredRU(isoDate: string) {
     const d = new Date(isoDate);
     const day = d.getDate();
@@ -769,16 +824,16 @@ function ProfileMePage(props: {
       <div className="trello-boards-main">
         <header className="trello-boards-topbar trello-topbar-stripe-3col">
           <div className="trello-topbar-stripe-left">
-            <button type="button" className="trello-top-left-brand trello-top-left-brand--stripe" onClick={() => navigate('/workspaces')}>
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/workspaces">
               <span className="trello-logo" aria-hidden />
               <span className="trello-top-left-brand-text">mini trello</span>
-            </button>
+            </SpaLink>
           </div>
           <h1 className="trello-topbar-stripe-center">Профиль</h1>
           <div className="trello-topbar-actions">
-            <button className="trello-btn trello-btn-ghost" onClick={() => navigate('/workspaces')} type="button">
+            <SpaLink className="trello-btn trello-btn-ghost" to="/workspaces">
               Назад
-            </button>
+            </SpaLink>
           </div>
         </header>
 
@@ -868,6 +923,16 @@ function ProfileMePage(props: {
                   onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
                   disabled={busy}
                 />
+
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-primary trello-btn-sm"
+                  style={{ marginTop: 14, width: '100%' }}
+                  onClick={() => setPasswordFormOpen((v) => !v)}
+                  disabled={passwordBusy}
+                >
+                  Сменить пароль
+                </button>
               </div>
 
               <div className="trello-profile-fields-col">
@@ -920,14 +985,134 @@ function ProfileMePage(props: {
 
                 <div className="trello-label">Зарегистрирован</div>
                 <div style={{ marginBottom: 0 }}>{user?.createdAt ? formatRegisteredRU(user.createdAt) : '—'}</div>
+
               </div>
             </div>
           </div>
         </section>
 
-        <div style={{ marginTop: 20 }}>
-          <ProfileInvitesSection accessToken={props.accessToken} />
-        </div>
+        {passwordFormOpen && (
+          <div className="trello-modal-backdrop" role="presentation" onClick={() => !passwordBusy && setPasswordFormOpen(false)}>
+            <div className="trello-modal trello-modal-narrow" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
+              <div className="trello-modal-head">
+                <h2 className="trello-modal-title">{user?.hasPassword ? 'Смена пароля' : 'Установка пароля'}</h2>
+                <button type="button" className="trello-modal-close" onClick={() => !passwordBusy && setPasswordFormOpen(false)} aria-label="Закрыть">
+                  ×
+                </button>
+              </div>
+              <div className="trello-modal-body">
+                {user?.hasPassword && (
+                  <label className="trello-field">
+                    <span className="trello-label">Текущий пароль</span>
+                    <input
+                      className="trello-input"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      type="password"
+                      autoComplete="current-password"
+                      disabled={passwordBusy}
+                    />
+                  </label>
+                )}
+                <label className="trello-field">
+                  <span className="trello-label">Новый пароль</span>
+                  <input
+                    className="trello-input"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    type="password"
+                    autoComplete="new-password"
+                    disabled={passwordBusy}
+                    autoFocus
+                  />
+                </label>
+                <label className="trello-field">
+                  <span className="trello-label">Подтверждение нового пароля</span>
+                  <input
+                    className="trello-input"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    type="password"
+                    autoComplete="new-password"
+                    disabled={passwordBusy}
+                  />
+                </label>
+              </div>
+              <div className="trello-modal-foot">
+                <button type="button" className="trello-btn trello-btn-ghost" onClick={() => !passwordBusy && setPasswordFormOpen(false)}>
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-primary"
+                  onClick={() => void changePassword()}
+                  disabled={
+                    passwordBusy ||
+                    !newPassword ||
+                    !confirmNewPassword ||
+                    (user?.hasPassword ? !currentPassword : false)
+                  }
+                >
+                  {passwordBusy ? '…' : user?.hasPassword ? 'Изменить пароль' : 'Установить пароль'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {passwordSetupSuccessOpen && (
+          <div className="trello-modal-backdrop" role="presentation" onClick={() => setPasswordSetupSuccessOpen(false)}>
+            <div className="trello-modal trello-modal-narrow" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
+              <div className="trello-modal-head">
+                <h2 className="trello-modal-title">Пароль установлен</h2>
+                <button type="button" className="trello-modal-close" onClick={() => setPasswordSetupSuccessOpen(false)} aria-label="Закрыть">
+                  ×
+                </button>
+              </div>
+              <div className="trello-modal-body">
+                <div className="trello-confirm-text">Пароль успешно установлен.</div>
+              </div>
+              <div className="trello-modal-foot">
+                <button type="button" className="trello-btn trello-btn-primary" onClick={() => setPasswordSetupSuccessOpen(false)}>
+                  Ок
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        <AlertModal
+          open={passwordErrorModalMessage != null}
+          title="Ошибка"
+          message={passwordErrorModalMessage ?? ''}
+          onClose={() => setPasswordErrorModalMessage(null)}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MyInvitesPage(props: {
+  accessToken: string | null;
+  onInvitesCountChange?: (count: number) => void;
+}) {
+  return (
+    <div className="trello-app-shell">
+      <div className="trello-boards-main">
+        <header className="trello-boards-topbar trello-topbar-stripe-3col">
+          <div className="trello-topbar-stripe-left">
+            <SpaLink className="trello-top-left-brand trello-top-left-brand--stripe" to="/workspaces">
+              <span className="trello-logo" aria-hidden />
+              <span className="trello-top-left-brand-text">mini trello</span>
+            </SpaLink>
+          </div>
+          <h1 className="trello-topbar-stripe-center">Приглашения</h1>
+          <div className="trello-topbar-actions">
+            <SpaLink className="trello-btn trello-btn-ghost" to="/workspaces">
+              Назад
+            </SpaLink>
+          </div>
+        </header>
+        <ProfileInvitesSection accessToken={props.accessToken} onRowsCountChange={props.onInvitesCountChange} />
       </div>
     </div>
   );
@@ -958,6 +1143,7 @@ function App() {
   const [toolbarUser, setToolbarUser] = useState<UserSafe | null>(null);
   const [toolbarAvatarBroken, setToolbarAvatarBroken] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   const setToken = (t: string | null) => {
@@ -1036,11 +1222,40 @@ function App() {
     const protectedPath =
       route === '/workspaces' ||
       route.startsWith('/workspaces/') ||
-      route.startsWith('/profile');
+      route.startsWith('/profile') ||
+      route.startsWith('/invites');
     if (!accessToken && protectedPath) {
       navigate('/');
     }
   }, [route, accessToken]);
+
+  useEffect(() => {
+    if (route === '/profile') {
+      navigate('/profile/me');
+    }
+  }, [route]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setPendingInvitesCount(0);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const rows = await api<Array<{ id: number }>>('/workspace-invite/my?limit=100&offset=0', {
+          method: 'GET',
+          accessToken,
+        });
+        if (!cancelled) setPendingInvitesCount(Array.isArray(rows) ? rows.length : 0);
+      } catch {
+        if (!cancelled) setPendingInvitesCount(0);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, route]);
 
   useEffect(() => {
     try {
@@ -1075,10 +1290,13 @@ function App() {
 
   const boardDetailMatch = route.match(/^\/workspaces\/(\d+)\/boards\/(\d+)$/);
   const boardsListMatch = route.match(/^\/workspaces\/(\d+)\/boards\/?$/);
+  const activityRouteMatch = route.match(/^\/workspaces\/(\d+)\/activity\/?$/);
   const memberRouteMatch = route.match(/^\/workspaces\/(\d+)\/members$/);
   let page: ReactElement;
   if (route === '/invite' || route.startsWith('/invite/')) {
     page = <InviteAcceptPage accessToken={accessToken} />;
+  } else if (route.startsWith('/invites')) {
+    page = <MyInvitesPage accessToken={accessToken} onInvitesCountChange={setPendingInvitesCount} />;
   } else if (boardDetailMatch) {
     page = (
       <BoardPage
@@ -1091,6 +1309,13 @@ function App() {
   } else if (boardsListMatch) {
     page = (
       <WorkspaceBoardsPage accessToken={accessToken} workspaceId={Number(boardsListMatch[1])} />
+    );
+  } else if (activityRouteMatch) {
+    page = (
+      <WorkspaceActivityPage
+        accessToken={accessToken}
+        workspaceId={Number(activityRouteMatch[1])}
+      />
     );
   } else if (memberRouteMatch) {
     page = <WorkspaceMembersPage accessToken={accessToken} workspaceId={Number(memberRouteMatch[1])} />;
@@ -1158,8 +1383,22 @@ function App() {
               title="Меню"
               aria-expanded={profileMenuOpen}
               aria-haspopup="menu"
-              onClick={() => setProfileMenuOpen((o) => !o)}
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey) {
+                  e.preventDefault();
+                  openSpaInNewTab('/profile/me');
+                  return;
+                }
+                setProfileMenuOpen((o) => !o);
+              }}
+              onAuxClick={(e) => {
+                if (e.button === 1) {
+                  e.preventDefault();
+                  openSpaInNewTab('/profile/me');
+                }
+              }}
             >
+              {pendingInvitesCount > 0 && <span className="trello-toolbar-notification-dot" aria-hidden />}
               {toolbarAvatarSrc ? (
                 <img
                   src={toolbarAvatarSrc}
@@ -1177,17 +1416,27 @@ function App() {
           </div>
           {profileMenuOpen && (
             <div className="trello-profile-menu" role="menu">
-              <button
-                type="button"
+              <SpaLink
                 className="trello-profile-menu-item"
                 role="menuitem"
-                onClick={() => {
-                  navigate('/profile/me');
-                  setProfileMenuOpen(false);
-                }}
+                to="/profile/me"
+                onClick={() => setProfileMenuOpen(false)}
               >
                 Профиль
-              </button>
+              </SpaLink>
+              <SpaLink
+                className="trello-profile-menu-item trello-profile-menu-item-with-badge"
+                role="menuitem"
+                to="/invites"
+                onClick={() => setProfileMenuOpen(false)}
+              >
+                <span>Приглашения</span>
+                {pendingInvitesCount > 0 && (
+                  <span className="trello-profile-menu-item-badge" aria-label={`Активных приглашений: ${pendingInvitesCount}`}>
+                    {pendingInvitesCount}
+                  </span>
+                )}
+              </SpaLink>
               <div className="trello-profile-menu-theme" role="presentation">
                 <span className="trello-profile-menu-theme-label">
                   <svg className="trello-moon-icon" viewBox="0 0 24 24" aria-hidden>
@@ -1200,17 +1449,14 @@ function App() {
                 </span>
                 {themeSwitch}
               </div>
-              <button
-                type="button"
+              <SpaLink
                 className="trello-profile-menu-item"
                 role="menuitem"
-                onClick={() => {
-                  navigate('/workspaces');
-                  setProfileMenuOpen(false);
-                }}
+                to="/workspaces"
+                onClick={() => setProfileMenuOpen(false)}
               >
                 Мои рабочие пространства
-              </button>
+              </SpaLink>
               <button
                 type="button"
                 className="trello-profile-menu-item trello-profile-menu-logout"

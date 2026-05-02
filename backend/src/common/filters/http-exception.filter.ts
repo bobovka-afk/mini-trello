@@ -45,7 +45,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? req.headers['x-request-id'][0]
         : req.headers['x-request-id']);
 
-    // Keep error context useful while avoiding sensitive request payload logging.
     this.logger.error(
       {
         requestId,
@@ -76,16 +75,25 @@ export class HttpExceptionFilter implements ExceptionFilter {
   }
 
   private resolveMessage(statusCode: number, exceptionResponse: unknown): unknown {
+    const isGateway =
+      statusCode === HttpStatus.BAD_GATEWAY ||
+      statusCode === HttpStatus.SERVICE_UNAVAILABLE;
+
     if (exceptionResponse && typeof exceptionResponse === 'object') {
-      const obj = exceptionResponse as { message?: unknown };
-      if (
-        statusCode === HttpStatus.SERVICE_UNAVAILABLE ||
-        statusCode === HttpStatus.BAD_GATEWAY
-      ) {
-        const maybeMessage = obj.message;
-        if (typeof maybeMessage === 'string') return maybeMessage;
-        if (Array.isArray(maybeMessage)) return maybeMessage.join(', ');
+      const raw = (exceptionResponse as { message?: unknown }).message;
+
+      if (isGateway) {
+        if (typeof raw === 'string') return raw;
+        if (Array.isArray(raw)) return raw.join(', ');
       }
+
+      if (statusCode >= 500) {
+        return 'Internal server error';
+      }
+
+      if (typeof raw === 'string') return raw;
+      if (Array.isArray(raw)) return raw.join(', ');
+      return raw ?? 'Request failed';
     }
 
     if (statusCode >= 500) {
@@ -94,11 +102,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (typeof exceptionResponse === 'string') {
       return exceptionResponse;
-    }
-
-    if (exceptionResponse && typeof exceptionResponse === 'object') {
-      const maybeMessage = (exceptionResponse as { message?: unknown }).message;
-      return maybeMessage ?? 'Request failed';
     }
 
     return 'Request failed';
