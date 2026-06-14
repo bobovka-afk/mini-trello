@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, formatApiError, isRateLimitMessage } from '@shared/api';
+import { ModalForm } from '@shared/ui/modal-form';
 import { formatDateRuLong } from '@shared/lib/formatDateRu';
 import { SpaLink } from '@shared/lib/navigation';
 import { AppLogo } from '@shared/ui/app-logo/AppLogo';
@@ -44,14 +45,17 @@ export function InvitesPage({ accessToken }: Props) {
   const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (options?: { silent?: boolean }) => {
     if (!accessToken) {
       setRows([]);
       setLoading(false);
       return;
     }
-    setLoading(true);
-    setMsg(null);
+    const silent = options?.silent ?? false;
+    if (!silent) {
+      setLoading(true);
+      setMsg(null);
+    }
     try {
       const data = await api<InviteRow[]>(
         `/workspace-invite/my?limit=${limit}&offset=${offset}`,
@@ -63,9 +67,13 @@ export function InvitesPage({ accessToken }: Props) {
       setRows(Array.isArray(data) ? data : []);
     } catch (e) {
       setRows([]);
-      setMsg(formatError(e));
+      if (!silent) {
+        setMsg(formatError(e));
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [accessToken, limit, offset]);
 
@@ -82,7 +90,7 @@ export function InvitesPage({ accessToken }: Props) {
         method: 'POST',
         accessToken,
       });
-      await load();
+      setRows((prev) => prev.filter((item) => item.id !== row.id));
     } catch (e) {
       setMsg(formatError(e));
     } finally {
@@ -99,7 +107,7 @@ export function InvitesPage({ accessToken }: Props) {
         method: 'POST',
         accessToken,
       });
-      await load();
+      setRows((prev) => prev.filter((item) => item.id !== row.id));
     } catch (e) {
       setMsg(formatError(e));
     } finally {
@@ -133,7 +141,6 @@ export function InvitesPage({ accessToken }: Props) {
       setCreateWorkspaceId('');
       setCreateEmail('');
       setCreateRole('MEMBER');
-      await load();
     } catch (e) {
       setMsg(formatError(e));
     } finally {
@@ -290,44 +297,46 @@ export function InvitesPage({ accessToken }: Props) {
                 ×
               </button>
             </div>
-            <div className="jira-modal-body">
-              <label className="jira-field">
-                <span className="jira-label">ID рабочего пространства *</span>
-                <input
-                  className="jira-input"
-                  value={createWorkspaceId}
-                  onChange={(e) => setCreateWorkspaceId(e.target.value)}
-                />
-              </label>
-              <label className="jira-field">
-                <span className="jira-label">Почта *</span>
-                <input
-                  className="jira-input"
-                  value={createEmail}
-                  onChange={(e) => setCreateEmail(e.target.value)}
-                  autoComplete="email"
-                />
-              </label>
-              <label className="jira-field">
-                <span className="jira-label">Роль</span>
-                <select
-                  className="jira-input"
-                  value={createRole}
-                  onChange={(e) => setCreateRole(e.target.value as InviteRole)}
-                >
-                  <option value="MEMBER">MEMBER</option>
-                  <option value="ADMIN">ADMIN</option>
-                </select>
-              </label>
-            </div>
-            <div className="jira-modal-footer">
-              <button type="button" className="jira-btn jira-btn-ghost" onClick={() => !createBusy && setCreateOpen(false)}>
-                Отмена
-              </button>
-              <button type="button" className="jira-btn jira-btn-primary" disabled={createBusy} onClick={() => void submitCreate()}>
-                {createBusy ? 'Отправка…' : 'Отправить приглашение'}
-              </button>
-            </div>
+            <ModalForm onSubmit={submitCreate} disabled={createBusy}>
+              <div className="jira-modal-body">
+                <label className="jira-field">
+                  <span className="jira-label">ID рабочего пространства *</span>
+                  <input
+                    className="jira-input"
+                    value={createWorkspaceId}
+                    onChange={(e) => setCreateWorkspaceId(e.target.value)}
+                  />
+                </label>
+                <label className="jira-field">
+                  <span className="jira-label">Почта *</span>
+                  <input
+                    className="jira-input"
+                    value={createEmail}
+                    onChange={(e) => setCreateEmail(e.target.value)}
+                    autoComplete="email"
+                  />
+                </label>
+                <label className="jira-field">
+                  <span className="jira-label">Роль</span>
+                  <select
+                    className="jira-input"
+                    value={createRole}
+                    onChange={(e) => setCreateRole(e.target.value as InviteRole)}
+                  >
+                    <option value="MEMBER">MEMBER</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </label>
+              </div>
+              <div className="jira-modal-footer">
+                <button type="button" className="jira-btn jira-btn-ghost" onClick={() => !createBusy && setCreateOpen(false)}>
+                  Отмена
+                </button>
+                <button type="submit" className="jira-btn jira-btn-primary" disabled={createBusy}>
+                  {createBusy ? 'Отправка…' : 'Отправить приглашение'}
+                </button>
+              </div>
+            </ModalForm>
           </div>
         </div>
       )}

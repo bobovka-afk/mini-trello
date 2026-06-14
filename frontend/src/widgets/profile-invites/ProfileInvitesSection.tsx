@@ -39,7 +39,7 @@ export function ProfileInvitesSection({ accessToken, onRowsCountChange }: Props)
   const [limit] = useState(20);
   const [offset] = useState(0);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (options?: { silent?: boolean }) => {
     if (!accessToken) {
       setRows([]);
       setLoading(false);
@@ -47,8 +47,11 @@ export function ProfileInvitesSection({ accessToken, onRowsCountChange }: Props)
       return;
     }
 
-    setLoading(true);
-    setMsg(null);
+    const silent = options?.silent ?? false;
+    if (!silent) {
+      setLoading(true);
+      setMsg(null);
+    }
     try {
       const data = await api<InviteRow[]>(`/workspace-invite/my?limit=${limit}&offset=${offset}`, {
         method: 'GET',
@@ -60,9 +63,13 @@ export function ProfileInvitesSection({ accessToken, onRowsCountChange }: Props)
     } catch (e) {
       setRows([]);
       onRowsCountChange?.(0);
-      setMsg(formatError(e));
+      if (!silent) {
+        setMsg(formatError(e));
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [accessToken, limit, offset, onRowsCountChange]);
 
@@ -76,7 +83,11 @@ export function ProfileInvitesSection({ accessToken, onRowsCountChange }: Props)
     setMsg(null);
     try {
       await api(`/workspace-invite/${row.id}/accept`, { method: 'POST', accessToken });
-      await load();
+      setRows((prev) => {
+        const next = prev.filter((item) => item.id !== row.id);
+        onRowsCountChange?.(next.length);
+        return next;
+      });
     } catch (e) {
       setMsg(formatError(e));
     } finally {
@@ -90,7 +101,11 @@ export function ProfileInvitesSection({ accessToken, onRowsCountChange }: Props)
     setMsg(null);
     try {
       await api(`/workspace-invite/${row.id}/decline`, { method: 'POST', accessToken });
-      await load();
+      setRows((prev) => {
+        const next = prev.filter((item) => item.id !== row.id);
+        onRowsCountChange?.(next.length);
+        return next;
+      });
     } catch (e) {
       setMsg(formatError(e));
     } finally {

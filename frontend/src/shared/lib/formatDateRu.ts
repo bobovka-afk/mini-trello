@@ -98,6 +98,15 @@ export function formatDateTimeRuSettings(iso: string): string {
   return `${pad2(day)}.${pad2(month + 1)}.${year}, ${pad2(hour)}:${pad2(minute)}`;
 }
 
+/** 08.06.2026, 19:52:03 — session signed-on */
+export function formatDateTimeRuSettingsWithSeconds(iso: string): string {
+  const date = parseDate(iso);
+  if (!date) return iso;
+  const { day, month, year, hour, minute } = localParts(date);
+  const seconds = date.getSeconds();
+  return `${pad2(day)}.${pad2(month + 1)}.${year}, ${pad2(hour)}:${pad2(minute)}:${pad2(seconds)}`;
+}
+
 /** 8 июн 2026 01:09 */
 export function formatDateTimeRuWithYear(iso: string): string {
   const date = parseDate(iso);

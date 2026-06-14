@@ -14,7 +14,7 @@ type XpToward = {
 type Props = {
   character: CharacterDto;
   xpToward: XpToward;
-  /** full — уровень, опыт, здоровье, мана, пыль; sidebar — HP; detail — 2×2; compact — 4 в ряд; dashboard — 2×2, короткие подписи */
+  /** full — уровень, опыт, здоровье, мана; sidebar — HP; detail — 2×2; compact — 4 в ряд; dashboard — 2×2, короткие подписи */
   variant?: 'full' | 'sidebar' | 'detail' | 'compact' | 'dashboard';
 };
 
@@ -22,7 +22,7 @@ function statVisible(
   variant: 'full' | 'sidebar' | 'detail' | 'compact' | 'dashboard',
   stat: 'level' | 'xp' | 'health' | 'mana' | 'dust',
 ): boolean {
-  if (variant === 'full') return true;
+  if (variant === 'full') return stat !== 'dust';
   if (variant === 'sidebar') return stat === 'health';
   if (variant === 'compact' || variant === 'dashboard') return stat !== 'dust';
   return stat === 'level' || stat === 'xp' || stat === 'health' || stat === 'mana';

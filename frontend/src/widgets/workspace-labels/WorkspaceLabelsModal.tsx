@@ -112,7 +112,13 @@ export function WorkspaceLabelsModal({
           {error ? <p className="trello-banner trello-banner-error">{error}</p> : null}
 
           {canManage && (
-            <div className="trello-labels-create">
+            <form
+              className="trello-labels-create"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!busy && name.trim().length >= 1) void createLabel();
+              }}
+            >
               <input
                 className="trello-input"
                 placeholder="Название метки"
@@ -132,14 +138,13 @@ export function WorkspaceLabelsModal({
                 ))}
               </select>
               <button
-                type="button"
+                type="submit"
                 className="trello-btn trello-btn-primary trello-btn-sm"
                 disabled={busy || name.trim().length < 1}
-                onClick={() => void createLabel()}
               >
                 Добавить
               </button>
-            </div>
+            </form>
           )}
 
           {labels.length === 0 ? (
@@ -149,7 +154,13 @@ export function WorkspaceLabelsModal({
               {labels.map((l) => (
                 <li key={l.id} className="trello-labels-list-item">
                   {editingId === l.id ? (
-                    <div className="trello-labels-edit-row">
+                    <form
+                      className="trello-labels-edit-row"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!busy) void saveEdit(l.id);
+                      }}
+                    >
                       <input
                         className="trello-input"
                         value={editName}
@@ -168,10 +179,9 @@ export function WorkspaceLabelsModal({
                         ))}
                       </select>
                       <button
-                        type="button"
+                        type="submit"
                         className="trello-btn trello-btn-primary trello-btn-sm"
                         disabled={busy}
-                        onClick={() => void saveEdit(l.id)}
                       >
                         OK
                       </button>
@@ -182,7 +192,7 @@ export function WorkspaceLabelsModal({
                       >
                         Отмена
                       </button>
-                    </div>
+                    </form>
                   ) : (
                     <>
                       <span

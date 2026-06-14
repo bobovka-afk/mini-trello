@@ -83,11 +83,6 @@
   text-align: center;
 }
 
-.personal-column-hint--empty {
-  padding: 20px 8px;
-  opacity: 0.85;
-}
-
 .personal-add-trigger {
   width: 100%;
   box-sizing: border-box;
@@ -208,10 +203,10 @@
 }
 
 .personal-page .trello-card-complete-btn {
-  width: 22px;
-  height: 22px;
-  border-width: 3px;
-  border-radius: var(--qf-radius-sm, 4px);
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+  border-radius: 50%;
 }
 
 .personal-card-body {

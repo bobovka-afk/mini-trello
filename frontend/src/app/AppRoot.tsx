@@ -38,6 +38,7 @@ import {
 } from '@pages/index';
 import { GamificationIntroModal, ProfileInvitesSection } from '@widgets/index';
 import { AppShell, routeUsesAppShell } from '@widgets/app-shell';
+import { RailIconThemeMoon, RailIconThemeSun } from '@widgets/app-shell/RailNavIcons';
 import { useAppTheme } from './theme/useAppTheme';
 import { navigate, SpaLink } from '@shared/lib';
 import { canonicalProfilePath } from '@shared/lib/normalizeLegacyProfilePath';
@@ -146,25 +147,31 @@ function EmailVerificationRequestPage() {
             <p className="trello-boards-sub" style={{ marginTop: 0 }}>
               Запрос письма с ссылкой
             </p>
-            <label className="trello-field">
-              <span className="trello-label">Email</span>
-              <input
-                className="trello-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-              />
-            </label>
-
-            <button
-              className="trello-btn trello-btn-primary"
-              style={{ marginTop: 12 }}
-              onClick={() => void submit()}
-              disabled={busy}
-              type="button"
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!busy) void submit();
+              }}
             >
-              {busy ? '…' : 'Отправить письмо'}
-            </button>
+              <label className="trello-field">
+                <span className="trello-label">Email</span>
+                <input
+                  className="trello-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                />
+              </label>
+
+              <button
+                className="trello-btn trello-btn-primary"
+                style={{ marginTop: 12 }}
+                disabled={busy}
+                type="submit"
+              >
+                {busy ? '…' : 'Отправить письмо'}
+              </button>
+            </form>
 
             {msg && (
               <div
@@ -275,25 +282,31 @@ function PasswordResetRequestPage() {
             <p className="trello-boards-sub" style={{ marginTop: 0 }}>
               Запрос ссылки на почту
             </p>
-            <label className="trello-field">
-              <span className="trello-label">Email</span>
-              <input
-                className="trello-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-              />
-            </label>
-
-            <button
-              className="trello-btn trello-btn-primary"
-              style={{ marginTop: 12 }}
-              onClick={() => void submit()}
-              disabled={busy}
-              type="button"
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!busy) void submit();
+              }}
             >
-              {busy ? '…' : 'Отправить письмо'}
-            </button>
+              <label className="trello-field">
+                <span className="trello-label">Email</span>
+                <input
+                  className="trello-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                />
+              </label>
+
+              <button
+                className="trello-btn trello-btn-primary"
+                style={{ marginTop: 12 }}
+                disabled={busy}
+                type="submit"
+              >
+                {busy ? '…' : 'Отправить письмо'}
+              </button>
+            </form>
 
             {msg && (
               <div
@@ -371,6 +384,12 @@ function PasswordResetConfirmPage() {
               </div>
             ) : (
               <>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!busy && newPassword) void submit();
+                }}
+              >
                 <label className="trello-field">
                   <span className="trello-label">Новый пароль</span>
                   <input
@@ -385,12 +404,12 @@ function PasswordResetConfirmPage() {
                 <button
                   className="trello-btn trello-btn-primary"
                   style={{ marginTop: 12 }}
-                  onClick={() => void submit()}
                   disabled={busy || !newPassword}
-                  type="button"
+                  type="submit"
                 >
                   {busy ? '…' : 'Сохранить пароль'}
                 </button>
+              </form>
               </>
             )}
 
@@ -416,6 +435,24 @@ function PasswordResetConfirmPage() {
 }
 
 type AuthedOptions = { gamificationIntro?: boolean };
+
+function GuestThemeToggle() {
+  const { toggleTheme, isDark } = useAppTheme();
+  return (
+    <button
+      type="button"
+      className="px-rail-btn px-rail-btn--icon-only px-rail-btn--theme px-guest-theme-toggle"
+      aria-label={isDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему'}
+      onClick={toggleTheme}
+    >
+      {isDark ? (
+        <RailIconThemeSun className="px-rail-btn__ico" />
+      ) : (
+        <RailIconThemeMoon className="px-rail-btn__ico" />
+      )}
+    </button>
+  );
+}
 
 function Home(props: { onAuthed: (token: string, options?: AuthedOptions) => void; hasSession: boolean }) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -507,7 +544,13 @@ function Home(props: { onAuthed: (token: string, options?: AuthedOptions) => voi
             </div>
           )}
 
-          <div className="trello-home-form">
+          <form
+            className="trello-home-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!busy) void submit();
+            }}
+          >
             {mode === 'register' && (
               <label className="trello-field">
                 <span className="trello-label">Имя</span>
@@ -545,9 +588,8 @@ function Home(props: { onAuthed: (token: string, options?: AuthedOptions) => voi
             </label>
 
             <button
-              type="button"
+              type="submit"
               className="trello-btn trello-btn-primary trello-home-submit"
-              onClick={() => void submit()}
               disabled={busy}
             >
               {busy ? '…' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
@@ -574,7 +616,7 @@ function Home(props: { onAuthed: (token: string, options?: AuthedOptions) => voi
               </svg>
               Продолжить с Google
             </a>
-          </div>
+          </form>
         </div>
       </main>
     </div>
@@ -892,6 +934,7 @@ function AppContent() {
           accessToken={accessToken}
           initialTab={parseSettingsTabFromRoute(route)}
           onAccountDeleted={() => void handleLogout()}
+          onCurrentSessionRevoked={() => void handleLogout()}
         />
       );
   } else if (route.startsWith('/profile')) {
@@ -939,34 +982,10 @@ function AppContent() {
     page
   );
 
-  const guestThemeSwitch = (
-    <label className="theme-switch" aria-label="Тёмная тема">
-      <input
-        className="theme-switch-input"
-        type="checkbox"
-        checked={isDark}
-        onChange={toggleTheme}
-      />
-      <span className="theme-switch-track" aria-hidden>
-        <span className="theme-switch-thumb" />
-      </span>
-    </label>
-  );
-
   return (
     <>
       {!accessToken &&
-        createPortal(
-          <div className="trello-fixed-toolbar trello-fixed-toolbar--guest" aria-label="Параметры приложения">
-            <div className="theme-toggle trello-theme-toggle-inline" aria-label="Theme switch">
-              <span className="theme-toggle-icon" aria-hidden>
-                ◐
-              </span>
-              {guestThemeSwitch}
-            </div>
-          </div>,
-          document.body,
-        )}
+        createPortal(<GuestThemeToggle />, document.body)}
       {wrappedPage}
       {accessToken &&
         createPortal(

@@ -54,7 +54,13 @@ export function CharacterCreateForm(props: Props) {
 
   return (
     <>
-      <section className="trello-character-setup">
+      <form
+        className="trello-character-setup"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!busy) void submit();
+        }}
+      >
         <label className="trello-field">
           <span className="trello-label">Имя персонажа</span>
           <input
@@ -125,14 +131,13 @@ export function CharacterCreateForm(props: Props) {
         </div>
 
         <button
-          type="button"
+          type="submit"
           className="trello-btn trello-btn-primary trello-character-submit-full"
           disabled={busy}
-          onClick={() => void submit()}
         >
           {busy ? 'Создаём…' : (props.submitLabel ?? 'Создать персонажа')}
         </button>
-      </section>
+      </form>
       <AlertModal
         open={errorModalMessage != null}
         title="Ошибка"

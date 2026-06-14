@@ -1,99 +1,131 @@
 # Questflow
 
-Questflow — fullstack-платформа для командной работы с задачами и встроенной геймификацией.
+Questflow — fullstack-платформа для командной работы с задачами и встроенной геймификацией. Пользователь закрывает реальные дела (карточки на доске, привычки, личные задачи) и получает прогресс персонажа: XP, HP, квесты, сундуки и косметику.
 
-В приложении есть два слоя:
+**Демо:** [https://quest-flow.up.railway.app/](https://quest-flow.up.railway.app/)
 
-- **Рабочий слой**: воркспейсы (с пользовательским порядком списка), доски, списки, карточки, комментарии, роли и приглашения.
-- **Прогрессионный слой**: персонаж пользователя, XP/HP, чекины, стрики, квесты, сундуки, пыль, достижения, косметика.
-- **Solo-слой**: раздел **«Привычки»** (`/personal`) — привычки, ежедневные и личные задачи без воркспейса.
+[Скриншоты](#screenshots)
 
-## Концепция геймификации
+В приложении три слоя:
 
-Геймификация в Questflow завязана на реальные действия в продукте, а не на декоративные счетчики.
+- **Рабочий слой** — воркспейсы, доски, списки, карточки, комментарии, роли и приглашения.
+- **Прогрессионный слой** — персонаж, XP/HP, чекины, стрики, квесты, сундуки, пыль, achievements.
+- **Solo-слой** — раздел «Привычки» (`/personal`): привычки, ежедневные и личные задачи без воркспейса.
 
-Ключевые принципы:
+---
 
-- **Сервер решает награды**: правила начислений живут в backend, frontend только отображает результат.
-- **Детерминированная экономика**: все константы наград централизованы и синхронизируются backend ↔ frontend.
-- **Идемпотентность событий**: повторные начисления блокируются ограничениями БД и конфликт-кодами API.
-- **Прозрачный фидбек**: пользователь сразу видит XP/HP, прогресс квестов, награды из сундуков и новые косметические предметы.
+## Содержание
 
-Текущие механики:
+- [Возможности](#features)
+- [Технологии](#tech)
+- [Быстрый старт](#quickstart)
+- [API](#api)
+- [Аутентификация](#auth)
+- [Разделы приложения](#sections)
+- [Архитектура frontend](#frontend-arch)
 
-- Персонаж (1 на пользователя), уровни и HP.
-- XP за релевантные действия с дневными ограничениями.
-- Daily check-in и streak по игровому дню (`GAME_DAY_TZ`).
-- Дневные, недельные и месячные квесты (карточки, solo-действия, привычки).
-- Сундуки и лут с косметикой.
-- Пыль за дубликаты и магазин сундуков.
-- Achievements за ключевые этапы прогресса.
+---
 
-Подробные документы по механикам и статусу фаз:
+<h2 id="features">Возможности</h2>
 
-- `docs/gamification-agent-context.md` — инварианты и карта файлов для агента
-- `docs/gamification-roadmap.md` — фазы, **каталог квестов и achievements**, разделы приложения
-- `docs/solo-habits-roadmap.md` — `/personal`, привычки и личные задачи
-- `docs/gamification-assets.md`
-- `docs/profile-settings-roadmap.md` — личный кабинет, настройки аккаунта, приватность
+### Совместная работа
 
-## Технологии
+- [x] Воркспейсы с ролями `OWNER` / `ADMIN` / `MEMBER`
+- [x] Персональный порядок воркспейсов (перетаскивание на `/workspaces`, `WorkspaceMember.sortOrder`)
+- [x] Приглашения по email: принять / отклонить / отозвать
+- [x] Kanban: `Workspace → Board → List → Card`
+- [x] Перетаскивание карточек и колонок, исполнители, дедлайны, комментарии, вложения
+- [x] Журнал активности воркспейса
+
+### Геймификация
+
+- [x] Один персонаж на пользователя, уровни 1–100, HP
+- [x] XP за закрытие карточек, личных задач, ежедневных и привычек «+»
+- [x] Дневной лимит активности (`DAILY_ACTIVITY_XP_MAX` = 500 XP)
+- [x] Daily check-in и streak по игровому дню (`GAME_DAY_TZ`)
+- [x] Квесты: daily / weekly / monthly
+- [x] Сундуки, пыль за дубликаты, магазин сундуков
+- [x] Achievements за ключевые этапы прогресса
+- [x] Идемпотентность XP-событий (уникальные ограничения БД + коды API)
+
+### Solo (`/personal`)
+
+- [x] Три колонки: привычки (+/−), ежедневные, задачи
+- [x] XP/HP и прогресс квестов в общей экономике с досками
+- [x] Штрафы HP за «−» привычку и пропуск ежедневных
+- [x] Онбординг: после создания персонажа без воркспейса → `/personal`
+
+### Социальное и рейды
+
+- [x] Друзья по `friendCode`, заявки accept/decline
+- [x] Личные сообщения 1:1 (REST + poll)
+- [x] Рейд-боссы для пати друзей (2–8 игроков), мана за XP-карточки
+
+### Инфраструктура
+
+- [x] NestJS + Prisma + PostgreSQL
+- [x] Redis: refresh-сессии, rate limiting
+- [x] React + Vite, pixel UI
+- [x] Swagger (`/api/docs`)
+- [x] Pino + Grafana Loki
+- [x] SendGrid для транзакционных писем
+- [x] Docker Compose для полного стека
+- [x] Jest unit-тесты backend (порог покрытия 80%)
+
+---
+
+<h2 id="tech">Технологии</h2>
 
 | Слой | Технологии |
 |------|------------|
-| API | NestJS, TypeScript, class-validator, Swagger (`/api/docs`) |
+| API | NestJS, TypeScript, class-validator, Swagger |
 | Данные | PostgreSQL, Prisma (схема, миграции) |
 | Кеш / лимиты | Redis (refresh-сессии, rate limiting) |
 | Frontend | React, TypeScript, Vite |
 | Auth | JWT, Passport (Google OAuth), bcrypt |
-| Почта | SendGrid (`@sendgrid/mail`) |
+| Почта | SendGrid |
 | Логи / наблюдаемость | Pino, Promtail, Grafana Loki, Grafana |
 
-## Архитектура frontend
+---
 
-Структура проекта гибридная:
+<h2 id="quickstart">Быстрый старт</h2>
 
-- `frontend/src/app` — вход приложения и app-shell
-- `frontend/src/pages` — уровень экранов и роутов
-- `frontend/src/widgets` — крупные композиционные UI-блоки
-- `frontend/src/features` — пользовательские сценарии
-- `frontend/src/entities` — доменные сущности
-- `frontend/src/shared` — общий API-слой и утилиты
+### 1. Переменные окружения
 
-## Основные сценарии
+```bash
+cp backend/.env.example backend/.env
+```
 
-### Аутентификация
+Заполните переменные: `DATABASE_URL`, `JWT_*`, `REDIS_URL`, `GOOGLE_*`, `SENDGRID_*`, `GAME_DAY_TZ` и др.
 
-- Регистрация / вход по email + пароль
-- Access + refresh токены (refresh в httpOnly cookie)
-- Вход через Google OAuth
-- Подтверждение email и восстановление пароля
+### 2. Зависимости и миграции
 
-### Совместная работа
+```bash
+cd backend && npm install
+cd ../frontend && npm install
 
-- Создание воркспейса, роли `OWNER` / `ADMIN` / `MEMBER`
-- Список воркспейсов на `/workspaces` с drag-and-drop порядка (персональный `sortOrder`)
-- Приглашения по email (принять / отклонить / отозвать)
-- Журнал активности воркспейса для привилегированных ролей
-- Каскадное удаление связанных данных при удалении воркспейса
+cd ../backend
+npx prisma migrate deploy   # или prisma migrate dev
+```
 
-### Доски и карточки
+### 3. Локальный запуск
 
-- Иерархия: `Workspace -> Board -> List -> Card`
-- Проверки доступа через guards по членству и роли
-- Исполнители, дедлайны, переносы карточек (DnD), завершение, комментарии
-- XP за первое закрытие карточки (исполнитель или автор действия)
+```bash
+# Backend
+cd backend && npm run start:dev
 
-### Привычки (solo, `/personal`)
+# Frontend (отдельный терминал)
+cd frontend && npm run dev
+```
 
-- Три колонки: **привычки** (+/−), **ежедневные**, **задачи**
-- XP/HP и прогресс квестов так же, как на досках (общий лимит task-like XP, отдельный лимит habit XP)
-- Подходит пользователям без воркспейса; после создания персонажа — редирект на `/personal`
-- Подробнее: `docs/solo-habits-roadmap.md`
+### 4. Docker (полный стек)
 
-## Тесты backend
+```bash
+cd backend
+docker compose up --build
+```
 
-Unit-тесты (Jest) покрывают бизнес-логику с порогом 80%.
+### 5. Тесты backend
 
 ```bash
 cd backend
@@ -101,20 +133,92 @@ npm run test:cov
 npm test
 ```
 
-## Запуск проекта
+---
 
-1. Склонировать репозиторий.
-2. Скопировать `backend/.env.example` в `backend/.env` и заполнить переменные.
-3. Установить зависимости в `backend/` и `frontend/`.
-4. Применить миграции Prisma.
-5. Запустить backend: `cd backend && npm run start:dev`.
-6. Запустить frontend: `cd frontend && npm run dev`.
+<h2 id="api">API</h2>
 
-Полный стек через Docker:
+| Ресурс | URL |
+|--------|-----|
+| Приложение (prod) | [https://quest-flow.up.railway.app/](https://quest-flow.up.railway.app/) |
+| Base URL (local) | `http://localhost:3000/api` |
+| Swagger (local) | `http://localhost:3000/api/docs` |
+| Health (local) | `http://localhost:3000/api/health` |
 
-```bash
-cd backend
-docker compose up --build
-```
+Основные группы эндпоинтов: `auth`, `user`, `workspace`, `board`, `list`, `card`, `comment`, `character`, `personal`, `social`, `party`, `notifications`, `user-settings`.
 
-Swagger: `http://localhost:3000/api/docs`
+---
+
+<h2 id="auth">Аутентификация</h2>
+
+- Регистрация и вход по email + пароль
+- Access + refresh токены (refresh в httpOnly cookie)
+- Вход через Google OAuth
+- Подтверждение email и восстановление пароля
+- Управление сессиями и security events в `/settings`
+
+---
+
+<h2 id="sections">Разделы приложения</h2>
+
+| Раздел | Маршрут | Назначение |
+|--------|---------|------------|
+| Привычки (solo) | `/personal` | Привычки, ежедневные, личные задачи |
+| Воркспейсы | `/workspaces` | Список WS, порядок перетаскиванием |
+| Доска | `/workspaces/:ws/boards/:board` | Kanban, карточки, перетаскивание |
+| Персонаж | `/profile/character` | Квесты, сундуки, косметика, рейд |
+| Сообщения | `/messages` | DM, заявки в друзья |
+| Настройки | `/settings` | Аккаунт, безопасность, приватность |
+| Уведомления | `/notifications` | XP, квесты, сундуки, mentions |
+
+Rail: вкладка **«Привычки»** между «Доски» и «Персонаж».
+
+---
+
+<h2 id="frontend-arch">Архитектура frontend</h2>
+
+Гибридная структура (FSD-подобная):
+
+| Слой | Путь | Назначение |
+|------|------|------------|
+| App | `frontend/src/app` | Вход, app-shell, глобальные стили |
+| Pages | `frontend/src/pages` | Экраны и роуты |
+| Widgets | `frontend/src/widgets` | Крупные UI-блоки (rail, guide, modals) |
+| Features | `frontend/src/features` | Пользовательские сценарии |
+| Entities | `frontend/src/entities` | Доменные сущности |
+| Shared | `frontend/src/shared` | API-клиент, утилиты, UI-kit |
+
+Константы наград синхронизируются с backend: `frontend/src/lib/xpRewards.ts` ↔ `backend/src/gamification/config/rewards.ts`.
+
+---
+
+<h2 id="screenshots">Скриншоты</h2>
+
+`backend/uploads/demo/`
+
+### Вход и онбординг
+
+![Онбординг](backend/uploads/demo/onboarding.png)
+![Вход](backend/uploads/demo/auth-login.png)
+![Создание персонажа](backend/uploads/demo/character-onboarding.png)
+
+### Воркспейсы и доска
+
+![Воркспейсы](backend/uploads/demo/workspaces-list.png)
+![Доска](backend/uploads/demo/board-kanban.png)
+![Карточка](backend/uploads/demo/card-detail.png)
+
+### Привычки
+
+![Привычки](backend/uploads/demo/personal-habits.png)
+![Награда XP](backend/uploads/demo/reward-toast.png)
+
+### Персонаж
+
+![Профиль](backend/uploads/demo/character-profile.png)
+![Магазин](backend/uploads/demo/shop.png)
+![Рейд](backend/uploads/demo/raid-boss.png)
+
+### Настройки и уведомления
+
+![Настройки](backend/uploads/demo/settings-account.png)
+![Уведомления](backend/uploads/demo/notifications.png)

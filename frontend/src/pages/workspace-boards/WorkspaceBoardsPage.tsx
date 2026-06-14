@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AlertModal } from '@shared/ui/alert-modal/AlertModal';
+import { ModalForm } from '@shared/ui/modal-form';
 import { api, type ApiError } from '@shared/api';
 import {
   SpaLink,
@@ -118,14 +119,17 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     }
   }, [accessToken, workspaceId, myPermissions, myRole]);
 
-  const loadBoards = useCallback(async () => {
+  const loadBoards = useCallback(async (options?: { silent?: boolean }) => {
     if (!accessToken) {
       setBoards([]);
       setLoading(false);
       return;
     }
-    setLoading(true);
-    setMsg(null);
+    const silent = options?.silent ?? false;
+    if (!silent) {
+      setLoading(true);
+      setMsg(null);
+    }
     try {
       const data = await api<BoardRow[]>(
         `/workspace/${workspaceId}/boards`,
@@ -133,10 +137,14 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
       );
       setBoards(Array.isArray(data) ? data : []);
     } catch (e) {
-      setMsg(formatError(e));
+      if (!silent) {
+        setMsg(formatError(e));
+      }
       setBoards([]);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [accessToken, workspaceId]);
 
@@ -160,14 +168,16 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     setCreateBusy(true);
     setMsg(null);
     try {
-      await api(`/workspace/${workspaceId}/boards`, {
+      const created = await api<BoardRow>(`/workspace/${workspaceId}/boards`, {
         method: 'POST',
         accessToken,
         json: { name, position },
       });
       setCreateOpen(false);
       setCreateName('');
-      await loadBoards();
+      setBoards((prev) =>
+        [...prev, created].sort((a, b) => a.position - b.position || a.id - b.id),
+      );
     } catch (e) {
       setAlertText(formatError(e));
       setAlertOpen(true);
@@ -183,13 +193,13 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
     setEditBusy(true);
     setMsg(null);
     try {
-      await api(`/workspace/${workspaceId}/boards/${editBoard.id}`, {
+      const updated = await api<BoardRow>(`/workspace/${workspaceId}/boards/${editBoard.id}`, {
         method: 'PATCH',
         accessToken,
         json: { name },
       });
       setEditBoard(null);
-      await loadBoards();
+      setBoards((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
     } catch (e) {
       setMsg(formatError(e));
     } finally {
@@ -213,8 +223,8 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
         method: 'PATCH',
         accessToken,
       });
-      await loadBoards();
-      await loadArchivedBoards();
+      setBoards((prev) => prev.filter((row) => row.id !== b.id));
+      setArchivedBoards((prev) => [...prev, { ...b, archivedAt: new Date().toISOString() }]);
     } catch (e) {
       setAlertText(formatError(e));
       setAlertOpen(true);
@@ -228,8 +238,12 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
         method: 'PATCH',
         accessToken,
       });
-      await loadBoards();
-      await loadArchivedBoards();
+      setArchivedBoards((prev) => prev.filter((row) => row.id !== b.id));
+      setBoards((prev) =>
+        [...prev, { ...b, archivedAt: null }].sort(
+          (a, b) => a.position - b.position || a.id - b.id,
+        ),
+      );
     } catch (e) {
       setAlertText(formatError(e));
       setAlertOpen(true);
@@ -245,9 +259,10 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
         method: 'DELETE',
         accessToken,
       });
+      const deletedId = boardToDelete.id;
       setBoardToDelete(null);
       setEditBoard(null);
-      await loadBoards();
+      setBoards((prev) => prev.filter((b) => b.id !== deletedId));
     } catch (e) {
       setMsg(formatError(e));
     } finally {
@@ -435,35 +450,39 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
                 ×
               </button>
             </div>
-            <div className="trello-modal-body">
-              <label className="trello-field">
-                <span className="trello-label">Название</span>
-                <input
-                  className="trello-input"
-                  value={createName}
-                  onChange={(e) => setCreateName(e.target.value)}
-                  maxLength={50}
-                  autoFocus
-                />
-              </label>
-            </div>
-            <div className="trello-modal-foot">
-              <button
-                type="button"
-                className="trello-btn trello-btn-ghost"
-                onClick={() => !createBusy && setCreateOpen(false)}
-              >
-                Отмена
-              </button>
-              <button
-                type="button"
-                className="trello-btn trello-btn-primary"
-                disabled={createName.trim().length < 3 || createBusy}
-                onClick={() => void submitCreate()}
-              >
-                {createBusy ? 'Создание…' : 'Создать'}
-              </button>
-            </div>
+            <ModalForm
+              onSubmit={submitCreate}
+              disabled={createName.trim().length < 3 || createBusy}
+            >
+              <div className="trello-modal-body">
+                <label className="trello-field">
+                  <span className="trello-label">Название</span>
+                  <input
+                    className="trello-input"
+                    value={createName}
+                    onChange={(e) => setCreateName(e.target.value)}
+                    maxLength={50}
+                    autoFocus
+                  />
+                </label>
+              </div>
+              <div className="trello-modal-foot">
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-ghost"
+                  onClick={() => !createBusy && setCreateOpen(false)}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="trello-btn trello-btn-primary"
+                  disabled={createName.trim().length < 3 || createBusy}
+                >
+                  {createBusy ? 'Создание…' : 'Создать'}
+                </button>
+              </div>
+            </ModalForm>
           </div>
         </div>
       )}
@@ -490,61 +509,65 @@ export function WorkspaceBoardsPage({ accessToken, workspaceId }: Props) {
                 ×
               </button>
             </div>
-            <div className="trello-modal-body">
-              <label className="trello-field">
-                <span className="trello-label">Название</span>
-                <input
-                  className="trello-input"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  maxLength={50}
-                  autoFocus
-                />
-              </label>
-            </div>
-            <div className="trello-modal-foot trello-modal-foot-split">
-              <div className="trello-modal-foot-danger-group">
-                {canArchive && (
+            <ModalForm
+              onSubmit={submitEditBoard}
+              disabled={editName.trim().length < 3 || editBusy}
+            >
+              <div className="trello-modal-body">
+                <label className="trello-field">
+                  <span className="trello-label">Название</span>
+                  <input
+                    className="trello-input"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    maxLength={50}
+                    autoFocus
+                  />
+                </label>
+              </div>
+              <div className="trello-modal-foot trello-modal-foot-split">
+                <div className="trello-modal-foot-danger-group">
+                  {canArchive && (
+                    <button
+                      type="button"
+                      className="trello-btn trello-btn-ghost"
+                      disabled={editBusy || deleteBoardBusy}
+                      onClick={() => void archiveBoardFromEdit()}
+                    >
+                      В архив
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="trello-btn trello-btn-danger"
+                    disabled={editBusy || deleteBoardBusy}
+                    onClick={() => {
+                      if (!editBoard || editBusy) return;
+                      setBoardToDelete(editBoard);
+                      setEditBoard(null);
+                    }}
+                  >
+                    Удалить
+                  </button>
+                </div>
+                <div className="trello-modal-foot-actions">
                   <button
                     type="button"
                     className="trello-btn trello-btn-ghost"
-                    disabled={editBusy || deleteBoardBusy}
-                    onClick={() => void archiveBoardFromEdit()}
+                    onClick={() => !editBusy && setEditBoard(null)}
                   >
-                    В архив
+                    Отмена
                   </button>
-                )}
-                <button
-                  type="button"
-                  className="trello-btn trello-btn-danger"
-                  disabled={editBusy || deleteBoardBusy}
-                  onClick={() => {
-                    if (!editBoard || editBusy) return;
-                    setBoardToDelete(editBoard);
-                    setEditBoard(null);
-                  }}
-                >
-                  Удалить
-                </button>
+                  <button
+                    type="submit"
+                    className="trello-btn trello-btn-primary"
+                    disabled={editName.trim().length < 3 || editBusy}
+                  >
+                    {editBusy ? 'Сохранение…' : 'Сохранить'}
+                  </button>
+                </div>
               </div>
-              <div className="trello-modal-foot-actions">
-                <button
-                  type="button"
-                  className="trello-btn trello-btn-ghost"
-                  onClick={() => !editBusy && setEditBoard(null)}
-                >
-                  Отмена
-                </button>
-                <button
-                  type="button"
-                  className="trello-btn trello-btn-primary"
-                  disabled={editName.trim().length < 3 || editBusy}
-                  onClick={() => void submitEditBoard()}
-                >
-                  {editBusy ? 'Сохранение…' : 'Сохранить'}
-                </button>
-              </div>
-            </div>
+            </ModalForm>
           </div>
         </div>
       )}

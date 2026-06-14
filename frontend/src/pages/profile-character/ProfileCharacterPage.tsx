@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { api, formatApiError, type ApiError } from '@shared/api';
+import { ModalForm } from '@shared/ui/modal-form';
 import {
   CHARACTER_ROLES,
   type CharacterDto,
@@ -613,88 +614,90 @@ export function ProfileCharacterPage(props: Props) {
                 ×
               </button>
             </div>
-            <div className="trello-modal-body trello-character-edit-modal-body">
-              {msg && editOpen && (
-                <div className="trello-banner trello-banner-error" style={{ marginBottom: 12 }}>
-                  {msg}
-                </div>
-              )}
-              <label className="trello-field">
-                <span className="trello-label">Имя персонажа</span>
-                <input
-                  className="trello-input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={40}
-                />
-              </label>
+            <ModalForm onSubmit={save} disabled={busy}>
+              <div className="trello-modal-body trello-character-edit-modal-body">
+                {msg && editOpen && (
+                  <div className="trello-banner trello-banner-error" style={{ marginBottom: 12 }}>
+                    {msg}
+                  </div>
+                )}
+                <label className="trello-field">
+                  <span className="trello-label">Имя персонажа</span>
+                  <input
+                    className="trello-input"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={40}
+                  />
+                </label>
 
-              <div className="trello-character-gender-row">
-                <span className="trello-label">Пол</span>
-                <div className="trello-character-gender-toggle trello-character-gender-toggle--full">
-                  <button
-                    type="button"
-                    className={
-                      gender === 'MALE'
-                        ? 'trello-btn trello-btn-primary trello-btn-sm'
-                        : 'trello-btn trello-btn-ghost trello-btn-sm'
-                    }
-                    onClick={() => setGender('MALE')}
-                  >
-                    Мужской
-                  </button>
-                  <button
-                    type="button"
-                    className={
-                      gender === 'FEMALE'
-                        ? 'trello-btn trello-btn-primary trello-btn-sm'
-                        : 'trello-btn trello-btn-ghost trello-btn-sm'
-                    }
-                    onClick={() => setGender('FEMALE')}
-                  >
-                    Женский
-                  </button>
+                <div className="trello-character-gender-row">
+                  <span className="trello-label">Пол</span>
+                  <div className="trello-character-gender-toggle trello-character-gender-toggle--full">
+                    <button
+                      type="button"
+                      className={
+                        gender === 'MALE'
+                          ? 'trello-btn trello-btn-primary trello-btn-sm'
+                          : 'trello-btn trello-btn-ghost trello-btn-sm'
+                      }
+                      onClick={() => setGender('MALE')}
+                    >
+                      Мужской
+                    </button>
+                    <button
+                      type="button"
+                      className={
+                        gender === 'FEMALE'
+                          ? 'trello-btn trello-btn-primary trello-btn-sm'
+                          : 'trello-btn trello-btn-ghost trello-btn-sm'
+                      }
+                      onClick={() => setGender('FEMALE')}
+                    >
+                      Женский
+                    </button>
+                  </div>
+                </div>
+
+                <div className="trello-character-avatar-block trello-character-avatar-block--no-label">
+                  <div className="trello-character-avatar-grid">
+                    {CHARACTER_ROLES.map((r) => {
+                      const p = presetForRole(gender, r);
+                      const selected = r === role;
+                      return (
+                        <button
+                          key={r}
+                          type="button"
+                          className={
+                            selected
+                              ? 'trello-character-avatar-card trello-character-avatar-card--selected'
+                              : 'trello-character-avatar-card'
+                          }
+                          onClick={() => setRole(r)}
+                          aria-pressed={selected}
+                        >
+                          <img
+                            src={characterPortraitUrl(p)}
+                            alt=""
+                            className="trello-character-avatar-img"
+                            loading="lazy"
+                          />
+                          <span className="trello-character-avatar-label">{ROLE_LABEL_RU[r]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-
-              <div className="trello-character-avatar-block trello-character-avatar-block--no-label">
-                <div className="trello-character-avatar-grid">
-                  {CHARACTER_ROLES.map((r) => {
-                    const p = presetForRole(gender, r);
-                    const selected = r === role;
-                    return (
-                      <button
-                        key={r}
-                        type="button"
-                        className={
-                          selected
-                            ? 'trello-character-avatar-card trello-character-avatar-card--selected'
-                            : 'trello-character-avatar-card'
-                        }
-                        onClick={() => setRole(r)}
-                        aria-pressed={selected}
-                      >
-                        <img
-                          src={characterPortraitUrl(p)}
-                          alt=""
-                          className="trello-character-avatar-img"
-                          loading="lazy"
-                        />
-                        <span className="trello-character-avatar-label">{ROLE_LABEL_RU[r]}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="trello-modal-foot trello-character-edit-modal-foot">
+                <button type="button" className="trello-btn trello-btn-ghost" disabled={busy} onClick={closeEdit}>
+                  Отмена
+                </button>
+                <button type="submit" className="trello-btn trello-btn-primary" disabled={busy}>
+                  {busy ? 'Сохранение…' : 'Сохранить'}
+                </button>
               </div>
-            </div>
-            <div className="trello-modal-foot trello-character-edit-modal-foot">
-              <button type="button" className="trello-btn trello-btn-ghost" disabled={busy} onClick={closeEdit}>
-                Отмена
-              </button>
-              <button type="button" className="trello-btn trello-btn-primary" disabled={busy} onClick={() => void save()}>
-                {busy ? 'Сохранение…' : 'Сохранить'}
-              </button>
-            </div>
+            </ModalForm>
           </div>
         </div>
       )}

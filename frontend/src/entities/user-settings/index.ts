@@ -34,6 +34,8 @@ export {
   type PrivacyUserSettings,
 } from './lib/privacySettings';
 export { securityEventLabelRu } from './lib/securityEventLabels';
+export { parseSessionUserAgent } from './lib/parseSessionUserAgent';
+export type { SessionPlatformInfo } from './lib/parseSessionUserAgent';
 export type {
   UserSecurityEventDto,
   UserSessionDto,

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api, formatApiError } from '@shared/api';
+import { ModalForm } from '@shared/ui/modal-form';
 
 type Props = {
   accessToken: string;
@@ -73,56 +74,63 @@ export function SettingsDeleteAccountPanel({ accessToken, hasPassword, onDeleted
                 ×
               </button>
             </div>
-            <div className="trello-modal-body">
-              <p className="trello-confirm-text">
-                Это действие нельзя отменить. Все данные аккаунта будут удалены.
-              </p>
-              {hasPassword ? (
-                <label className="trello-field">
-                  <span className="trello-label">Текущий пароль</span>
-                  <input
-                    className="trello-input"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={busy}
-                  />
-                </label>
-              ) : (
-                <label className="trello-field">
-                  <span className="trello-label">Введите УДАЛИТЬ для подтверждения</span>
-                  <input
-                    className="trello-input"
-                    value={confirmPhrase}
-                    onChange={(e) => setConfirmPhrase(e.target.value)}
-                    disabled={busy}
-                    placeholder="УДАЛИТЬ"
-                  />
-                </label>
-              )}
-              {msg ? <p className="trello-settings-card-hint">{msg}</p> : null}
-            </div>
-            <div className="trello-modal-foot">
-              <button
-                type="button"
-                className="trello-btn trello-btn-ghost"
-                disabled={busy}
-                onClick={() => setOpen(false)}
-              >
-                Отмена
-              </button>
-              <button
-                type="button"
-                className="trello-btn trello-btn-danger"
-                disabled={
-                  busy ||
-                  (hasPassword ? !password : confirmPhrase.trim() !== 'УДАЛИТЬ')
-                }
-                onClick={() => void handleDelete()}
-              >
-                {busy ? '…' : 'Удалить навсегда'}
-              </button>
-            </div>
+            <ModalForm
+              onSubmit={handleDelete}
+              disabled={
+                busy ||
+                (hasPassword ? !password : confirmPhrase.trim() !== 'УДАЛИТЬ')
+              }
+            >
+              <div className="trello-modal-body">
+                <p className="trello-confirm-text">
+                  Это действие нельзя отменить. Все данные аккаунта будут удалены.
+                </p>
+                {hasPassword ? (
+                  <label className="trello-field">
+                    <span className="trello-label">Текущий пароль</span>
+                    <input
+                      className="trello-input"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={busy}
+                    />
+                  </label>
+                ) : (
+                  <label className="trello-field">
+                    <span className="trello-label">Введите УДАЛИТЬ для подтверждения</span>
+                    <input
+                      className="trello-input"
+                      value={confirmPhrase}
+                      onChange={(e) => setConfirmPhrase(e.target.value)}
+                      disabled={busy}
+                      placeholder="УДАЛИТЬ"
+                    />
+                  </label>
+                )}
+                {msg ? <p className="trello-settings-card-hint">{msg}</p> : null}
+              </div>
+              <div className="trello-modal-foot">
+                <button
+                  type="button"
+                  className="trello-btn trello-btn-ghost"
+                  disabled={busy}
+                  onClick={() => setOpen(false)}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="trello-btn trello-btn-danger"
+                  disabled={
+                    busy ||
+                    (hasPassword ? !password : confirmPhrase.trim() !== 'УДАЛИТЬ')
+                  }
+                >
+                  {busy ? '…' : 'Удалить навсегда'}
+                </button>
+              </div>
+            </ModalForm>
           </div>
         </div>
       ) : null}

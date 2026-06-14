@@ -1,8 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { applyPixelThemeToDocument, type AppThemeMode } from './pixelThemeTokens';
 
 const THEME_KEY = 'questflow_theme';
 const THEME_KEY_LEGACY = 'mini_trello_theme';
+const THEME_CHANGE_EVENT = 'questflow-theme-change';
+
+function notifyThemeChange() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+  }
+}
+
+function subscribeTheme(onStoreChange: () => void) {
+  window.addEventListener(THEME_CHANGE_EVENT, onStoreChange);
+  return () => window.removeEventListener(THEME_CHANGE_EVENT, onStoreChange);
+}
+
+function readIsDarkFromDocument(): boolean {
+  return document.documentElement.classList.contains('theme-dark');
+}
+
+/** Subscribes to theme toggles anywhere in the app (reads `theme-dark` on `<html>`). */
+export function useIsDarkTheme(): boolean {
+  return useSyncExternalStore(subscribeTheme, readIsDarkFromDocument, () => false);
+}
 
 function migrateLegacyThemeKey() {
   try {
@@ -35,6 +56,7 @@ export function useAppTheme() {
 
   useEffect(() => {
     applyPixelThemeToDocument(theme);
+    notifyThemeChange();
     try {
       localStorage.setItem(THEME_KEY, theme);
     } catch {

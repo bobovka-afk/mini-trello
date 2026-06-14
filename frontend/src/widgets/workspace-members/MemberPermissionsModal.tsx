@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ModalForm } from '@shared/ui/modal-form';
 import type { WorkspacePermissions } from '@entities/workspace/lib/permissions';
 
 const LABELS: { key: keyof WorkspacePermissions; label: string; hint: string }[] = [
@@ -40,37 +41,38 @@ export function MemberPermissionsModal({
             ×
           </button>
         </div>
-        <div className="trello-modal-body">
-          {LABELS.map(({ key, label, hint }) => (
-            <label key={key} className="trello-settings-switch">
-              <span>
-                <span className="trello-label">{label}</span>
-                <span className="trello-settings-card-hint">{hint}</span>
-              </span>
-              <input
-                type="checkbox"
-                checked={draft[key]}
-                disabled={saving}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, [key]: e.target.checked }))
-                }
-              />
-            </label>
-          ))}
-        </div>
-        <div className="trello-modal-foot">
-          <button type="button" className="trello-btn trello-btn-ghost" onClick={onClose} disabled={saving}>
-            Отмена
-          </button>
-          <button
-            type="button"
-            className="trello-btn trello-btn-primary"
-            disabled={saving}
-            onClick={() => onSave(draft)}
-          >
-            {saving ? 'Сохранение…' : 'Сохранить'}
-          </button>
-        </div>
+        <ModalForm onSubmit={() => onSave(draft)} disabled={saving}>
+          <div className="trello-modal-body">
+            {LABELS.map(({ key, label, hint }) => (
+              <label key={key} className="trello-settings-switch">
+                <span>
+                  <span className="trello-label">{label}</span>
+                  <span className="trello-settings-card-hint">{hint}</span>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={draft[key]}
+                  disabled={saving}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, [key]: e.target.checked }))
+                  }
+                />
+              </label>
+            ))}
+          </div>
+          <div className="trello-modal-foot">
+            <button type="button" className="trello-btn trello-btn-ghost" onClick={onClose} disabled={saving}>
+              Отмена
+            </button>
+            <button
+              type="submit"
+              className="trello-btn trello-btn-primary"
+              disabled={saving}
+            >
+              {saving ? 'Сохранение…' : 'Сохранить'}
+            </button>
+          </div>
+        </ModalForm>
       </div>
     </div>
   );

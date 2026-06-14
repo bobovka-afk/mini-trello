@@ -18,6 +18,7 @@ import {
 	type DropResult
 } from '@hello-pangea/dnd'
 import { AlertModal } from '@shared/ui/alert-modal/AlertModal'
+import { ModalForm } from '@shared/ui/modal-form'
 import {
 	api,
 	formatApiError,
@@ -25,6 +26,8 @@ import {
 	isXpGrantErrorCode,
 	type ApiError
 } from '@shared/api'
+import { BoardSwitcherBar } from '@widgets/board-switcher/BoardSwitcherBar'
+import { BoardTopbarMenu } from '@widgets/board-topbar-menu/BoardTopbarMenu'
 import { CheckinRewardToast, TaskRewardToast } from '@widgets/reward-grant-toast/RewardGrantToast'
 import { writeCharacterStreakSnapshot } from '@entities/character/lib/characterStreakSnapshot'
 import type { ActivityUserBrief } from '@entities/user'
@@ -65,7 +68,9 @@ import { CardDetailModalTrello } from '@widgets/card-detail/CardDetailModalTrell
 import { WorkspaceSearchModal } from '@widgets/workspace-search/WorkspaceSearchModal'
 import { WorkspaceLabelsModal } from '@widgets/workspace-labels/WorkspaceLabelsModal'
 import { useWorkspaceSearchHotkey } from '@shared/lib/useWorkspaceSearchHotkey'
-import { LIST_COLOR_PRESET_KEYS, listHeaderColor, listUsesLightChrome } from '@entities/board'
+import { useIsDarkTheme } from '@app/theme/useAppTheme'
+import { MoreHorizontalIcon } from '@shared/ui/icons/MoreHorizontalIcon'
+import { LIST_COLOR_PRESET_KEYS, listColumnChromeColor, listHeaderColor, listUsesLightChrome } from '@entities/board'
 import { LIST_NAME_MIN_LENGTH } from '@entities/board/lib/listLimits'
 import { CARD_TITLE_MAX_LENGTH, CARD_TITLE_MIN_LENGTH } from '@entities/card/lib/cardLimits'
 import { archiveCard } from '@features/board/api/cardCoverApi'
@@ -151,9 +156,9 @@ function nextCardPosition(cards: CardRow[]): number {
 const BOARD_LISTS_DROPPABLE_ID = 'board-lists'
 const LIST_DRAG_PREFIX = 'list-'
 
-/** Не начинать панораму доски с этих элементов (колонки, карточки, полоска с отдельным захватом и т.д.). */
+/** Не начинать панораму доски с этих элементов (колонки, карточки и т.д.). */
 const BOARD_PAN_BLOCK_SELECTOR =
-	'.trello-list-wrap,.trello-card,.trello-board-hpan-strip,button,a,input,textarea,select,[role="dialog"]'
+	'.trello-list-wrap,.trello-card,button,a,input,textarea,select,[role="dialog"]'
 
 function adjustTextareaHeight(el: HTMLTextAreaElement | null) {
 	if (!el) return
@@ -432,6 +437,7 @@ export function BoardPage({
 	boardId,
 	currentUserId
 }: Props) {
+	const isDark = useIsDarkTheme()
 	const [board, setBoard] = useState<BoardRow | null>(null)
 	const [lists, setLists] = useState<ListRow[]>([])
 	const [cardsByListId, setCardsByListId] = useState<
@@ -578,50 +584,11 @@ export function BoardPage({
 	const [cardTitleEditing, setCardTitleEditing] = useState(false)
 	const cardTitleInputRef = useRef<HTMLTextAreaElement>(null)
 	const boardListsScrollRef = useRef<HTMLDivElement>(null)
-	const boardHpanRef = useRef<{ id: number | null; lastX: number }>({
+	const boardPanRef = useRef<{ id: number | null; lastX: number }>({
 		id: null,
 		lastX: 0
 	})
 	const [nowTick, setNowTick] = useState(() => Date.now())
-
-	const handleBoardHpanPointerDown = useCallback(
-		(e: React.PointerEvent<HTMLDivElement>) => {
-			if (e.button !== 0) return
-			const scrollEl = boardListsScrollRef.current
-			if (!scrollEl) return
-			e.preventDefault()
-			boardHpanRef.current = { id: e.pointerId, lastX: e.clientX }
-			e.currentTarget.setPointerCapture(e.pointerId)
-		},
-		[]
-	)
-
-	const handleBoardHpanPointerMove = useCallback(
-		(e: React.PointerEvent<HTMLDivElement>) => {
-			const st = boardHpanRef.current
-			if (st.id == null || st.id !== e.pointerId) return
-			const scrollEl = boardListsScrollRef.current
-			if (!scrollEl) return
-			const dx = e.clientX - st.lastX
-			st.lastX = e.clientX
-			scrollEl.scrollLeft -= dx
-		},
-		[]
-	)
-
-	const handleBoardHpanPointerEnd = useCallback(
-		(e: React.PointerEvent<HTMLDivElement>) => {
-			const st = boardHpanRef.current
-			if (st.id !== e.pointerId) return
-			st.id = null
-			try {
-				e.currentTarget.releasePointerCapture(e.pointerId)
-			} catch {
-				/* noop */
-			}
-		},
-		[]
-	)
 
 	const handleBoardListsPanDown = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
@@ -631,7 +598,7 @@ export function BoardPage({
 			const scrollEl = boardListsScrollRef.current
 			if (!scrollEl) return
 			e.preventDefault()
-			boardHpanRef.current = { id: e.pointerId, lastX: e.clientX }
+			boardPanRef.current = { id: e.pointerId, lastX: e.clientX }
 			scrollEl.setPointerCapture(e.pointerId)
 		},
 		[]
@@ -639,7 +606,7 @@ export function BoardPage({
 
 	const handleBoardListsPanMove = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
-			const st = boardHpanRef.current
+			const st = boardPanRef.current
 			if (st.id == null || st.id !== e.pointerId) return
 			const scrollEl = boardListsScrollRef.current
 			if (!scrollEl) return
@@ -652,7 +619,7 @@ export function BoardPage({
 
 	const handleBoardListsPanEnd = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
-			const st = boardHpanRef.current
+			const st = boardPanRef.current
 			if (st.id !== e.pointerId) return
 			st.id = null
 			try {
@@ -675,48 +642,55 @@ export function BoardPage({
 		return m?.user.name ?? 'Участник'
 	}, [currentUserId, workspaceMembers])
 
-	const load = useCallback(async () => {
-		if (!accessToken) {
-			setBoard(null)
-			setLists([])
-			setMyRole(null)
-			setLoading(false)
-			return
-		}
-		setLoading(true)
-		setMsg(null)
-		try {
-			const [b, ls, summary] = await Promise.all([
-				api<BoardRow>(`/workspace/${workspaceId}/boards/${boardId}`, {
-					method: 'GET',
-					accessToken
-				}),
-				api<ListRow[]>(
-					`/workspace/${workspaceId}/board/${boardId}/lists`,
-					{ method: 'GET', accessToken }
-				),
-				api<{
-					myRole: string | null
-					myPermissions: WorkspacePermissions | null
-				}>(`/workspace/${workspaceId}/summary`, {
-					method: 'GET',
-					accessToken,
-				}),
-			])
-			setBoard(b)
-			setLists(Array.isArray(ls) ? ls : [])
-			setMyRole(summary.myRole ?? null)
-			setMyPermissions(summary.myPermissions ?? null)
-		} catch (e) {
-			setMsg(formatError(e))
-			setBoard(null)
-			setLists([])
-			setMyRole(null)
-			setMyPermissions(null)
-		} finally {
-			setLoading(false)
-		}
-	}, [accessToken, workspaceId, boardId])
+  const load = useCallback(async (options?: { silent?: boolean }) => {
+    if (!accessToken) {
+      setBoard(null)
+      setLists([])
+      setMyRole(null)
+      setLoading(false)
+      return
+    }
+    const silent = options?.silent ?? false
+    if (!silent) {
+      setLoading(true)
+      setMsg(null)
+    }
+    try {
+      const [b, ls, summary] = await Promise.all([
+        api<BoardRow>(`/workspace/${workspaceId}/boards/${boardId}`, {
+          method: 'GET',
+          accessToken
+        }),
+        api<ListRow[]>(
+          `/workspace/${workspaceId}/board/${boardId}/lists`,
+          { method: 'GET', accessToken }
+        ),
+        api<{
+          myRole: string | null
+          myPermissions: WorkspacePermissions | null
+        }>(`/workspace/${workspaceId}/summary`, {
+          method: 'GET',
+          accessToken,
+        }),
+      ])
+      setBoard(b)
+      setLists(Array.isArray(ls) ? ls : [])
+      setMyRole(summary.myRole ?? null)
+      setMyPermissions(summary.myPermissions ?? null)
+    } catch (e) {
+      if (!silent) {
+        setMsg(formatError(e))
+      }
+      setBoard(null)
+      setLists([])
+      setMyRole(null)
+      setMyPermissions(null)
+    } finally {
+      if (!silent) {
+        setLoading(false)
+      }
+    }
+  }, [accessToken, workspaceId, boardId])
 
 	const reloadWsLabels = useCallback(async () => {
 		if (!accessToken) {
@@ -983,7 +957,7 @@ export function BoardPage({
 			} catch (e) {
 				setAlertText(formatError(e))
 				setAlertOpen(true)
-				await load()
+				await load({ silent: true })
 			} finally {
 				setMoveBusy(false)
 			}
@@ -1152,6 +1126,15 @@ export function BoardPage({
 		setMsg(null)
 	}
 
+	function removeListFromBoard(listId: number) {
+		setLists(prev => prev.filter(row => row.id !== listId))
+		setCardsByListId(prev => {
+			const next = { ...prev }
+			delete next[listId]
+			return next
+		})
+	}
+
 	async function confirmDeleteList() {
 		if (!accessToken || !listPendingDelete) return
 		const list = listPendingDelete
@@ -1167,8 +1150,7 @@ export function BoardPage({
 			}
 			setActiveListMenuId(null)
 			setListPendingDelete(null)
-			await load()
-			if (archivedListsOpen) await loadArchivedLists()
+			removeListFromBoard(list.id)
 		} catch (e) {
 			setMsg(formatError(e))
 		} finally {
@@ -1186,8 +1168,10 @@ export function BoardPage({
 				accessToken,
 			})
 			if (editList?.id === list.id) setEditList(null)
-			await load()
-			if (archivedListsOpen) await loadArchivedLists()
+			removeListFromBoard(list.id)
+			if (archivedListsOpen) {
+				setArchivedLists(prev => [...prev, list])
+			}
 		} catch (e) {
 			setAlertText(formatError(e))
 			setAlertOpen(true)
@@ -1204,8 +1188,13 @@ export function BoardPage({
 				method: 'PATCH',
 				accessToken,
 			})
-			await load()
-			await loadArchivedLists()
+			setArchivedLists(prev => prev.filter(row => row.id !== list.id))
+			setLists(prev =>
+				[...prev, list].sort(
+					(a, b) => a.position - b.position || a.id - b.id,
+				),
+			)
+			setCardsByListId(prev => ({ ...prev, [list.id]: prev[list.id] ?? [] }))
 		} catch (e) {
 			setAlertText(formatError(e))
 			setAlertOpen(true)
@@ -1277,7 +1266,7 @@ export function BoardPage({
 		const position = nextCardPosition(listCards)
 		setCreateCardBusy(true)
 		try {
-			await api(
+			const created = await api<CardRow>(
 				`/workspace/${workspaceId}/lists/${createCardListId}/cards`,
 				{
 					method: 'POST',
@@ -1285,8 +1274,16 @@ export function BoardPage({
 					json: { title, position }
 				}
 			)
+			setCardsByListId(prev => {
+				const listCards = prev[createCardListId] ?? []
+				return {
+					...prev,
+					[createCardListId]: [...listCards, created].sort(
+						(a, b) => a.position - b.position || a.id - b.id,
+					),
+				}
+			})
 			setCreateCardTitle('')
-			await loadCards()
 			requestAnimationFrame(() => {
 				const el = createCardTextareaRef.current
 				if (!el) return
@@ -1725,13 +1722,13 @@ export function BoardPage({
 			key={list.id}
 			className={[
 				'trello-list-wrap',
-				listUsesLightChrome(list.colorPreset)
+				listUsesLightChrome(list.colorPreset, isDark)
 					? 'trello-list-wrap--light-chrome'
 					: '',
 			]
 				.filter(Boolean)
 				.join(' ')}
-			style={{ backgroundColor: listHeaderColor(list.colorPreset) }}
+			style={{ backgroundColor: listColumnChromeColor(list.colorPreset, isDark) }}
 		>
 			<div className='trello-list-header'>
 				<div className='trello-list-header-row'>
@@ -1793,7 +1790,7 @@ export function BoardPage({
 													listSnapshot.isDragging
 														? 'trello-list-wrap--dragging'
 														: '',
-													listUsesLightChrome(list.colorPreset)
+													listUsesLightChrome(list.colorPreset, isDark)
 														? 'trello-list-wrap--light-chrome'
 														: '',
 												]
@@ -1801,8 +1798,9 @@ export function BoardPage({
 													.join(' ')}
 												style={{
 													backgroundColor:
-														listHeaderColor(
-															list.colorPreset
+														listColumnChromeColor(
+															list.colorPreset,
+															isDark
 														),
 													...listDragProvided
 														.draggableProps.style
@@ -1866,13 +1864,15 @@ export function BoardPage({
 															/>
 														</div>
 														<div className='trello-list-header-actions'>
-															<span
-																className='trello-list-card-count'
-																title={`Карточек: ${cards.length}`}
-																aria-label={`Карточек в колонке: ${cards.length}`}
-															>
-																{cards.length}
-															</span>
+															{cards.length > 0 ? (
+																<span
+																	className='trello-list-card-count'
+																	title={`Карточек: ${cards.length}`}
+																	aria-label={`Карточек в колонке: ${cards.length}`}
+																>
+																	{cards.length}
+																</span>
+															) : null}
 														{canManageLists ? (
 															<div
 																className='trello-list-menu-wrap'
@@ -1897,7 +1897,7 @@ export function BoardPage({
 																		)
 																	}}
 																>
-																	✎
+																	<MoreHorizontalIcon className='trello-list-column-menu-icon' />
 																</button>
 																{activeListMenuId ===
 																	list.id && (
@@ -1962,8 +1962,9 @@ export function BoardPage({
 													<TrelloListCardsPane
 														listId={list.id}
 														cardCount={cards.length}
-														chromeColor={listHeaderColor(
-															list.colorPreset
+														chromeColor={listColumnChromeColor(
+															list.colorPreset,
+															isDark
 														)}
 														addCardFooter={
 															createCardListId ===
@@ -2274,15 +2275,6 @@ export function BoardPage({
 					</button>
 				</div>
 			</div>
-			<div
-				className='trello-board-hpan-strip'
-				role='presentation'
-				aria-label='Прокрутка доски влево-вправо'
-				onPointerDown={handleBoardHpanPointerDown}
-				onPointerMove={handleBoardHpanPointerMove}
-				onPointerUp={handleBoardHpanPointerEnd}
-				onPointerCancel={handleBoardHpanPointerEnd}
-			/>
 		</div>
 		</DragDropContext>
 	)
@@ -2307,78 +2299,22 @@ export function BoardPage({
 				<h1 className='trello-topbar-stripe-center'>
 					{loading ? '…' : (board?.name ?? 'Доска')}
 				</h1>
-				<div className='trello-topbar-actions' />
+				<div className='trello-topbar-actions'>
+					{accessToken ? (
+						<BoardTopbarMenu
+							boardFilter={boardFilter}
+							onBoardFilterChange={setBoardFilter}
+							wsLabels={wsLabels}
+							labelFilterId={labelFilterId}
+							onLabelFilterChange={setLabelFilterId}
+							onSearch={() => setSearchOpen(true)}
+							onLabels={() => setLabelsModalOpen(true)}
+							onArchivedLists={() => setArchivedListsOpen(true)}
+							canArchiveLists={canArchiveLists}
+						/>
+					) : null}
+				</div>
 			</header>
-
-			{accessToken && (
-				<nav className='trello-board-toolbar' aria-label='Фильтры и действия доски'>
-					<div className='trello-board-toolbar-filters'>
-						{(['all', 'mine', 'overdue', 'unassigned'] as BoardCardFilter[]).map(
-							f => (
-								<button
-									key={f}
-									type='button'
-									className={`trello-btn trello-btn-sm ${boardFilter === f ? 'trello-btn-primary' : 'trello-btn-ghost'}`}
-									onClick={() => setBoardFilter(f)}
-								>
-									{f === 'all'
-										? 'Все'
-										: f === 'mine'
-											? 'Мои'
-											: f === 'overdue'
-												? 'Просрочено'
-												: 'Без исполнителя'}
-								</button>
-							)
-						)}
-						{wsLabels.length > 0 && (
-							<select
-								className='trello-input trello-board-filter-select'
-								value={labelFilterId ?? ''}
-								onChange={e =>
-									setLabelFilterId(
-										e.target.value === '' ? null : Number(e.target.value)
-									)
-								}
-								aria-label='Фильтр по метке'
-							>
-								<option value=''>Все метки</option>
-								{wsLabels.map(l => (
-									<option key={l.id} value={l.id}>
-										{l.name}
-									</option>
-								))}
-							</select>
-						)}
-					</div>
-					<div className='trello-board-toolbar-tools'>
-						<button
-							type='button'
-							className='trello-btn trello-btn-sm trello-btn-ghost'
-							onClick={() => setSearchOpen(true)}
-							title='Поиск (⌘K / Ctrl+K)'
-						>
-							Поиск
-						</button>
-						<button
-							type='button'
-							className='trello-btn trello-btn-sm trello-btn-ghost'
-							onClick={() => setLabelsModalOpen(true)}
-						>
-							Метки
-						</button>
-						{canArchiveLists ? (
-							<button
-								type='button'
-								className='trello-btn trello-btn-sm trello-btn-ghost'
-								onClick={() => setArchivedListsOpen(true)}
-							>
-								Архив колонок
-							</button>
-						) : null}
-					</div>
-				</nav>
-			)}
 
 			{!accessToken && (
 				<div className='trello-board-banner'>
@@ -2415,15 +2351,6 @@ export function BoardPage({
 							<div className='trello-board-dnd-row'>
 								{guestListColumns}
 							</div>
-							<div
-								className='trello-board-hpan-strip'
-								role='presentation'
-								aria-label='Прокрутка доски влево-вправо'
-								onPointerDown={handleBoardHpanPointerDown}
-								onPointerMove={handleBoardHpanPointerMove}
-								onPointerUp={handleBoardHpanPointerEnd}
-								onPointerCancel={handleBoardHpanPointerEnd}
-							/>
 						</div>
 					)
 				) : lists.length === 0 ? (
@@ -2476,41 +2403,47 @@ export function BoardPage({
 								×
 							</button>
 						</div>
-						<div className='trello-modal-body'>
-							<label className='trello-field'>
-								<span className='trello-label'>Название</span>
-								<input
-									className='trello-input'
-									value={newListName}
-									onChange={e =>
-										setNewListName(e.target.value)
+						<ModalForm
+							onSubmit={submitAddList}
+							disabled={
+								newListName.trim().length < LIST_NAME_MIN_LENGTH || addBusy
+							}
+						>
+							<div className='trello-modal-body'>
+								<label className='trello-field'>
+									<span className='trello-label'>Название</span>
+									<input
+										className='trello-input'
+										value={newListName}
+										onChange={e =>
+											setNewListName(e.target.value)
+										}
+										maxLength={50}
+										autoFocus
+									/>
+								</label>
+							</div>
+							<div className='trello-modal-foot'>
+								<button
+									type='button'
+									className='trello-btn trello-btn-ghost'
+									onClick={() =>
+										!addBusy && setAddListOpen(false)
 									}
-									maxLength={50}
-									autoFocus
-								/>
-							</label>
-						</div>
-						<div className='trello-modal-foot'>
-							<button
-								type='button'
-								className='trello-btn trello-btn-ghost'
-								onClick={() =>
-									!addBusy && setAddListOpen(false)
-								}
-							>
-								Отмена
-							</button>
-							<button
-								type='button'
-								className='trello-btn trello-btn-primary'
-								disabled={
-									newListName.trim().length < LIST_NAME_MIN_LENGTH || addBusy
-								}
-								onClick={() => void submitAddList()}
-							>
-								{addBusy ? 'Добавление…' : 'Добавить'}
-							</button>
-						</div>
+								>
+									Отмена
+								</button>
+								<button
+									type='submit'
+									className='trello-btn trello-btn-primary'
+									disabled={
+										newListName.trim().length < LIST_NAME_MIN_LENGTH || addBusy
+									}
+								>
+									{addBusy ? 'Добавление…' : 'Добавить'}
+								</button>
+							</div>
+						</ModalForm>
 					</div>
 				</div>
 			)}
@@ -2916,63 +2849,69 @@ export function BoardPage({
 								×
 							</button>
 						</div>
-						<div className='trello-modal-body'>
-							<label className='trello-field'>
-								<span className='trello-label'>Название</span>
-								<input
-									className='trello-input'
-									value={editName}
-									onChange={e => setEditName(e.target.value)}
-									maxLength={50}
-								/>
-							</label>
-							<label className='trello-field'>
-								<span className='trello-label'>Цвет</span>
-								<div
-									className='trello-color-grid'
-									role='listbox'
-									aria-label='Цвет колонки'
+						<ModalForm
+							onSubmit={submitEditList}
+							disabled={
+								editName.trim().length < LIST_NAME_MIN_LENGTH || editBusy
+							}
+						>
+							<div className='trello-modal-body'>
+								<label className='trello-field'>
+									<span className='trello-label'>Название</span>
+									<input
+										className='trello-input'
+										value={editName}
+										onChange={e => setEditName(e.target.value)}
+										maxLength={50}
+									/>
+								</label>
+								<label className='trello-field'>
+									<span className='trello-label'>Цвет</span>
+									<div
+										className='trello-color-grid'
+										role='listbox'
+										aria-label='Цвет колонки'
+									>
+										{LIST_COLOR_PRESET_KEYS.map(key => (
+											<button
+												key={key}
+												type='button'
+												className={
+													key === editColor
+														? 'trello-color-swatch trello-color-swatch-active'
+														: 'trello-color-swatch'
+												}
+												style={{
+													backgroundColor:
+														listHeaderColor(key)
+												}}
+												aria-label={key}
+												aria-selected={key === editColor}
+												onClick={() => setEditColor(key)}
+											/>
+										))}
+									</div>
+								</label>
+							</div>
+							<div className='trello-modal-foot'>
+								<button
+									type='button'
+									className='trello-btn trello-btn-ghost'
+									onClick={() => !editBusy && setEditList(null)}
 								>
-									{LIST_COLOR_PRESET_KEYS.map(key => (
-										<button
-											key={key}
-											type='button'
-											className={
-												key === editColor
-													? 'trello-color-swatch trello-color-swatch-active'
-													: 'trello-color-swatch'
-											}
-											style={{
-												backgroundColor:
-													listHeaderColor(key)
-											}}
-											aria-label={key}
-											aria-selected={key === editColor}
-											onClick={() => setEditColor(key)}
-										/>
-									))}
-								</div>
-							</label>
-						</div>
-						<div className='trello-modal-foot'>
-							<button
-								type='button'
-								className='trello-btn trello-btn-ghost'
-								onClick={() => !editBusy && setEditList(null)}
-							>
-								Отмена
-							</button>
-							<button
-								type='button'
-								className='trello-btn trello-btn-primary'
-								disabled={
-									editName.trim().length < LIST_NAME_MIN_LENGTH || editBusy
-								}
-								onClick={() => void submitEditList()}
-							>
-								{editBusy ? 'Сохранение…' : 'Сохранить'}
-							</button>
-						</div>
+									Отмена
+								</button>
+								<button
+									type='submit'
+									className='trello-btn trello-btn-primary'
+									disabled={
+										editName.trim().length < LIST_NAME_MIN_LENGTH || editBusy
+									}
+								>
+									{editBusy ? 'Сохранение…' : 'Сохранить'}
+								</button>
+							</div>
+						</ModalForm>
 					</div>
 				</div>
 			)}
@@ -2997,6 +2936,14 @@ export function BoardPage({
 						void reloadWsLabels()
 						void loadCards()
 					}}
+				/>
+			)}
+
+			{accessToken && (
+				<BoardSwitcherBar
+					accessToken={accessToken}
+					workspaceId={workspaceId}
+					currentBoardId={boardId}
 				/>
 			)}
 		</div>

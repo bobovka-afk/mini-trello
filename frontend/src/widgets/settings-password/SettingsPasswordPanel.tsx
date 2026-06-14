@@ -89,51 +89,57 @@ export function SettingsPasswordPanel({ accessToken, user, onUserUpdated }: Prop
         {user?.hasPassword ? 'Смена пароля' : 'Установка пароля'}
       </h2>
       {msg ? <p className="trello-settings-card-hint">{msg}</p> : null}
-      {user?.hasPassword ? (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!busy) void submit();
+        }}
+      >
+        {user?.hasPassword ? (
+          <label className="trello-field">
+            <span className="trello-label">Текущий пароль</span>
+            <input
+              className="trello-input"
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              disabled={busy}
+            />
+          </label>
+        ) : null}
         <label className="trello-field">
-          <span className="trello-label">Текущий пароль</span>
+          <span className="trello-label">Новый пароль</span>
           <input
             className="trello-input"
             type="password"
-            autoComplete="current-password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
             disabled={busy}
           />
         </label>
-      ) : null}
-      <label className="trello-field">
-        <span className="trello-label">Новый пароль</span>
-        <input
-          className="trello-input"
-          type="password"
-          autoComplete="new-password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          disabled={busy}
-        />
-      </label>
-      <label className="trello-field">
-        <span className="trello-label">Подтверждение</span>
-        <input
-          className="trello-input"
-          type="password"
-          autoComplete="new-password"
-          value={confirmNewPassword}
-          onChange={(e) => setConfirmNewPassword(e.target.value)}
-          disabled={busy}
-        />
-      </label>
-      <div className="trello-settings-card-actions">
-        <button
-          type="button"
-          className="trello-btn trello-btn-primary trello-btn-sm"
-          disabled={busy}
-          onClick={() => void submit()}
-        >
-          {busy ? '…' : user?.hasPassword ? 'Изменить пароль' : 'Установить пароль'}
-        </button>
-      </div>
+        <label className="trello-field">
+          <span className="trello-label">Подтверждение</span>
+          <input
+            className="trello-input"
+            type="password"
+            autoComplete="new-password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            disabled={busy}
+          />
+        </label>
+        <div className="trello-settings-card-actions">
+          <button
+            type="submit"
+            className="trello-btn trello-btn-primary trello-btn-sm"
+            disabled={busy}
+          >
+            {busy ? '…' : user?.hasPassword ? 'Изменить пароль' : 'Установить пароль'}
+          </button>
+        </div>
+      </form>
       <AlertModal
         open={errorModal != null}
         title="Ошибка"

@@ -299,7 +299,7 @@ html.px-ui .trello-list-header {
 }
 
 html.px-ui:not(.theme-dark) .trello-list-wrap.trello-list-wrap--light-chrome {
-  background-color: #dfe1e6 !important;
+  background-color: color-mix(in srgb, var(--px-bg2) 72%, var(--px-muted)) !important;
 }
 
 html.px-ui:not(.theme-dark) .trello-list-wrap.trello-list-wrap--light-chrome .trello-list-header {
@@ -334,13 +334,13 @@ html.px-ui:not(.theme-dark)
 }
 
 html.px-ui:not(.theme-dark) .trello-list-wrap.trello-list-wrap--light-chrome .trello-list-column-menu-btn {
-  background: rgba(0, 0, 0, 0.08);
+  background: transparent;
   color: var(--px-text);
-  border-color: var(--qf-control-border);
+  border: none;
 }
 
 html.px-ui:not(.theme-dark) .trello-list-wrap.trello-list-wrap--light-chrome .trello-list-column-menu-btn:hover {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .px-shell .trello-list-menu,
@@ -356,7 +356,13 @@ html.px-ui .trello-list-menu {
   border-radius: var(--qf-radius-md);
   border: 1px solid var(--qf-control-border);
   box-shadow: var(--qf-shadow-panel);
-  background: var(--qf-control-bg, var(--px-bg2));
+  background: var(--px-bg2, #ffffff);
+  backdrop-filter: none;
+}
+
+html.px-ui.theme-dark .trello-list-menu {
+  background: var(--px-bg2, #222830);
+  backdrop-filter: none;
 }
 
 .px-shell .trello-list-menu-item,
@@ -535,18 +541,18 @@ html.px-ui .trello-settings-section {
   background: transparent;
 }
 
-html.px-ui .trello-settings-panel .trello-field {
+html.px-ui .trello-settings-layout .trello-field {
   max-width: min(100%, 400px);
   margin-bottom: 8px;
 }
 
-html.px-ui .trello-settings-panel .trello-label {
+html.px-ui .trello-settings-layout .trello-label {
   font-size: 12px;
   margin-bottom: 6px;
 }
 
-html.px-ui .trello-settings-panel .trello-input,
-html.px-ui .trello-settings-panel select.trello-input {
+html.px-ui .trello-settings-layout .trello-input,
+html.px-ui .trello-settings-layout select.trello-input {
   font-size: 14px;
   line-height: 1.35;
   min-height: var(--qf-btn-height-md, 32px);
@@ -1100,13 +1106,17 @@ html.px-ui .px-shell .trello-inline-add-card-actions {
 html.px-ui .px-shell .trello-inline-add-card-submit {
   flex: 1;
   min-width: 0;
-  background: var(--px-primary-bg) !important;
-  color: var(--px-primary-text) !important;
-  border-color: color-mix(in srgb, var(--px-primary-bg) 70%, var(--qf-control-border)) !important;
+  background: var(--qf-kanban-add-submit-bg) !important;
+  color: var(--qf-kanban-add-submit-text) !important;
+  border-color: var(--qf-kanban-add-submit-hover) !important;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(9, 30, 66, 0.28);
 }
 
 html.px-ui .px-shell .trello-inline-add-card-submit:hover:not(:disabled) {
-  filter: brightness(1.06);
+  background: var(--qf-kanban-add-submit-hover) !important;
+  border-color: var(--qf-kanban-add-submit-hover) !important;
+  filter: none;
 }
 
 html.px-ui .px-shell .trello-inline-add-card-submit:active:not(:disabled) {

@@ -67,6 +67,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 backend/src/generated/prisma
 
 # Local / optional docs (not versioned)
+docs/
 GAMIFICATION_ROADMAP.md
 
 # Runtime uploads (not versioned); static presets live under uploads/ui/, character-avatars/, etc.

@@ -4,6 +4,7 @@ export {
   LIST_PRESET_HEX,
   LIST_PRESET_HEX_LIGHT,
   listHeaderColor,
+  listColumnChromeColor,
   listUsesLightChrome,
 } from './lib/trelloColors';
 export type { ListColorPresetKey } from './lib/trelloColors';

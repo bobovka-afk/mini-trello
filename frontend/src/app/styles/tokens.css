@@ -60,13 +60,13 @@
   --qf-nav-active-bg: rgba(79, 70, 229, 0.14);
   --qf-nav-active-border: rgba(79, 70, 229, 0.35);
 
-  --trello-list-chrome: #e4e9f1;
+  --trello-list-chrome: #c5cad3;
 
   --qf-panel-bg: rgba(255, 255, 255, 0.92);
   --qf-panel-bg-muted: rgba(248, 250, 252, 0.88);
   --qf-panel-border: rgba(15, 23, 42, 0.1);
   --qf-panel-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
-  --qf-topbar-toolbar-gutter: 124px;
+  --qf-topbar-toolbar-gutter: clamp(72px, 5vw + 36px, 124px);
 
   /* Modern UI (Yandex Cloud–like) */
   --qf-radius-xs: 6px;
@@ -79,22 +79,22 @@
   --qf-shadow-control: 0 2px 8px rgba(15, 23, 42, 0.08);
   --qf-shadow-panel: 0 8px 28px rgba(15, 23, 42, 0.1);
 
-  /* Компактные кнопки (Trello-like toolbar / фильтры) */
-  --qf-btn-height-sm: 28px;
-  --qf-btn-height-md: 32px;
-  --qf-btn-font-sm: 12px;
-  --qf-btn-font-md: 14px;
-  --qf-btn-pad-y-sm: 4px;
-  --qf-btn-pad-x-sm: 10px;
-  --qf-btn-pad-y-md: 6px;
-  --qf-btn-pad-x-md: 12px;
+  /* Компактные кнопки (Trello-like toolbar / фильтры) — fluid */
+  --qf-btn-height-sm: clamp(26px, 0.4vw + 22px, 28px);
+  --qf-btn-height-md: clamp(28px, 0.5vw + 24px, 32px);
+  --qf-btn-font-sm: clamp(11px, 0.15vw + 10px, 12px);
+  --qf-btn-font-md: clamp(12px, 0.2vw + 11px, 14px);
+  --qf-btn-pad-y-sm: clamp(3px, 0.2vw + 2px, 4px);
+  --qf-btn-pad-x-sm: clamp(8px, 0.4vw + 5px, 10px);
+  --qf-btn-pad-y-md: clamp(5px, 0.25vw + 3px, 6px);
+  --qf-btn-pad-x-md: clamp(10px, 0.4vw + 6px, 12px);
 
-  /* App topbar (settings / character reference) */
-  --qf-app-topbar-pad-y: 12px;
-  --qf-app-topbar-pad-x: 20px;
-  --qf-app-topbar-title-size: 18px;
+  /* App topbar (settings / character reference) — fluid */
+  --qf-app-topbar-pad-y: clamp(8px, 0.6vw + 4px, 12px);
+  --qf-app-topbar-pad-x: clamp(12px, 1vw + 4px, 20px);
+  --qf-app-topbar-title-size: clamp(15px, 0.3vw + 12px, 18px);
   --qf-app-topbar-title-weight: 600;
-  --qf-app-topbar-gap: 12px;
+  --qf-app-topbar-gap: clamp(8px, 0.5vw + 4px, 12px);
 
   --qf-card-complete-green: #61bd4f;
   --qf-card-complete-check: #ffffff;
@@ -102,6 +102,31 @@
   /** Kanban card hover outline — inset ring (not clipped by list scroll overflow) */
   --qf-kanban-card-hover-border: #0c66e4;
   --qf-kanban-card-hover-shadow: inset 0 0 0 2px var(--qf-kanban-card-hover-border);
+
+  /** Kanban inline «Добавить карточку» — насыщенная кнопка поверх цветной колонки */
+  --qf-kanban-add-submit-bg: #1d7afc;
+  --qf-kanban-add-submit-hover: #0c66e4;
+  --qf-kanban-add-submit-text: #ffffff;
+
+  /* Responsive fluid scale (see responsive.css for layout breakpoints) */
+  --qf-bp-narrow: 1024px;
+  --qf-bp-laptop: 1280px;
+  --qf-bp-desktop: 1440px;
+  --qf-text-base: clamp(14px, 0.28vw + 11.4px, 17px);
+  --qf-text-sm: clamp(12px, 0.18vw + 10.2px, 14px);
+  --qf-text-md: clamp(15px, 0.22vw + 12.2px, 18px);
+  --qf-text-lg: clamp(17px, 0.32vw + 13px, 22px);
+  --qf-text-xl: clamp(20px, 0.45vw + 14px, 28px);
+  --qf-text-2xl: clamp(22px, 0.55vw + 15px, 34px);
+  --qf-page-pad-x: clamp(12px, 1.25vw + 4px, 32px);
+  --qf-page-pad-y: clamp(16px, 1vw + 8px, 40px);
+  --qf-gap-sm: clamp(6px, 0.4vw + 3px, 8px);
+  --qf-gap-md: clamp(10px, 0.65vw + 4px, 16px);
+  --qf-gap-lg: clamp(12px, 0.85vw + 4px, 20px);
+  --qf-kanban-col-width: clamp(236px, 15vw + 44px, 288px);
+  --qf-tile-min: clamp(148px, 10vw + 72px, 200px);
+  --qf-split-sidebar-min: clamp(200px, 18vw, 320px);
+  --character-rpg-rail-width: clamp(240px, 12vw + 96px, min(28vw, 420px));
 }
 
 html.theme-dark {
@@ -139,7 +164,7 @@ html.theme-dark {
   --qf-panel-bg-muted: #1a2028;
   --qf-panel-border: rgba(255, 255, 255, 0.1);
   --qf-panel-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-  --qf-topbar-toolbar-gutter: 124px;
+  --qf-topbar-toolbar-gutter: clamp(72px, 5vw + 36px, 124px);
 
   --qf-control-border: rgba(255, 255, 255, 0.12);
   --qf-control-bg: rgba(34, 40, 48, 0.92);
@@ -151,4 +176,8 @@ html.theme-dark {
 
   --qf-kanban-card-hover-border: #579dff;
   --qf-kanban-card-hover-shadow: inset 0 0 0 2px var(--qf-kanban-card-hover-border);
+
+  --qf-kanban-add-submit-bg: #579dff;
+  --qf-kanban-add-submit-hover: #388bff;
+  --qf-kanban-add-submit-text: #ffffff;
 }

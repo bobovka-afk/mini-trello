@@ -14,11 +14,11 @@ import {
   type UserSessionDto,
 } from '@entities/user-settings';
 import { api, formatApiError } from '@shared/api';
-import { formatDateTimeRuSettings } from '@shared/lib/formatDateRu';
 import { SettingsSwitch } from '@shared/ui/settings-switch/SettingsSwitch';
 import { SettingsPasswordPanel } from '@widgets/settings-password/SettingsPasswordPanel';
 import { SettingsDeleteAccountPanel } from '@widgets/settings-delete-account/SettingsDeleteAccountPanel';
 import { SettingsSecurityLogModal } from '@widgets/settings-security-log/SettingsSecurityLogModal';
+import { SettingsSessionsPanel } from '@widgets/settings-sessions/SettingsSessionsPanel';
 import { SettingsWebPushPanel } from '@widgets/settings-web-push/SettingsWebPushPanel';
 import { ThemedSelect } from '@features/board/ui/ThemedSelect';
 import {
@@ -48,6 +48,7 @@ type Props = {
   accessToken: string | null;
   initialTab?: SettingsTab;
   onAccountDeleted?: () => void;
+  onCurrentSessionRevoked?: () => void;
 };
 
 export function SettingsPage(props: Props) {
@@ -188,12 +189,16 @@ export function SettingsPage(props: Props) {
     }
   }
 
-  async function handleRevokeSession(sessionId: string) {
+  async function handleRevokeSession(sessionId: string, isCurrent = false) {
     if (!props.accessToken) return;
     setSessionBusyId(sessionId);
     setMsg(null);
     try {
       await revokeUserSession(props.accessToken, sessionId);
+      if (isCurrent) {
+        props.onCurrentSessionRevoked?.();
+        return;
+      }
       setSessions((rows) => rows.filter((row) => row.id !== sessionId));
     } catch (e) {
       setMsg(formatApiError(e));
@@ -264,38 +269,44 @@ export function SettingsPage(props: Props) {
             ) : null}
             <article className="trello-settings-card">
               <h2 className="trello-settings-card-title">Сменить email</h2>
-              <label className="trello-field">
-                <span className="trello-label">Новый email</span>
-                <input
-                  className="trello-input"
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  disabled={emailChangeBusy}
-                />
-              </label>
-              {user?.hasPassword ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!emailChangeBusy && newEmail.trim()) void handleRequestEmailChange();
+                }}
+              >
                 <label className="trello-field">
-                  <span className="trello-label">Текущий пароль</span>
+                  <span className="trello-label">Новый email</span>
                   <input
                     className="trello-input"
-                    type="password"
-                    value={emailChangePassword}
-                    onChange={(e) => setEmailChangePassword(e.target.value)}
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
                     disabled={emailChangeBusy}
                   />
                 </label>
-              ) : null}
-              <div className="trello-settings-card-actions">
-                <button
-                  type="button"
-                  className="trello-btn trello-btn-primary trello-btn-sm"
-                  disabled={emailChangeBusy || !newEmail.trim()}
-                  onClick={() => void handleRequestEmailChange()}
-                >
-                  {emailChangeBusy ? '…' : 'Отправить подтверждения'}
-                </button>
-              </div>
+                {user?.hasPassword ? (
+                  <label className="trello-field">
+                    <span className="trello-label">Текущий пароль</span>
+                    <input
+                      className="trello-input"
+                      type="password"
+                      value={emailChangePassword}
+                      onChange={(e) => setEmailChangePassword(e.target.value)}
+                      disabled={emailChangeBusy}
+                    />
+                  </label>
+                ) : null}
+                <div className="trello-settings-card-actions">
+                  <button
+                    type="submit"
+                    className="trello-btn trello-btn-primary trello-btn-sm"
+                    disabled={emailChangeBusy || !newEmail.trim()}
+                  >
+                    {emailChangeBusy ? '…' : 'Отправить подтверждения'}
+                  </button>
+                </div>
+              </form>
             </article>
             <article className="trello-settings-card">
               <h2 className="trello-settings-card-title">Часовой пояс отображения</h2>
@@ -352,73 +363,21 @@ export function SettingsPage(props: Props) {
             ) : null}
 
             <article className="trello-settings-card">
-              {(() => {
-                const otherActiveCount = sessions.filter((s) => !s.isCurrent).length;
-                return (
-                  <>
-                    <div className="trello-settings-card-head-row">
-                      <h2 className="trello-settings-card-title">Устройства и сессии</h2>
-                      <div className="trello-settings-card-head-actions">
-                        <button
-                          type="button"
-                          className="trello-btn trello-btn-ghost trello-btn-sm"
-                          onClick={() => setSecurityLogOpen(true)}
-                        >
-                          Журнал безопасности
-                        </button>
-                        <button
-                          type="button"
-                          className="trello-btn trello-btn-ghost trello-btn-sm"
-                          disabled={
-                            revokeOthersBusy ||
-                            securityLoading ||
-                            otherActiveCount === 0
-                          }
-                          onClick={() => void handleRevokeOtherSessions()}
-                        >
-                          {revokeOthersBusy ? '…' : 'Завершить все другие'}
-                        </button>
-                      </div>
-                    </div>
-                    {securityLoading && sessions.length === 0 ? (
-                      <p className="trello-settings-card-hint trello-settings-session-placeholder">
-                        Загрузка…
-                      </p>
-                    ) : sessions.length === 0 ? (
-                      <p className="trello-settings-card-hint">Активных сессий пока нет.</p>
-                    ) : (
-                      <ul className="trello-settings-session-list">
-                        {sessions.map((session) => (
-                          <li key={session.id} className="trello-settings-session-item">
-                            <div className="trello-settings-session-main">
-                              <strong>
-                                {session.deviceLabel ?? 'Неизвестное устройство'}
-                                {session.isCurrent ? ' · текущая' : ''}
-                              </strong>
-                              <span className="trello-settings-session-meta">
-                                Последняя активность:{' '}
-                                {formatDateTimeRuSettings(session.lastSeenAt)}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              className={`trello-btn trello-btn-sm ${
-                                session.isCurrent
-                                  ? 'trello-settings-session-btn--current trello-btn-primary'
-                                  : 'trello-btn-ghost'
-                              }`}
-                              disabled={session.isCurrent || sessionBusyId === session.id}
-                              onClick={() => void handleRevokeSession(session.id)}
-                            >
-                              {sessionBusyId === session.id ? '…' : 'Завершить'}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                );
-              })()}
+              <div className="trello-settings-card-head-row">
+                <h2 className="trello-settings-card-title">Журнал безопасности</h2>
+                <div className="trello-settings-card-head-actions">
+                  <button
+                    type="button"
+                    className="trello-btn trello-btn-ghost trello-btn-sm"
+                    onClick={() => setSecurityLogOpen(true)}
+                  >
+                    Открыть журнал
+                  </button>
+                </div>
+              </div>
+              <p className="trello-settings-card-hint">
+                Смена пароля, входы, сессии и почта — с IP и устройством.
+              </p>
             </article>
 
             <SettingsSecurityLogModal
@@ -427,6 +386,30 @@ export function SettingsPage(props: Props) {
               onClose={() => setSecurityLogOpen(false)}
             />
           </div>
+        );
+
+      case 'sessions':
+        return (
+          <>
+            {props.accessToken ? (
+              <SettingsSessionsPanel
+                sessions={sessions}
+                loading={securityLoading}
+                sessionBusyId={sessionBusyId}
+                revokeOthersBusy={revokeOthersBusy}
+                onRevokeSession={(sessionId, isCurrent) =>
+                  void handleRevokeSession(sessionId, isCurrent)
+                }
+                onRevokeOthers={() => void handleRevokeOtherSessions()}
+                onOpenSecurityLog={() => setSecurityLogOpen(true)}
+              />
+            ) : null}
+            <SettingsSecurityLogModal
+              accessToken={props.accessToken}
+              open={securityLogOpen}
+              onClose={() => setSecurityLogOpen(false)}
+            />
+          </>
         );
 
       case 'notifications':
@@ -618,57 +601,45 @@ export function SettingsPage(props: Props) {
       <div className="px-content settings-page-content">
         {msg ? <div className="trello-banner trello-banner-warn">{msg}</div> : null}
 
-        <section className="trello-panel trello-settings-panel trello-settings-panel--split">
-          <div className="trello-settings-split">
-            <nav className="trello-settings-split-nav" aria-label="Разделы настроек" role="tablist">
-              {SETTINGS_TABS.map((key) => {
-                const isActive = tab === key;
-                return (
-                  <button
-                    key={key}
-                    id={`settings-tab-${key}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-controls={`settings-tabpanel-${key}`}
-                    className={[
-                      'trello-settings-tab',
-                      isActive ? 'trello-settings-tab--active' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    onClick={() => selectTab(key)}
-                  >
-                    {SETTINGS_TAB_LABELS[key]}
-                  </button>
-                );
-              })}
-            </nav>
-            <div className="trello-settings-split-body">
-              {SETTINGS_TABS.map((key) => {
-                const isActive = tab === key;
-                return (
-                  <div
-                    key={key}
-                    id={`settings-tabpanel-${key}`}
-                    className={[
-                      'trello-settings-tab-panel',
-                      isActive ? '' : 'trello-settings-tab-panel--inactive',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    role="tabpanel"
-                    aria-labelledby={`settings-tab-${key}`}
-                    aria-hidden={!isActive}
-                    tabIndex={isActive ? 0 : -1}
-                  >
-                    {renderTabContent(key)}
-                  </div>
-                );
-              })}
-            </div>
+        <div className="trello-settings-layout">
+          <nav
+            className="trello-settings-nav-panel"
+            aria-label="Разделы настроек"
+            role="tablist"
+          >
+            {SETTINGS_TABS.map((key) => {
+              const isActive = tab === key;
+              return (
+                <button
+                  key={key}
+                  id={`settings-tab-${key}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`settings-tabpanel-${key}`}
+                  className={[
+                    'trello-settings-tab',
+                    isActive ? 'trello-settings-tab--active' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => selectTab(key)}
+                >
+                  {SETTINGS_TAB_LABELS[key]}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div
+            className="trello-settings-content-panel"
+            id={`settings-tabpanel-${tab}`}
+            role="tabpanel"
+            aria-labelledby={`settings-tab-${tab}`}
+          >
+            {renderTabContent(tab)}
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

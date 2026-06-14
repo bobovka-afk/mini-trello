@@ -1,6 +1,7 @@
 export type SettingsTab =
   | 'account'
   | 'security'
+  | 'sessions'
   | 'notifications'
   | 'gamification'
   | 'privacy';
@@ -8,6 +9,7 @@ export type SettingsTab =
 const TAB_ROUTES: Record<SettingsTab, string> = {
   account: '/settings/account',
   security: '/settings/security',
+  sessions: '/settings/sessions',
   notifications: '/settings/notifications',
   gamification: '/settings/gamification',
   privacy: '/settings/privacy',
@@ -16,6 +18,7 @@ const TAB_ROUTES: Record<SettingsTab, string> = {
 export const SETTINGS_TABS: SettingsTab[] = [
   'account',
   'security',
+  'sessions',
   'notifications',
   'gamification',
   'privacy',
@@ -27,6 +30,7 @@ export function parseSettingsTabFromRoute(route: string): SettingsTab {
     return 'account';
   }
   if (route.startsWith('/settings/security')) return 'security';
+  if (route.startsWith('/settings/sessions')) return 'sessions';
   if (route.startsWith('/settings/notifications')) return 'notifications';
   if (route.startsWith('/settings/privacy')) return 'privacy';
   if (route === '/settings' || route.startsWith('/settings/')) return 'account';
@@ -50,6 +54,7 @@ export function replaceSettingsTabInUrl(tab: SettingsTab): void {
 export const SETTINGS_TAB_LABELS: Record<SettingsTab, string> = {
   account: 'Аккаунт',
   security: 'Безопасность',
+  sessions: 'Сессии',
   notifications: 'Уведомления',
   gamification: 'Геймификация',
   privacy: 'Конфиденциальность',

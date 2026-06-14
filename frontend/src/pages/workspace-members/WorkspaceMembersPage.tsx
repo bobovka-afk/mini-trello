@@ -4,6 +4,7 @@ import {
   formatApiError,
   isRateLimitMessage,
 } from '@shared/api';
+import { ModalForm } from '@shared/ui/modal-form';
 import { avatarSrcFromPath, userProfilePath } from '@entities/user';
 import { formatDateRuLong } from '@shared/lib/formatDateRu';
 import {
@@ -165,7 +166,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     }
   }, [accessToken, showAlert]);
 
-  const loadMembers = useCallback(async () => {
+  const loadMembers = useCallback(async (options?: { silent?: boolean }) => {
     if (!accessToken) {
       setLoading(false);
       setRows([]);
@@ -173,9 +174,12 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       return;
     }
 
-    setLoading(true);
-    setAlertModal(null);
-    setBrokenAvatarUserIds({});
+    const silent = options?.silent ?? false;
+    if (!silent) {
+      setLoading(true);
+      setAlertModal(null);
+      setBrokenAvatarUserIds({});
+    }
     try {
       const data = await api<WorkspaceMemberRow[]>(
         `/workspace/${workspaceId}/members?limit=${MEMBERS_PAGE_SIZE}&offset=0`,
@@ -190,9 +194,13 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
     } catch (e) {
       setRows([]);
       setHasMore(false);
-      showAlert(formatError(e));
+      if (!silent) {
+        showAlert(formatError(e));
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [accessToken, workspaceId, showAlert]);
 
@@ -236,7 +244,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
         accessToken,
       });
       setDeleteMember(null);
-      await loadMembers();
+      setRows((prev) => prev.filter((row) => row.userId !== deleteMember.userId));
     } catch (e) {
       showAlert(formatError(e));
     } finally {
@@ -282,8 +290,6 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
       setCreateOpen(false);
       setCreateEmail('');
       setCreateRole('MEMBER');
-      // список членов не меняется, но пусть UI обновится
-      await loadMembers();
     } catch (e) {
       showAlert(formatInviteSendError(e));
     } finally {
@@ -562,69 +568,70 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                   ×
                 </button>
               </div>
-              <div className="trello-modal-body">
-                <label className="trello-field">
-                  <span className="trello-label">Почта *</span>
-                  <input
-                    className="trello-input"
-                    value={createEmail}
-                    onChange={(e) => setCreateEmail(e.target.value)}
-                    autoComplete="email"
-                  />
-                </label>
-                <div className="trello-field">
-                  <span className="trello-label" id="invite-role-label">
-                    Роль
-                  </span>
-                  <div
-                    className="trello-invite-role-toggle"
-                    role="group"
-                    aria-labelledby="invite-role-label"
-                  >
-                    <button
-                      type="button"
-                      className={
-                        createRole === 'MEMBER'
-                          ? 'trello-invite-role-btn trello-invite-role-btn--active'
-                          : 'trello-invite-role-btn'
-                      }
-                      disabled={createBusy}
-                      onClick={() => setCreateRole('MEMBER')}
+              <ModalForm onSubmit={submitCreateInvite} disabled={createBusy}>
+                <div className="trello-modal-body">
+                  <label className="trello-field">
+                    <span className="trello-label">Почта *</span>
+                    <input
+                      className="trello-input"
+                      value={createEmail}
+                      onChange={(e) => setCreateEmail(e.target.value)}
+                      autoComplete="email"
+                    />
+                  </label>
+                  <div className="trello-field">
+                    <span className="trello-label" id="invite-role-label">
+                      Роль
+                    </span>
+                    <div
+                      className="trello-invite-role-toggle"
+                      role="group"
+                      aria-labelledby="invite-role-label"
                     >
-                      Участник
-                    </button>
-                    <button
-                      type="button"
-                      className={
-                        createRole === 'ADMIN'
-                          ? 'trello-invite-role-btn trello-invite-role-btn--active'
-                          : 'trello-invite-role-btn'
-                      }
-                      disabled={createBusy}
-                      onClick={() => setCreateRole('ADMIN')}
-                    >
-                      Администратор
-                    </button>
+                      <button
+                        type="button"
+                        className={
+                          createRole === 'MEMBER'
+                            ? 'trello-invite-role-btn trello-invite-role-btn--active'
+                            : 'trello-invite-role-btn'
+                        }
+                        disabled={createBusy}
+                        onClick={() => setCreateRole('MEMBER')}
+                      >
+                        Участник
+                      </button>
+                      <button
+                        type="button"
+                        className={
+                          createRole === 'ADMIN'
+                            ? 'trello-invite-role-btn trello-invite-role-btn--active'
+                            : 'trello-invite-role-btn'
+                        }
+                        disabled={createBusy}
+                        onClick={() => setCreateRole('ADMIN')}
+                      >
+                        Администратор
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="trello-modal-foot">
-                <button
-                  type="button"
-                  className="trello-btn trello-btn-ghost"
-                  onClick={() => !createBusy && setCreateOpen(false)}
-                >
-                  Отмена
-                </button>
-                <button
-                  type="button"
-                  className="trello-btn trello-btn-primary"
-                  disabled={createBusy}
-                  onClick={() => void submitCreateInvite()}
-                >
-                  {createBusy ? 'Отправка…' : 'Отправить приглашение'}
-                </button>
-              </div>
+                <div className="trello-modal-foot">
+                  <button
+                    type="button"
+                    className="trello-btn trello-btn-ghost"
+                    onClick={() => !createBusy && setCreateOpen(false)}
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="submit"
+                    className="trello-btn trello-btn-primary"
+                    disabled={createBusy}
+                  >
+                    {createBusy ? 'Отправка…' : 'Отправить приглашение'}
+                  </button>
+                </div>
+              </ModalForm>
             </div>
           </div>
         )}
@@ -853,7 +860,7 @@ export function WorkspaceMembersPage({ accessToken, workspaceId }: Props) {
                   json: next,
                 });
                 setPermMember(null);
-                await loadMembers();
+                await loadMembers({ silent: true });
               } catch (e) {
                 showAlert(formatError(e));
               } finally {

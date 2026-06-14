@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { api, formatApiError } from '@shared/api';
 import { cosmeticAssetUrl } from '@entities/character/lib/cosmetics';
@@ -51,7 +51,14 @@ function chestRewardPreviewUrl(result: OpenChestResult): string | null {
   return cosmeticAssetUrl(result.cosmeticKey);
 }
 
-const STORAGE_SLOTS_PER_PAGE = 12;
+const STORAGE_GRID_COLS = 6;
+const STORAGE_GRID_ROWS = 3;
+const STORAGE_SLOTS_PER_PAGE = STORAGE_GRID_COLS * STORAGE_GRID_ROWS;
+
+const storageGridStyle = {
+  '--storage-grid-cols': STORAGE_GRID_COLS,
+  '--storage-grid-rows': STORAGE_GRID_ROWS,
+} as CSSProperties;
 
 function getStorageTotalPages(
   itemCount: number,
@@ -78,6 +85,7 @@ function StoragePagedGrid(props: {
   ariaLabel: string;
   slotsPerPage?: number;
   gridClassName?: string;
+  gridStyle?: CSSProperties;
   children: ReactNode;
 }) {
   const slotsPerPage = props.slotsPerPage ?? STORAGE_SLOTS_PER_PAGE;
@@ -89,6 +97,7 @@ function StoragePagedGrid(props: {
     <div className="trello-character-storage-page">
       <ul
         className={`trello-character-inventory-grid ${gridClassName}`}
+        style={{ ...storageGridStyle, ...props.gridStyle }}
         role="list"
         aria-label={props.ariaLabel}
       >
@@ -292,11 +301,9 @@ function QuestRow(props: {
 function QuestGroup(props: {
   title: string;
   group: QuestPeriodGroup;
-  rowCount: number;
   onOpenChest: (chestId: number, tier: ChestTier) => void;
   openingChestId: number | null;
 }) {
-  const placeholders = Math.max(0, props.rowCount - props.group.quests.length);
   return (
     <div className="trello-character-quest-group trello-character-quest-column">
       <h3 className="trello-character-quest-group-title">{props.title}</h3>
@@ -307,13 +314,6 @@ function QuestGroup(props: {
             quest={q}
             onOpenChest={props.onOpenChest}
             openingChestId={props.openingChestId}
-          />
-        ))}
-        {Array.from({ length: placeholders }, (_, index) => (
-          <li
-            key={`quest-spacer-${index}`}
-            className="trello-character-quest-row trello-character-quest-row--spacer"
-            aria-hidden
           />
         ))}
       </ul>
@@ -681,28 +681,22 @@ export function ProfileCharacterQuestsPanel(props: Props) {
               <p className="trello-muted">Загрузка данных персонажа…</p>
             )}
             {quests && questRowCount > 0 && (
-              <div
-                className="trello-character-quests-columns"
-                style={{ '--quest-row-count': questRowCount } as React.CSSProperties}
-              >
+              <div className="trello-character-quests-columns">
                 <QuestGroup
                   title="Ежедневные"
                   group={quests.daily}
-                  rowCount={questRowCount}
                   onOpenChest={(id, tier) => void handleOpenChest(id, tier)}
                   openingChestId={openingChestId}
                 />
                 <QuestGroup
                   title="Еженедельные"
                   group={quests.weekly}
-                  rowCount={questRowCount}
                   onOpenChest={(id, tier) => void handleOpenChest(id, tier)}
                   openingChestId={openingChestId}
                 />
                 <QuestGroup
                   title="Ежемесячные"
                   group={quests.monthly}
-                  rowCount={questRowCount}
                   onOpenChest={(id, tier) => void handleOpenChest(id, tier)}
                   openingChestId={openingChestId}
                 />

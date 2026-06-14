@@ -751,7 +751,7 @@ export function PersonalPage({ accessToken }: Props) {
               }
               footer={
                 board.todos.length === 0 ? (
-                  <p className="personal-column-hint personal-column-hint--empty">
+                  <p className="personal-column-hint">
                     ☐ Разовые дела без сброса — добавьте первую задачу.
                   </p>
                 ) : (

@@ -11,10 +11,12 @@ describe('settingsRoutes', () => {
     expect(parseSettingsTabFromRoute('/settings/gamification')).toBe('gamification');
     expect(parseSettingsTabFromRoute('/settings')).toBe('account');
     expect(parseSettingsTabFromRoute('/settings/security')).toBe('security');
+    expect(parseSettingsTabFromRoute('/settings/sessions')).toBe('sessions');
   });
 
   it('maps tab to route', () => {
     expect(settingsRouteForTab('privacy')).toBe('/settings/privacy');
+    expect(settingsRouteForTab('sessions')).toBe('/settings/sessions');
     expect(parseSettingsTabFromRoute('/settings/data')).toBe('account');
   });
 

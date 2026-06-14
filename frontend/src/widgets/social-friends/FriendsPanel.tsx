@@ -185,7 +185,13 @@ export function FriendsPanel({ accessToken, onMessagePeer, onInboxChange }: Prop
 
       <section className="trello-social-section">
         <h3 className="trello-social-section-title">Добавить друга</h3>
-        <div className="trello-social-add-row">
+        <form
+          className="trello-social-add-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!busy) void handleSendRequest();
+          }}
+        >
           <input
             className="trello-input trello-social-code-input"
             placeholder="4 цифры"
@@ -195,14 +201,13 @@ export function FriendsPanel({ accessToken, onMessagePeer, onInboxChange }: Prop
             onChange={(e) => setCodeInput(e.target.value)}
           />
           <button
-            type="button"
+            type="submit"
             className="trello-btn trello-btn-primary trello-btn-sm"
             disabled={busy}
-            onClick={() => void handleSendRequest()}
           >
             Отправить заявку
           </button>
-        </div>
+        </form>
       </section>
 
       {incoming.length > 0 && (

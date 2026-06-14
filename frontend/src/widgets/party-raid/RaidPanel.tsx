@@ -263,7 +263,10 @@ export function RaidPanel({
                   {CHEST_TIER_LABEL_RU[activeBoss.chestTier]}
                 </span>
               </h4>
-              <p className="trello-party-boss-preview-desc">{activeBoss.descriptionRu}</p>
+              <p className="trello-party-boss-preview-desc">
+                Выполняйте различные активности и получайте ману. Атакуйте босса вместе с друзьями
+                и забирайте награду.
+              </p>
               <p className="trello-party-boss-loot">
                 Награда: {bossChestRewardLabel(activeBoss.chestTier)}
               </p>
@@ -670,10 +673,6 @@ export function RaidPanel({
       ) : (
         <section className="trello-party-section">
           <h2 className="trello-party-section-title">Рейд с друзьями</h2>
-          <p className="trello-party-intro">
-            Закрывайте карточки, выполняйте привычки и дела в «Личном» — получайте ману.
-            Атакуйте босса вместе с друзьями и забирайте boss-сундук.
-          </p>
           <h3 className="trello-party-create-subtitle">Выберите босса</h3>
           {renderBossPicker()}
           <div className="trello-party-gather-row trello-party-gather-row--centered">
