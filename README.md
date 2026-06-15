@@ -22,7 +22,6 @@ Questflow — fullstack-платформа для командной работ�
 - [API](#api)
 - [Аутентификация](#auth)
 - [Разделы приложения](#sections)
-- [Архитектура frontend](#frontend-arch)
 
 ---
 
@@ -171,23 +170,6 @@ npm test
 | Уведомления | `/notifications` | XP, квесты, сундуки, mentions |
 
 Rail: вкладка **«Привычки»** между «Доски» и «Персонаж».
-
----
-
-<h2 id="frontend-arch">Архитектура frontend</h2>
-
-Гибридная структура (FSD-подобная):
-
-| Слой | Путь | Назначение |
-|------|------|------------|
-| App | `frontend/src/app` | Вход, app-shell, глобальные стили |
-| Pages | `frontend/src/pages` | Экраны и роуты |
-| Widgets | `frontend/src/widgets` | Крупные UI-блоки (rail, guide, modals) |
-| Features | `frontend/src/features` | Пользовательские сценарии |
-| Entities | `frontend/src/entities` | Доменные сущности |
-| Shared | `frontend/src/shared` | API-клиент, утилиты, UI-kit |
-
-Константы наград синхронизируются с backend: `frontend/src/lib/xpRewards.ts` ↔ `backend/src/gamification/config/rewards.ts`.
 
 ---
 
